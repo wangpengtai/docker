@@ -20,11 +20,8 @@ RUN apk add --no-cache \
         nodejs-lts \
         ruby \
         ruby-io-console \
-        ruby-irb && \
-    # considered bad practice but we really need it
-    apk add --no-cache sudo && \
-    # to replace busybox pkill
-    apk add --no-cache procps && \
+        ruby-irb \
+        sudo && \
     # busybox contains bug in env command preventing gitaly setup, downgrade it
     apk add busybox=1.25.1-r0 --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/v3.5/main && \
     # install build deps
@@ -159,16 +156,14 @@ RUN mkdir /etc/default && \
     echo "app_user=$USER" >>/etc/default/gitlab && \
     echo "shell_path=/bin/sh" >>/etc/default/gitlab
 
-# cleanup build deps
-RUN apk del .build-deps \
-    gcc g++ make cmake linux-headers \
-    icu-dev ruby-dev musl-dev zlib-dev libffi-dev libre2-dev && \
-    # these dirs waste a lot of space and not needed in runtime, remove them
-    rm -rf node_modules .git && \
-    rm -rf /home/$USER/.cache/yarn && \
-    # cleanup sudo no tty fix
-    sed --in-place "/$USER.*/d" /etc/sudoers && \
-    # stop services
-    sleep 5 # wait services stopping
+# Clean up
+RUN rm -rf \
+        /home/$USER/gitlab/node_modules \
+        /home/$USER/gitlab/tmp \
+        /home/$USER/gitlab/spec \
+        /home/$USER/gitlab/doc \
+        /home/$USER/gitlab/vendor/bundle/ruby/2.4.0/cache \
+        /home/$USER/.cache/yarn && \
+    apk del .build-deps sudo
 
 VOLUME /var/opt/gitlab /var/log
