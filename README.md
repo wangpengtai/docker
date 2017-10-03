@@ -1,10 +1,11 @@
-### Gitlab Rails Community Edition Docker Image
-Based on Alpine Linux official image.
-Built from source using Gitlab official source installation instructions with a
-bunch of Alpine specific fixes.
-This only contains the Rails code of GitLab, nothing else. It is intended to be
-used as the foundation for other services, like Unicorn or Sidekiq.
+### Gitlab Enterprise Edition Docker Images
 
-Volumes:
-- /var/opt/gitlab - config, repositories and postgres data
-- /var/log - logs
+Based on the [Alpine Linux](https://alpinelinux.org/) [official image](https://hub.docker.com/_/alpine/).
+
+Built using [the official source installation instructions](http://docs.gitlab.com/ee/install/installation.html) with some Alpine specific fixes.
+
+Each directory contains the `Dockerfile` for a specific component of the
+infrastructure needed to run GitLab.
+
+* [rails](/rails) - The Rails code needed for both API and web.
+* [unicorn](/unicorn) - The Unicorn container that exposes Rails.
