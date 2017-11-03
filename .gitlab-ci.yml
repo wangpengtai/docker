@@ -1,0 +1,19 @@
+stages:
+  - base-container
+
+gitlab-rails:
+  stage: base-container
+  image: "docker-latest"
+  variables:
+    DOCKER_DRIVER: overlay
+    DOCKER_HOST: tcp://docker:2375
+  services:
+  - docker:dind
+  script:
+  - docker rm -f "$CI_REGISTRY_IMAGE/gitlab-rails" &>/dev/null || true
+  - cd rails
+  - docker build -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CI_COMMIT_SHA-$CI_JOB_ID" .
+  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+  - docker push "$CI_REGISTRY_IMAGE/gitlab-rails:$CI_COMMIT_SHA-$CI_JOB_ID"
+  dependencies: []
+  retry: 1
