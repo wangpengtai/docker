@@ -12,14 +12,13 @@ gitlab-rails:
   - docker:dind
   script:
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
-  - # Check if container already exists
-  - EXISTS=${docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$CI_COMMIT_SHA" > /dev/null}
-  - if $EXISTS; then exit 0; fi
-  - # Build new image
+  # Check if container already exists
+  - if $(docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$CI_COMMIT_SHA" > /dev/null); then exit 0; fi
+  # Build new image
   - docker rm -f "$CI_REGISTRY_IMAGE/gitlab-rails" &>/dev/null || true
   - cd rails
   - docker build -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CI_COMMIT_SHA" .
-  - # Push new image
+  # Push new image
   - docker push "$CI_REGISTRY_IMAGE/gitlab-rails:$CI_COMMIT_SHA"
   dependencies: []
   retry: 1
@@ -34,14 +33,14 @@ unicorn:
   - docker:dind
   script:
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
-  - # Check if container already exists
-  - EXISTS=${docker pull "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CI_COMMIT_SHA" > /dev/null}
-  - if $EXISTS; then exit 0; fi
-  - # Build new image
+  # Check if container already exists
+  - if $(docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$CI_COMMIT_SHA" > /dev/null); then exit 0; fi
+  # Build new image
   - docker rm -f "$CI_REGISTRY_IMAGE/gitlab-unicorn" &>/dev/null || true
   - cd unicorn
   - docker build --build-arg "tag=$CI_COMMIT_SHA" -t "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CI_COMMIT_SHA" .
-  - # Push new image
+  # Push new image
   - docker push "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CI_COMMIT_SHA"
-  dependencies: [gitlab-rails]
+  dependencies:
+    - gitlab-rails
   retry: 1
