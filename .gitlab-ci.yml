@@ -3,7 +3,7 @@ stages:
 
 gitlab-rails:
   stage: base-container
-  image: "docker-latest"
+  image: "docker:latest"
   variables:
     DOCKER_DRIVER: overlay
     DOCKER_HOST: tcp://docker:2375
