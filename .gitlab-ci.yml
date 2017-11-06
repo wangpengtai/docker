@@ -38,10 +38,11 @@ unicorn:
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Check if container already exists
   - if $(docker pull "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" > /dev/null); then exit 0; fi
+  # Pull the base image
+  - docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$BASE_VERSION"
   # Build new image
   - docker rm -f "$CI_REGISTRY_IMAGE/gitlab-unicorn" &>/dev/null || true
   - cd unicorn
-  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   - docker build --build-arg "tag=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" .
   # Push new image
   - docker push "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION"
