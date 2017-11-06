@@ -43,7 +43,7 @@ unicorn:
   # Build new image
   - docker rm -f "$CI_REGISTRY_IMAGE/gitlab-unicorn" &>/dev/null || true
   - cd unicorn
-  - docker build --build-arg "tag=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" .
+  - docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" .
   # Push new image
   - docker push "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION"
   dependencies:
