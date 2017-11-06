@@ -1,5 +1,5 @@
 ARG TAG=10-0-stable-base-ee
-FROM gitlab-rails:${TAG}
+FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-rails:${TAG}
 
 COPY unicorn.rb /home/git/gitlab/config/unicorn.rb
 
