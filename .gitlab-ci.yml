@@ -38,6 +38,7 @@ unicorn:
   # Build new image
   - docker rm -f "$CI_REGISTRY_IMAGE/gitlab-unicorn" &>/dev/null || true
   - cd unicorn
+  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   - docker build --build-arg "tag=$CI_COMMIT_SHA" -t "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CI_COMMIT_SHA" .
   # Push new image
   - docker push "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CI_COMMIT_SHA"
