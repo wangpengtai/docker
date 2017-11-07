@@ -1,0 +1,51 @@
+stages:
+  - base-container
+  - target-container
+
+gitlab-rails:
+  stage: base-container
+  image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
+  variables:
+    DOCKER_DRIVER: overlay
+    DOCKER_HOST: tcp://docker:2375
+  services:
+  - docker:dind
+  script:
+  - CONTAINER_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
+  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+  # Check if container already exists
+  - if $(docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" > /dev/null); then exit 0; fi
+  # Build new image
+  - docker rm -f "$CI_REGISTRY_IMAGE/gitlab-rails" &>/dev/null || true
+  - cd rails
+  - docker build -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" .
+  # Push new image
+  - docker push "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION"
+  dependencies: []
+  retry: 1
+
+unicorn:
+  stage: target-container
+  image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
+  variables:
+    DOCKER_DRIVER: overlay
+    DOCKER_HOST: tcp://docker:2375
+  services:
+  - docker:dind
+  script:
+  - BASE_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
+  - CONTAINER_VERSION=$(git ls-tree HEAD -- unicorn | awk '{ print $3 }')
+  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+  # Check if container already exists
+  - if $(docker pull "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" > /dev/null); then exit 0; fi
+  # Pull the base image
+  - docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$BASE_VERSION"
+  # Build new image
+  - docker rm -f "$CI_REGISTRY_IMAGE/gitlab-unicorn" &>/dev/null || true
+  - cd unicorn
+  - docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" .
+  # Push new image
+  - docker push "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION"
+  dependencies:
+    - gitlab-rails
+  retry: 1
