@@ -1,7 +1,7 @@
 version: "3"
 services:
   omnibus:
-    image: gitlab/gitlab-ee:latest
+    image: gitlab/gitlab-ee:10.1.1-ee.0
     volumes:
     - ./dev/omnibus-config/gitlab.rb:/etc/gitlab/gitlab.rb
   unicorn:
