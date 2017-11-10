@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+require 'erb'
+
+template_directory = ARGV.shift
+config_directory = ARGV.shift || template_directory
+
+unless template_directory
+  puts 'usage: set-config <template_directory> [<config_directory>]'
+  exit 1
+end
+
+puts "Begin parsing .erb files from #{template_directory}"
+
+Dir.glob(File.join(template_directory, '*.erb')).each do |file|
+  output_file = File.join(config_directory, File.basename(file, '.erb'))
+  puts "Writing #{output_file}"
+  template = ERB.new(File.read(file))
+  File.write(output_file, template.result)
+end
