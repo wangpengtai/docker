@@ -162,7 +162,6 @@ RUN rm -rf \
         /home/${GITLAB_USER}/gitlab/node_modules \
         /home/${GITLAB_USER}/gitlab/tmp \
         /home/${GITLAB_USER}/gitlab/spec \
-        /home/${GITLAB_USER}/gitlab/doc \
         /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/cache \
         /home/${GITLAB_USER}/.cache/yarn \
         /usr/lib/libruby-static.a && \
