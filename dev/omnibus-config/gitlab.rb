@@ -2,13 +2,14 @@
 postgresql['enable'] = true
 redis['enable'] = true
 #bootstrap['enable'] = false
-nginx['enable'] = false
 unicorn['enable'] = false
 sidekiq['enable'] = false
 gitaly['enable'] = false
-gitlab_workhorse['enable'] = false
 mailroom['enable'] = false
 gitlab_monitor['enable'] = false
+
+# Workhorse configuration
+gitlab_workhorse['auth_backend'] = 'http://unicorn:8080'
 
 # PostgreSQL configuration
 postgresql['listen_address'] = '0.0.0.0'
