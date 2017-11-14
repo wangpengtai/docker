@@ -83,14 +83,17 @@ RUN sudo -u ${GITLAB_USER} -H git config --global gc.auto 0 && \
     sudo -u ${GITLAB_USER} -H git config --global repack.writeBitmaps true
 
 # Download GitLab
-RUN cd /home/${GITLAB_USER} && \
+RUN mkdir -p /opt/gitlab && \
+    chown ${GITLAB_USER} /opt/gitlab/ && \
+    sudo -u ${GITLAB_USER} -H mkdir -p /opt/gitlab/embedded/service && \
+    cd /opt/gitlab/embedded/service && \
     sudo -u ${GITLAB_USER} -H curl -o gitlab.tar.bz2 https://gitlab.com/gitlab-org/gitlab-ee/repository/${GITLAB_VERSION}/archive.tar.bz2 && \
     sudo -u ${GITLAB_USER} -H tar -xjf gitlab.tar.bz2 && \
-    mv gitlab-ee-${GITLAB_VERSION}-* gitlab && \
+    mv gitlab-ee-${GITLAB_VERSION}-* gitlab-rails && \
     rm gitlab.tar.bz2
 
 # Configure GitLab
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /opt/gitlab/embedded/service/gitlab-rails && \
     sudo -u ${GITLAB_USER} -H mkdir ${CONFIG} && \
     sudo -u ${GITLAB_USER} -H cp config/gitlab.yml.example ${CONFIG}/gitlab.yml && \
     sudo -u ${GITLAB_USER} -H cp config/unicorn.rb.example ${CONFIG}/unicorn.rb && \
@@ -107,11 +110,11 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
     sed --in-place "s/YOUR_SERVER_FQDN/${DOMAIN}/" lib/support/nginx/gitlab
 
 # Move log dir to /var/log data volume mount point
-RUN mv /home/${GITLAB_USER}/gitlab/log /var/log/gitlab && \
-    sudo -u ${GITLAB_USER} -H ln -s /var/log/gitlab /home/${GITLAB_USER}/gitlab/log
+RUN mv /opt/gitlab/embedded/service/gitlab-rails/log /var/log/gitlab && \
+    sudo -u ${GITLAB_USER} -H ln -s /var/log/gitlab /opt/gitlab/embedded/service/gitlab-rails/log
 
 # Set permissions
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /opt/gitlab/embedded/service/gitlab-rails && \
     chmod o-rwx config/database.yml && \
     chmod 0600 config/secrets.yml && \
     chown -R ${GITLAB_USER} log/ && \
@@ -130,43 +133,43 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
     chmod 0700 public/uploads
 
 # Install bundler
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /opt/gitlab/embedded/service/gitlab-rails && \
     gem install bundler --no-ri --no-rdoc
 
 # Maybe we should add these to the upstream Gemfile?
-# RUN cd /home/${GITLAB_USER}/gitlab && \
+# RUN cd /opt/gitlab/embedded/service/gitlab-rails && \
 #     echo "gem 'bigdecimal'" >> Gemfile && \
 #     echo "gem 'tzinfo-data'" >> Gemfile
 
 # Install gems
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /opt/gitlab/embedded/service/gitlab-rails && \
     sudo -u git -H bundle install --deployment --without development test mysql aws kerberos --jobs 4 --retry 5
 
 # Some Gems are skipping extension compilation on alpine for some reason, Force them to compile
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /opt/gitlab/embedded/service/gitlab-rails && \
     sudo -u git -H bundle exec gem uninstall --force google-protobuf grpc && \
     sudo -u git -H BUNDLE_FORCE_RUBY_PLATFORM=true bundle install
 
 # compile GetText PO files
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /opt/gitlab/embedded/service/gitlab-rails && \
     sudo -u ${GITLAB_USER} -H bundle exec rake gettext:pack RAILS_ENV=production && \
     sudo -u ${GITLAB_USER} -H bundle exec rake gettext:po_to_json RAILS_ENV=production
 
 # compile assets
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /opt/gitlab/embedded/service/gitlab-rails && \
     sudo -u ${GITLAB_USER} -H yarn install --production --pure-lockfile && \
     sudo -u ${GITLAB_USER} -H bundle exec rake gitlab:assets:compile RAILS_ENV=production NODE_ENV=production
 
 # Clean up
 RUN rm -rf \
-        /home/${GITLAB_USER}/gitlab/node_modules \
-        /home/${GITLAB_USER}/gitlab/tmp \
-        /home/${GITLAB_USER}/gitlab/spec \
-        /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/cache \
+        /opt/gitlab/embedded/service/gitlab-rails/node_modules \
+        /opt/gitlab/embedded/service/gitlab-rails/tmp \
+        /opt/gitlab/embedded/service/gitlab-rails/spec \
+        /opt/gitlab/embedded/service/gitlab-rails/vendor/bundle/ruby/*/cache \
         /home/${GITLAB_USER}/.cache/yarn \
         /usr/lib/libruby-static.a && \
-    find /home/${GITLAB_USER}/gitlab -name '*.gem' -type f -print -delete && \
-    find /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} + && \
+    find /opt/gitlab/embedded/service/gitlab-rails -name '*.gem' -type f -print -delete && \
+    find /opt/gitlab/embedded/service/gitlab-rails/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} + && \
     apk del .build-deps sudo
 
 # Add scripts
