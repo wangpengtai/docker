@@ -41,7 +41,7 @@ unicorn:
   script:
   - BASE_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
   - UNICORN_VERSION=$(git ls-tree HEAD -- unicorn | awk '{ print $3 }')
-  - CONTAINER_VERSION=$(echo -n "$BASE_VERSION$UNICORN_VERSION" | sha256sum)
+  - CONTAINER_VERSION=($(echo -n "$BASE_VERSION$UNICORN_VERSION" | sha1sum))
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
   - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" > /dev/null); then
