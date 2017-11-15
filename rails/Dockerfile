@@ -65,7 +65,7 @@ RUN cd ${BUILD_DIR} && \
     $(curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}.tar.gz" | tar -xz) && \
     cd node-v${NODE_VERSION} && \
     ./configure --prefix=/usr/local --fully-static --without-npm && \
-    make -j${CPU_COUNT} &&
+    make -j${CPU_COUNT} && \
     make install
 
 # create gitlab user
