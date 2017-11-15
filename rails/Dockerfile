@@ -10,7 +10,7 @@ ARG GITLAB_VERSION=v10.1.3-ee
 ARG RUBY_MAJOR_VERSION=2.3
 ARG RUBY_MINOR_VERSION=2.3.5
 ARG YARN_VERSION=0.20.3
-ARG NODE_VERSION=6.9.5-r1
+ARG NODE_VERSION=6.9.5
 
 # We need the latest and greatest at lesat for yarn
 RUN apk update && apk upgrade
@@ -38,7 +38,6 @@ RUN apk add --no-cache --virtual .build-deps \
         icu-dev \
         libffi-dev \
         libre2-dev \
-        nodejs=$NODE_VERSION \
         linux-headers \
         make \
         musl-dev \
@@ -57,8 +56,12 @@ RUN cd ${BUILD_DIR} && \
     ac_cv_func_isnan=yes ac_cv_func_isinf=yes ./configure --prefix=/usr --disable-install-doc && \
     make -j ${CPU_COUNT} && \
     make -j ${CPU_COUNT} install && \
-    cd && \
-    rm -rf ${BUILD_DIR}
+    cd
+
+# Install NodeJS binary
+RUN cd ${BUILD_DIR} && \
+    curl -fsSL "https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz" \
+    | tar --strip-components 1 -xzC /usr/local/
 
 # create gitlab user
 RUN adduser -D -g 'GitLab' ${GITLAB_USER}
@@ -160,12 +163,17 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
 
 # Clean up
 RUN rm -rf \
+        ${BUILD_DIR} \
         /home/${GITLAB_USER}/gitlab/node_modules \
         /home/${GITLAB_USER}/gitlab/tmp \
         /home/${GITLAB_USER}/gitlab/spec \
         /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/cache \
         /home/${GITLAB_USER}/.cache/yarn \
-        /usr/lib/libruby-static.a && \
+        /usr/lib/libruby-static.a \
+        /usr/local/bin/node \
+        /usr/local/bin/npm \
+        /usr/local/include/node \
+        /usr/local/lib/node* && \
     find /home/${GITLAB_USER}/gitlab -name '*.gem' -type f -print -delete && \
     find /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} + && \
     apk del .build-deps sudo
