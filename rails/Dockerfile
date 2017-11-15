@@ -10,7 +10,7 @@ ARG GITLAB_VERSION=v10.1.3-ee
 ARG RUBY_MAJOR_VERSION=2.3
 ARG RUBY_MINOR_VERSION=2.3.5
 ARG YARN_VERSION=0.20.3
-ARG NODE_VERSION=6.9.5
+ARG NODE_VERSION=6.9.5-r1
 
 # We need the latest and greatest at lesat for yarn
 RUN apk update && apk upgrade
