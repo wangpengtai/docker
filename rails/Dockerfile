@@ -112,7 +112,7 @@ RUN cd /var/cache/omnibus/src/gitlab-rails && \
     sed --in-place "s/YOUR_SERVER_FQDN/${DOMAIN}/" lib/support/nginx/gitlab
 
 # Move log dir to /var/log data volume mount point
-RUN mv /home/${GITLAB_USER}/gitlab/log /var/log/gitlab && \
+RUN mv /var/cache/omnibus/src/gitlab-rails/log /var/log/gitlab && \
     sudo -u ${GITLAB_USER} -H ln -s /var/cache/omnibus/src/gitlab-rails/log
 
 # Set permissions
@@ -148,7 +148,7 @@ RUN cd /var/cache/omnibus/src/gitlab-rails && \
     sudo -u git -H bundle install --deployment --without development test mysql aws kerberos --jobs 4 --retry 5
 
 # Some Gems are skipping extension compilation on alpine for some reason, Force them to compile
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /var/cache/omnibus/src/gitlab-rails && \
     sudo -u git -H bundle exec gem uninstall --force google-protobuf grpc && \
     sudo -u git -H BUNDLE_FORCE_RUBY_PLATFORM=true bundle install
 
