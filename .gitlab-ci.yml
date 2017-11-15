@@ -16,6 +16,8 @@ gitlab-rails:
   # Build container if it doesn't exist
   - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" > /dev/null); then
   -   docker rm -f "$CI_REGISTRY_IMAGE/gitlab-rails" &>/dev/null || true
+  # Pull the existing image to reuse existing layers
+  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:latest"
   -   cd rails
   -   docker build -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" .
   #   Push new image
