@@ -150,15 +150,15 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
 
 # Install node dependencies
 RUN cd /home/${GITLAB_USER}/gitlab && \
-    sudo -u ${GITLAB_USER} -H yarn install --production --pure-lockfile $COMPILE_ASSETS_ENV
+    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV yarn install --production --pure-lockfile
 
 # compile GetText PO files
 RUN cd /home/${GITLAB_USER}/gitlab && \
-    sudo -u ${GITLAB_USER} -H bundle exec rake gettext:pack $COMPILE_ASSETS_ENV
+    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gettext:pack
 
 # compile assets
 RUN cd /home/${GITLAB_USER}/gitlab && \
-    sudo -u ${GITLAB_USER} -H bundle exec rake gitlab:assets:compile $COMPILE_ASSETS_ENV
+    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gitlab:assets:compile
 
 # Clean up
 RUN rm -rf \
