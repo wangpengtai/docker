@@ -154,7 +154,7 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
 
 # compile GetText PO files
 RUN cd /home/${GITLAB_USER}/gitlab && \
-    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gettext:pack
+    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gettext:compile
 
 # compile assets
 RUN cd /home/${GITLAB_USER}/gitlab && \
