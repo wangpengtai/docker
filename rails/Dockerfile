@@ -39,6 +39,9 @@ RUN apk add --no-cache --virtual .build-deps \
         libffi-dev \
         libre2-dev \
         linux-headers \
+        python \
+        binutils-gold \
+        libstdc++ \
         make \
         musl-dev \
         postgresql-dev \
@@ -54,14 +57,17 @@ RUN cd ${BUILD_DIR} && \
     rm ruby.tar.bz2 && \
     cd ruby-${RUBY_MINOR_VERSION} && \
     ac_cv_func_isnan=yes ac_cv_func_isinf=yes ./configure --prefix=/usr --disable-install-doc && \
-    make -j ${CPU_COUNT} && \
-    make -j ${CPU_COUNT} install && \
-    cd
+    make -j${CPU_COUNT} && \
+    make install
 
 # Install NodeJS binary
 RUN cd ${BUILD_DIR} && \
-    curl -fsSL "https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz" \
-    | tar --strip-components 1 -xzC /usr/local/
+    curl -fsSL "https://nodejs.org/dist//v${NODE_VERSION}/node-v${NODE_VERSION}.tar.gz" \
+    | tar -xz && /
+    cd node-v${NODE_VERSION} && \
+    ./configure --prefix=/usr/local --fully-static --without-npm && \
+    make -j${CPU_COUNT} &&
+    make install
 
 # create gitlab user
 RUN adduser -D -g 'GitLab' ${GITLAB_USER}
