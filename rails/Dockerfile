@@ -10,7 +10,7 @@ ARG GITLAB_VERSION=v10.1.3-ee
 ARG RUBY_MAJOR_VERSION=2.3
 ARG RUBY_MINOR_VERSION=2.3.5
 ARG YARN_VERSION=0.20.3
-ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SKIP_STORAGE_VALIDATION=true NODE_PATH=/var/cache/omnibus/src/gitlab-rails/node_modules"
+ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SKIP_STORAGE_VALIDATION=true"
 
 # We need the latest and greatest at lesat for yarn
 RUN apk update && apk upgrade
@@ -83,15 +83,19 @@ RUN sudo -u ${GITLAB_USER} -H git config --global gc.auto 0 && \
     sudo -u ${GITLAB_USER} -H git config --global core.autocrlf input && \
     sudo -u ${GITLAB_USER} -H git config --global repack.writeBitmaps true
 
+RUN mkdir -p /var/cache/omnibus && \
+    chown ${GITLAB_USER} /var/cache/omnibus && \
+    sudo -u ${GITLAB_USER} -H mkdir -p /var/cache/omnibus/src/
+
 # Download GitLab
-RUN cd /home/${GITLAB_USER} && \
+RUN cd /var/cache/omnibus/src/ && \
     sudo -u ${GITLAB_USER} -H curl -o gitlab.tar.bz2 https://gitlab.com/gitlab-org/gitlab-ee/repository/${GITLAB_VERSION}/archive.tar.bz2 && \
     sudo -u ${GITLAB_USER} -H tar -xjf gitlab.tar.bz2 && \
-    mv gitlab-ee-${GITLAB_VERSION}-* gitlab && \
+    mv gitlab-ee-${GITLAB_VERSION}-* gitlab-rails && \
     rm gitlab.tar.bz2
 
 # Configure GitLab
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /var/cache/omnibus/src/gitlab-rails && \
     sudo -u ${GITLAB_USER} -H mkdir ${CONFIG} && \
     sudo -u ${GITLAB_USER} -H cp config/gitlab.yml.example ${CONFIG}/gitlab.yml && \
     sudo -u ${GITLAB_USER} -H cp config/unicorn.rb.example ${CONFIG}/unicorn.rb && \
@@ -109,10 +113,10 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
 
 # Move log dir to /var/log data volume mount point
 RUN mv /home/${GITLAB_USER}/gitlab/log /var/log/gitlab && \
-    sudo -u ${GITLAB_USER} -H ln -s /var/log/gitlab /home/${GITLAB_USER}/gitlab/log
+    sudo -u ${GITLAB_USER} -H ln -s /var/cache/omnibus/src/gitlab-rails/log
 
 # Set permissions
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /var/cache/omnibus/src/gitlab-rails && \
     chmod o-rwx config/database.yml && \
     chmod 0600 config/secrets.yml && \
     chown -R ${GITLAB_USER} log/ && \
@@ -131,16 +135,16 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
     chmod 0700 public/uploads
 
 # Install bundler
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /var/cache/omnibus/src//gitlab-rails && \
     gem install bundler --no-ri --no-rdoc
 
 # Maybe we should add these to the upstream Gemfile?
-# RUN cd /home/${GITLAB_USER}/gitlab && \
+# RUN cd /var/cache/omnibus/src/gitlab-rails && \
 #     echo "gem 'bigdecimal'" >> Gemfile && \
 #     echo "gem 'tzinfo-data'" >> Gemfile
 
 # Install gems
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /var/cache/omnibus/src/gitlab-rails && \
     sudo -u git -H bundle install --deployment --without development test mysql aws kerberos --jobs 4 --retry 5
 
 # Some Gems are skipping extension compilation on alpine for some reason, Force them to compile
@@ -149,31 +153,27 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
     sudo -u git -H BUNDLE_FORCE_RUBY_PLATFORM=true bundle install
 
 # Install node dependencies
-RUN mkdir -p /var/cache/omnibus && \
-    chown ${GITLAB_USER} /var/cache/omnibus && \
-    sudo -u ${GITLAB_USER} -H mkdir -p /var/cache/omnibus/src/gitlab-rails/node_modules && \
-    cd /home/${GITLAB_USER}/gitlab && \
-    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV yarn install --production --pure-lockfile --modules-folder /var/cache/omnibus/src/gitlab-rails/node_modules
+RUN cd /var/cache/omnibus/src/gitlab-rails && \
+    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV yarn install --production --pure-lockfile
 
 # compile GetText PO files
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /var/cache/omnibus/src/gitlab-rails && \
     sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gettext:compile
 
 # compile assets
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /var/cache/omnibus/src/gitlab-rails && \
     sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gitlab:assets:compile
 
 # Clean up
 RUN rm -rf \
-        /home/${GITLAB_USER}/gitlab/node_modules \
-        /home/${GITLAB_USER}/gitlab/tmp \
-        /home/${GITLAB_USER}/gitlab/spec \
-        /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/cache \
-        /home/${GITLAB_USER}/.cache/yarn \
-        /var/cache/omnibus \
+        /var/cache/omnibus/src/gitlab-rails/gitlab/node_modules \
+        /var/cache/omnibus/src/gitlab-rails/gitlab/tmp \
+        /var/cache/omnibus/src/gitlab-rails/gitlab/spec \
+        /var/cache/omnibus/src/gitlab-rails/gitlab/vendor/bundle/ruby/*/cache \
+        /var/cache/omnibus/src/gitlab-rails/.cache/yarn \
         /usr/lib/libruby-static.a && \
-    find /home/${GITLAB_USER}/gitlab -name '*.gem' -type f -print -delete && \
-    find /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} + && \
+    find /var/cache/omnibus/src/gitlab-rails/gitlab -name '*.gem' -type f -print -delete && \
+    find /var/cache/omnibus/src/gitlab-rails/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} + && \
     apk del .build-deps sudo
 
 # Add scripts

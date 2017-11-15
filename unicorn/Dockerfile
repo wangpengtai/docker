@@ -1,9 +1,9 @@
 ARG TAG=latest
 FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-rails:${TAG}
 
-COPY unicorn.rb /home/git/gitlab/config/unicorn.rb
+COPY unicorn.rb /var/cache/omnibus/src/gitlab-rails/config/unicorn.rb
 
-CMD /home/git/gitlab/bin/bundle exec unicorn \
+CMD /var/cache/omnibus/src/gitlab-rails/bin/bundle exec unicorn \
               -E production \
-              -c /home/git/gitlab/config/unicorn.rb \
-              /home/git/gitlab/config.ru
+              -c /var/cache/omnibus/src/gitlab-rails/config/unicorn.rb \
+              /var/cache/omnibus/src/gitlab-rails/config.ru
