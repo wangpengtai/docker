@@ -10,7 +10,7 @@ ARG GITLAB_VERSION=v10.1.3-ee
 ARG RUBY_MAJOR_VERSION=2.3
 ARG RUBY_MINOR_VERSION=2.3.5
 ARG YARN_VERSION=0.20.3
-ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SKIP_STORAGE_VALIDATION=true"
+ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SKIP_STORAGE_VALIDATION=true NODE_PATH=/var/cache/omnibus/src/gitlab-rails/node_modules"
 
 # We need the latest and greatest at lesat for yarn
 RUN apk update && apk upgrade
@@ -149,8 +149,11 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
     sudo -u git -H BUNDLE_FORCE_RUBY_PLATFORM=true bundle install
 
 # Install node dependencies
-RUN cd /home/${GITLAB_USER}/gitlab && \
-    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV yarn install --production --pure-lockfile
+RUN mkdir -p /var/cache/omnibus && \
+    chown ${GITLAB_USER} /var/cache/omnibus && \
+    sudo -u ${GITLAB_USER} -H mkdir -p /var/cache/omnibus/src/gitlab-rails/node_modules && \
+    cd /home/${GITLAB_USER}/gitlab && \
+    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV yarn install --production --pure-lockfile --modules-folder /var/cache/omnibus/src/gitlab-rails/node_modules
 
 # compile GetText PO files
 RUN cd /home/${GITLAB_USER}/gitlab && \
@@ -167,6 +170,7 @@ RUN rm -rf \
         /home/${GITLAB_USER}/gitlab/spec \
         /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/cache \
         /home/${GITLAB_USER}/.cache/yarn \
+        /var/cache/omnibus \
         /usr/lib/libruby-static.a && \
     find /home/${GITLAB_USER}/gitlab -name '*.gem' -type f -print -delete && \
     find /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} + && \
