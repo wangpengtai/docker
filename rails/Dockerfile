@@ -113,7 +113,7 @@ RUN cd /var/cache/omnibus/src/gitlab-rails && \
 
 # Move log dir to /var/log data volume mount point
 RUN mv /var/cache/omnibus/src/gitlab-rails/log /var/log/gitlab && \
-    sudo -u ${GITLAB_USER} -H ln -s /var/cache/omnibus/src/gitlab-rails/log
+    sudo -u ${GITLAB_USER} -H ln -s /var/log/gitlab /var/cache/omnibus/src/gitlab-rails/log
 
 # Set permissions
 RUN cd /var/cache/omnibus/src/gitlab-rails && \
