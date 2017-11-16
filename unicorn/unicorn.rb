@@ -7,7 +7,7 @@
 # ENV['RAILS_RELATIVE_URL_ROOT'] = "/gitlab"
 
 worker_processes 1
-working_directory "/home/git/gitlab"
+working_directory "/var/cache/omnibus/src/gitlab-rails"
 listen "0.0.0.0:8080", :tcp_nopush => true
 
 # nuke workers after 30 seconds instead of 60 seconds (the default)
