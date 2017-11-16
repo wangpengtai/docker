@@ -10,6 +10,7 @@ ARG GITLAB_VERSION=v10.1.3-ee
 ARG RUBY_MAJOR_VERSION=2.3
 ARG RUBY_MINOR_VERSION=2.3.5
 ARG YARN_VERSION=0.20.3
+ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SKIP_STORAGE_VALIDATION=true"
 
 # We need the latest and greatest at lesat for yarn
 RUN apk update && apk upgrade
@@ -147,15 +148,17 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
     sudo -u git -H bundle exec gem uninstall --force google-protobuf grpc && \
     sudo -u git -H BUNDLE_FORCE_RUBY_PLATFORM=true bundle install
 
+# Install node dependencies
+RUN cd /home/${GITLAB_USER}/gitlab && \
+    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV yarn install --production --pure-lockfile
+
 # compile GetText PO files
 RUN cd /home/${GITLAB_USER}/gitlab && \
-    sudo -u ${GITLAB_USER} -H bundle exec rake gettext:pack RAILS_ENV=production && \
-    sudo -u ${GITLAB_USER} -H bundle exec rake gettext:po_to_json RAILS_ENV=production
+    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gettext:compile
 
 # compile assets
 RUN cd /home/${GITLAB_USER}/gitlab && \
-    sudo -u ${GITLAB_USER} -H yarn install --production --pure-lockfile && \
-    sudo -u ${GITLAB_USER} -H bundle exec rake gitlab:assets:compile RAILS_ENV=production NODE_ENV=production
+    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gitlab:assets:compile
 
 # Clean up
 RUN rm -rf \
