@@ -166,14 +166,14 @@ RUN cd /var/cache/omnibus/src/gitlab-rails && \
 
 # Clean up
 RUN rm -rf \
-        /var/cache/omnibus/src/gitlab-rails/gitlab/node_modules \
-        /var/cache/omnibus/src/gitlab-rails/gitlab/tmp \
-        /var/cache/omnibus/src/gitlab-rails/gitlab/spec \
-        /var/cache/omnibus/src/gitlab-rails/gitlab/vendor/bundle/ruby/*/cache \
+        /var/cache/omnibus/src/gitlab-rails/node_modules \
+        /var/cache/omnibus/src/gitlab-rails/tmp \
+        /var/cache/omnibus/src/gitlab-rails/spec \
+        /var/cache/omnibus/src/gitlab-rails/vendor/bundle/ruby/*/cache \
         /var/cache/omnibus/src/gitlab-rails/.cache/yarn \
         /usr/lib/libruby-static.a && \
-    find /var/cache/omnibus/src/gitlab-rails/gitlab -name '*.gem' -type f -print -delete && \
-    find /var/cache/omnibus/src/gitlab-rails/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} + && \
+    find /var/cache/omnibus/src/gitlab-rails -name '*.gem' -type f -print -delete && \
+    find /var/cache/omnibus/src/gitlab-rails/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} + && \
     apk del .build-deps sudo
 
 # Add scripts
