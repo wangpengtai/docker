@@ -1,0 +1,3 @@
+[redis]
+URL = "tcp://omnibus:6379"
+Password = "redis-meercat"
