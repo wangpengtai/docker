@@ -8,8 +8,9 @@ gitaly['enable'] = false
 mailroom['enable'] = false
 gitlab_monitor['enable'] = false
 
-# Workhorse configuration
-gitlab_workhorse['auth_backend'] = 'http://unicorn:8080'
+gitlab_workhorse['enable'] = false
+gitlab_workhorse['listen_addr'] = 'unicorn:8181'
+gitlab_workhorse['listen_network'] = 'tcp'
 
 # PostgreSQL configuration
 postgresql['listen_address'] = '0.0.0.0'

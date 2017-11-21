@@ -4,7 +4,6 @@ ARG BUILD_DIR=/tmp/build
 ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
 ARG CPU_COUNT=4
-ARG DOMAIN=gitlab.valeriani.co.uk
 ARG GITLAB_USER=git
 ARG GITLAB_VERSION=v10.1.3-ee
 ARG RUBY_MAJOR_VERSION=2.3
@@ -101,11 +100,11 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
     sudo -u ${GITLAB_USER} -H cp config/initializers/rack_attack.rb.example ${CONFIG}/rack_attack.rb && \
     sudo -u ${GITLAB_USER} -H ln -s ${CONFIG}/* config && \
     sudo -u ${GITLAB_USER} -H mv config/rack_attack.rb config/initializers && \
+    sed --in-place "/host: localhost/d" config/gitlab.yml && \
+    sed --in-place "/port: 80/d" config/gitlab.yml && \
     sed --in-place "s/# user:.*/user: ${GITLAB_USER}/" config/gitlab.yml && \
-    sed --in-place "s/host: localhost/host: ${DOMAIN}/" config/gitlab.yml && \
     sed --in-place "s:/home/git/repositories:${DATADIR}/repo:" config/gitlab.yml && \
-    sed --in-place "s:/home/git:/home/${GITLAB_USER}:g" config/unicorn.rb && \
-    sed --in-place "s/YOUR_SERVER_FQDN/${DOMAIN}/" lib/support/nginx/gitlab
+    sed --in-place "s:/home/git:/home/${GITLAB_USER}:g" config/unicorn.rb
 
 # Move log dir to /var/log data volume mount point
 RUN mv /home/${GITLAB_USER}/gitlab/log /var/log/gitlab && \
