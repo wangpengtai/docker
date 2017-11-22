@@ -30,3 +30,5 @@ RUN mkdir /srv/gitlab-shell && chown ${GITLAB_USER}:${GITLAB_USER} /srv/gitlab-s
     ./bin/compile
 
 RUN apk del .build-deps
+
+CMD bash
