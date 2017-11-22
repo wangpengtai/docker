@@ -160,7 +160,7 @@ shell:
   #   Pull the existing image to reuse existing layers
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-shell:latest" || true
   #   Build new image
-  -   cd unicorn
+  -   cd shell
   -   docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-shell:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION"
