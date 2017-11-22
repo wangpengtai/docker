@@ -15,12 +15,6 @@ RUN adduser -D -g 'GitLab' ${GITLAB_USER} && \
     sed -i "s/${GITLAB_USER}:!/${GITLAB_USER}:*/" /etc/shadow && \
     echo "${GITLAB_USER} ALL=(ALL) NOPASSWD: ALL" >>/etc/sudoers
 
-# Prep the data directory
-RUN mkdir ${DATADIR} && \
-    cd ${DATADIR} && \
-    mkdir data repo config && \
-    chown -R ${GITLAB_USER}:${GITLAB_USER} ${DATADIR}
-
 # Download and compile GitLab Shell
 RUN mkdir /srv/gitlab-shell && chown ${GITLAB_USER}:${GITLAB_USER} /srv/gitlab-shell && \
     cd /srv/gitlab-shell && \
