@@ -19,7 +19,7 @@ gitlab-ruby:
   # Pull the existing image to reuse existing layers
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:latest" || true
   -   cd ruby
-  -   docker build -t "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" .
+  -   docker build -t "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-rails:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION"
   - fi
@@ -47,13 +47,12 @@ gitlab-rails:
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
   - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" > /dev/null); then
-  -   docker rm -f "$CI_REGISTRY_IMAGE/gitlab-rails" &>/dev/null || true
   #   Pull the base image
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
   # Pull the existing image to reuse existing layers
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:latest" || true
   -   cd rails
-  -   docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" .
+  -   docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-rails:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION"
   - fi
@@ -85,10 +84,11 @@ unicorn:
   - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" > /dev/null); then
   #   Pull the rails image
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$RAILS_CONTAINER"
+  #   Pull the existing image to reuse existing layers
+  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-unicorn:latest" || true
   #   Build new image
-  -   docker rm -f "$CI_REGISTRY_IMAGE/gitlab-unicorn" &>/dev/null || true
   -   cd unicorn
-  -   docker build --build-arg "TAG=$RAILS_CONTAINER" -t "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" .
+  -   docker build --build-arg "TAG=$RAILS_CONTAINER" -t "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-unicorn:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION"
   - fi
