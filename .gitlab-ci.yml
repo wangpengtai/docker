@@ -1,8 +1,9 @@
 stages:
   - base-container
+  - common-container
   - target-container
 
-gitlab-rails:
+gitlab-ruby:
   stage: base-container
   image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
   variables:
@@ -11,15 +12,48 @@ gitlab-rails:
   services:
   - docker:dind
   script:
-  - CONTAINER_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
+  - CONTAINER_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
+  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+  # Build container if it doesn't exist
+  - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" > /dev/null); then
+  # Pull the existing image to reuse existing layers
+  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:latest" || true
+  -   cd ruby
+  -   docker build -t "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" .
+  #   Push new image
+  -   docker push "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION"
+  - fi
+  # Push the latest tag if master
+  - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
+  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-ruby:latest"
+  #   Push latest image
+  -   docker push "$CI_REGISTRY_IMAGE/gitlab-ruby:latest"
+  - fi
+  dependencies: []
+  retry: 1
+
+gitlab-rails:
+  stage: common-container
+  image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
+  variables:
+    DOCKER_DRIVER: overlay
+    DOCKER_HOST: tcp://docker:2375
+  services:
+  - docker:dind
+  script:
+  - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
+  - TARGET_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
+  - CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION" | sha1sum))
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
   - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" > /dev/null); then
   -   docker rm -f "$CI_REGISTRY_IMAGE/gitlab-rails" &>/dev/null || true
+  #   Pull the base image
+  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
   # Pull the existing image to reuse existing layers
-  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:latest"
+  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:latest" || true
   -   cd rails
-  -   docker build -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" .
+  -   docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION"
   - fi
@@ -41,18 +75,20 @@ unicorn:
   services:
   - docker:dind
   script:
-  - BASE_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
+  - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
+  - RAILS_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
   - UNICORN_VERSION=$(git ls-tree HEAD -- unicorn | awk '{ print $3 }')
-  - CONTAINER_VERSION=($(echo -n "$BASE_VERSION$UNICORN_VERSION" | sha1sum))
+  - RAILS_CONTAINER=($(echo -n "$BASE_VERSION$RAILS_VERSION" | sha1sum))
+  - CONTAINER_VERSION=($(echo -n "$RAILS_CONTAINER$UNICORN_VERSION" | sha1sum))
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
   - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" > /dev/null); then
-  #   Pull the base image
-  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$BASE_VERSION"
+  #   Pull the rails image
+  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$RAILS_CONTAINER"
   #   Build new image
   -   docker rm -f "$CI_REGISTRY_IMAGE/gitlab-unicorn" &>/dev/null || true
   -   cd unicorn
-  -   docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" .
+  -   docker build --build-arg "TAG=$RAILS_CONTAINER" -t "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION"
   - fi

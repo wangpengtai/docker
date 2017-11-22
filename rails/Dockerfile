@@ -1,4 +1,5 @@
-FROM alpine:3.6
+ARG TAG=latest
+FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${TAG}
 
 ARG BUILD_DIR=/tmp/build
 ARG DATADIR=/var/opt/gitlab
@@ -6,8 +7,6 @@ ARG CONFIG=$DATADIR/config/gitlab
 ARG CPU_COUNT=4
 ARG GITLAB_USER=git
 ARG GITLAB_VERSION=v10.1.3-ee
-ARG RUBY_MAJOR_VERSION=2.3
-ARG RUBY_MINOR_VERSION=2.3.5
 ARG YARN_VERSION=0.20.3
 ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SKIP_STORAGE_VALIDATION=true"
 
@@ -15,19 +14,14 @@ ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SK
 RUN apk update && apk upgrade
 
 # install runtime deps
-# busybox contains bug in env command preventing gitaly setup, downgrade it
 RUN apk add --no-cache \
-        ca-certificates \
-        curl \
-        git \
         icu-libs \
         libre2 \
-        libffi \
         tzdata \
         libc6-compat \
         postgresql-client \
-        sudo && \
-    apk add busybox=1.25.1-r0 --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/v3.5/main
+        sudo \
+        busybox
 
 # install build deps
 RUN apk add --no-cache --virtual .build-deps \
@@ -44,20 +38,6 @@ RUN apk add --no-cache --virtual .build-deps \
         postgresql-dev \
         zlib-dev && \
         mkdir -p ${BUILD_DIR}
-
-
-# Install Ruby from source
-# Fix configure script for alpine: https://github.com/gliderlabs/docker-alpine/issues/261
-RUN cd ${BUILD_DIR} && \
-    curl -so ruby.tar.bz2 https://cache.ruby-lang.org/pub/ruby/${RUBY_MAJOR_VERSION}/ruby-${RUBY_MINOR_VERSION}.tar.bz2 && \
-    tar -xjf ruby.tar.bz2 && \
-    rm ruby.tar.bz2 && \
-    cd ruby-${RUBY_MINOR_VERSION} && \
-    ac_cv_func_isnan=yes ac_cv_func_isinf=yes ./configure --prefix=/usr --disable-install-doc && \
-    make -j ${CPU_COUNT} && \
-    make -j ${CPU_COUNT} install && \
-    cd && \
-    rm -rf ${BUILD_DIR}
 
 # create gitlab user
 RUN adduser -D -g 'GitLab' ${GITLAB_USER}
@@ -129,10 +109,6 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
     sudo -u ${GITLAB_USER} -H mkdir public/uploads && \
     chmod 0700 public/uploads
 
-# Install bundler
-RUN cd /home/${GITLAB_USER}/gitlab && \
-    gem install bundler --no-ri --no-rdoc
-
 # Maybe we should add these to the upstream Gemfile?
 # RUN cd /home/${GITLAB_USER}/gitlab && \
 #     echo "gem 'bigdecimal'" >> Gemfile && \
@@ -165,8 +141,7 @@ RUN rm -rf \
         /home/${GITLAB_USER}/gitlab/tmp \
         /home/${GITLAB_USER}/gitlab/spec \
         /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/cache \
-        /home/${GITLAB_USER}/.cache/yarn \
-        /usr/lib/libruby-static.a && \
+        /home/${GITLAB_USER}/.cache/yarn && \
     find /home/${GITLAB_USER}/gitlab -name '*.gem' -type f -print -delete && \
     find /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} + && \
     apk del .build-deps sudo
