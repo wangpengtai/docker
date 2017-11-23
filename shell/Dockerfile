@@ -6,7 +6,7 @@ ARG GITLAB_USER=git
 
 # install build deps
 RUN apk add --no-cache --virtual .build-deps \
-        cmake g++ gcc linux-headers make go
+        cmake g++ gcc linux-headers make go sudo
 
 # create gitlab user
 # openssh daemon does not allow locked user to login, change ! to *
