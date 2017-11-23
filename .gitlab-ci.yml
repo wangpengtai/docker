@@ -101,3 +101,38 @@ unicorn:
   dependencies:
     - gitlab-rails
   retry: 1
+
+sidekiq:
+  stage: target-container
+  image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
+  variables:
+    DOCKER_DRIVER: overlay
+    DOCKER_HOST: tcp://docker:2375
+  services:
+  - docker:dind
+  script:
+  - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
+  - RAILS_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
+  - SIDEKIQ_VERSION=$(git ls-tree HEAD -- sidekiq | awk '{ print $3 }')
+  - RAILS_CONTAINER=($(echo -n "$BASE_VERSION$RAILS_VERSION" | sha1sum))
+  - CONTAINER_VERSION=($(echo -n "$RAILS_CONTAINER$SIDEKIQ_VERSION" | sha1sum))
+  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+  # Build container if it doesn't exist
+  - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" > /dev/null); then
+  #   Pull the rails image
+  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$RAILS_CONTAINER"
+  #   Build new image
+  -   cd sidekiq
+  -   docker build --build-arg "TAG=$RAILS_CONTAINER" -t "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-sidekiq:latest".
+  #   Push new image
+  -   docker push "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION"
+  - fi
+  # Push the latest tag if master
+  - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
+  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-unicorn:latest"
+  #   Push latest image
+  -   docker push "$CI_REGISTRY_IMAGE/gitlab-sidekiq:latest"
+  - fi
+  dependencies:
+    - gitlab-rails
+  retry: 1

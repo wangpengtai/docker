@@ -19,3 +19,10 @@ services:
       - "${WORKHORSE_HOST_PORT}:8181"
     volumes:
       - ./dev/unicorn-config:/var/opt/gitlab/config/gitlab
+  sidekiq:
+    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq:latest
+    depends_on:
+      - omnibus
+    user: git
+    volumes:
+      - ./dev/sidekiq-config:/var/opt/gitlab/config/gitlab
