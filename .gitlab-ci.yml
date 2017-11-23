@@ -10,7 +10,8 @@ gitlab-ruby:
     DOCKER_DRIVER: overlay2
     DOCKER_HOST: tcp://docker:2375
   services:
-  - docker:dind
+  - name: docker:dind
+    command: ["--experimental=true"]
   script:
   - CONTAINER_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
@@ -39,7 +40,8 @@ gitlab-rails:
     DOCKER_DRIVER: overlay2
     DOCKER_HOST: tcp://docker:2375
   services:
-  - docker:dind
+  - name: docker:dind
+    command: ["--experimental=true"]
   script:
   - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - TARGET_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
@@ -72,7 +74,8 @@ unicorn:
     DOCKER_DRIVER: overlay2
     DOCKER_HOST: tcp://docker:2375
   services:
-  - docker:dind
+  - name: docker:dind
+    command: ["--experimental=true"]
   script:
   - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - RAILS_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
@@ -109,7 +112,8 @@ sidekiq:
     DOCKER_DRIVER: overlay2
     DOCKER_HOST: tcp://docker:2375
   services:
-  - docker:dind
+  - name: docker:dind
+    command: ["--experimental=true"]
   script:
   - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - RAILS_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
