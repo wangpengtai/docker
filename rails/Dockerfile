@@ -145,7 +145,7 @@ RUN rm -rf \
     find /home/${GITLAB_USER}/gitlab -name '*.gem' -type f -print -delete && \
     find /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} + && \
     apk del .build-deps sudo && \
-    echo 'foo'
+    touch /tmp/foo
 
 # Add scripts
 COPY scripts/ /scripts
