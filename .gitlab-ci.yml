@@ -40,7 +40,8 @@ gitlab-rails:
     DOCKER_DRIVER: overlay2
     DOCKER_HOST: tcp://docker:2375
   services:
-  - docker:dind
+  - name: docker:dind
+    command: ["--experimental=true"]
   script:
   - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - TARGET_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
@@ -51,9 +52,9 @@ gitlab-rails:
   #   Pull the base image
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
   # Pull the existing image to reuse existing layers
-  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:cb39272810706c5f8e9b7ff9da7e38fe09b572e5" || true
+  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:d653bfefdf23f029081595f3a6467259eb465649" || true
   -   cd rails
-  -   docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-rails:cb39272810706c5f8e9b7ff9da7e38fe09b572e5" .
+  -   docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-rails:d653bfefdf23f029081595f3a6467259eb465649" --squash .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION"
   - fi
