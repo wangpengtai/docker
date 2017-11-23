@@ -131,7 +131,7 @@ sidekiq:
   - fi
   # Push the latest tag if master
   - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
-  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-unicorn:latest"
+  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-sidekiq:latest"
   #   Push latest image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-sidekiq:latest"
   - fi
