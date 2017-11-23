@@ -144,7 +144,8 @@ RUN rm -rf \
         /home/${GITLAB_USER}/.cache/yarn && \
     find /home/${GITLAB_USER}/gitlab -name '*.gem' -type f -print -delete && \
     find /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} + && \
-    apk del .build-deps sudo
+    apk del .build-deps sudo && \
+    echo 'foo'
 
 # Add scripts
 COPY scripts/ /scripts
