@@ -51,7 +51,7 @@ gitlab-rails:
   #   Pull the base image
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
   # Pull the existing image to reuse existing layers
-  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:rails:cb39272810706c5f8e9b7ff9da7e38fe09b572e5" || true
+  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:cb39272810706c5f8e9b7ff9da7e38fe09b572e5" || true
   -   cd rails
   -   docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-rails:latest" .
   #   Push new image
