@@ -112,8 +112,7 @@ sidekiq:
     DOCKER_DRIVER: overlay2
     DOCKER_HOST: tcp://docker:2375
   services:
-  - name: docker:dind
-    command: ["--experimental=true"]
+  - docker:dind
   script:
   - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - RAILS_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
@@ -129,7 +128,7 @@ sidekiq:
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-sidekiq:latest" || true
   #   Build new image
   -   cd sidekiq
-  -   docker build --build-arg "TAG=$RAILS_CONTAINER" -t "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-sidekiq:latest" --squash .
+  -   docker build --build-arg "TAG=$RAILS_CONTAINER" -t "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-sidekiq:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION"
   - fi
