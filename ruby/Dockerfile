@@ -58,4 +58,6 @@ RUN cd ${BUILD_DIR} && \
     gem update --system "$RUBYGEMS_VERSION" && \
     gem install bundler --version "$BUNDLER_VERSION" --force
 
+ENV CACHEBUST=true
+
 CMD [ "irb" ]
