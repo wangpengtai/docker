@@ -151,8 +151,7 @@ COPY scripts/ /scripts
 
 ENV RAILS_ENV=production \
     EXECJS_RUNTIME=Disabled \
-    CONFIG_TEMPLATE_DIRECTORY=${CONFIG} \
-    CACHEBUST=true
+    CONFIG_TEMPLATE_DIRECTORY=${CONFIG}
 
 ENTRYPOINT ["/scripts/entrypoint.sh"]
 
