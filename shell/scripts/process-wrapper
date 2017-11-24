@@ -2,9 +2,14 @@
 
 set -e
 
-echo "Starting OpenSSH"
-/usr/sbin/sshd -E /var/log/gitlab-shell/ssh.log
+echo "Generating Host Keys"
 
+ssh-keygen -A
+
+echo "Starting OpenSSH"
+/usr/sbin/sshd -E /var/log/gitlab-shell/ssh.log &
+
+echo "Tailing Logs"
 tail -f /var/log/gitlab-shell/*
 
 wait
