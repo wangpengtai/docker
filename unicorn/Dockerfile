@@ -21,7 +21,7 @@ RUN cd ${BUILD_DIR} && \
 RUN rm -rf ${BUILD_DIR} && \
     apk del .build-deps
 
-COPY scripts/ /scripts
+COPY unicorn/scripts/ /scripts
 COPY unicorn.rb /home/git/gitlab/config/unicorn.rb
 
 CMD /scripts/process-wrapper

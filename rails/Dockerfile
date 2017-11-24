@@ -147,7 +147,7 @@ RUN rm -rf \
     apk del .build-deps sudo
 
 # Add scripts
-COPY scripts/ /scripts
+COPY shared/scripts/ /scripts
 
 ENV RAILS_ENV=production \
     EXECJS_RUNTIME=Disabled \

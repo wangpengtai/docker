@@ -27,6 +27,11 @@ RUN mkdir -p /var/log/gitlab-shell && chown ${GITLAB_USER} /var/log/gitlab-shell
 
 RUN apk del .build-deps
 
-VOLUME /var/log/gitlab-shell
+# Add scripts
+COPY shared/scripts/ /scripts
 
-CMD bash
+ENV CONFIG_TEMPLATE_DIRECTORY=/srv/gitlab-shell
+
+ENTRYPOINT ["/scripts/entrypoint.sh"]
+
+VOLUME /var/log/gitlab-shell
