@@ -5,7 +5,7 @@ set -e
 echo "Starting workhorse"
 /scripts/start-workhorse &
 
-/home/git/gitlab/bin/gitlab-rails runner -e production /opt/gitlab/bin/gitlab-rails runner -e production 'include Gitlab::CurrentSettings; current_application_settings.update_attribute(:authorized_keys_enabled, false)'
+/home/git/gitlab/bin/rails runner -e production /opt/gitlab/bin/gitlab-rails runner -e production 'include Gitlab::CurrentSettings; current_application_settings.update_attribute(:authorized_keys_enabled, false)'
 
 echo "Starting unicorn"
 /home/git/gitlab/bin/bundle exec unicorn -E production -c /home/git/gitlab/config/unicorn.rb /home/git/gitlab/config.ru &
