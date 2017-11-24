@@ -7,7 +7,7 @@ gitlab-ruby:
   stage: base-container
   image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
   variables:
-    DOCKER_DRIVER: overlay
+    DOCKER_DRIVER: overlay2
     DOCKER_HOST: tcp://docker:2375
   services:
   - docker:dind
@@ -36,7 +36,7 @@ gitlab-rails:
   stage: common-container
   image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
   variables:
-    DOCKER_DRIVER: overlay
+    DOCKER_DRIVER: overlay2
     DOCKER_HOST: tcp://docker:2375
   services:
   - docker:dind
@@ -70,7 +70,7 @@ unicorn:
   stage: target-container
   image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
   variables:
-    DOCKER_DRIVER: overlay
+    DOCKER_DRIVER: overlay2
     DOCKER_HOST: tcp://docker:2375
   services:
   - docker:dind
