@@ -32,7 +32,7 @@ RUN mkdir -p /var/log/gitlab-shell && chown ${GITLAB_USER} /var/log/gitlab-shell
 RUN apk del .build-deps
 
 # Add scripts
-COPY shared/scripts/ unicorn/scripts/ /scripts
+COPY shared/scripts/ unicorn/scripts/ /scripts/
 
 ENV CONFIG_TEMPLATE_DIRECTORY=/srv/gitlab-shell
 
