@@ -37,5 +37,6 @@ COPY shared/scripts/ unicorn/scripts/ /scripts
 ENV CONFIG_TEMPLATE_DIRECTORY=/srv/gitlab-shell
 
 ENTRYPOINT ["/scripts/entrypoint.sh"]
+CMD "/scripts/process-wrapper"
 
 VOLUME /var/log/gitlab-shell

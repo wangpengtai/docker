@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+echo "Starting OpenSSH"
+/usr/sbin/sshd -E /var/log/gitlab-shell/ssh.log
+
+tail -f /var/log/gitlab-shell/*
+
+wait

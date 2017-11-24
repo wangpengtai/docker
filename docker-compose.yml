@@ -2,6 +2,8 @@ version: "3"
 services:
   omnibus:
     image: gitlab/gitlab-ee:10.2.0-ee.0
+    environment:
+      - "GITLAB_SSH_PORT=${SSH_HOST_PORT}"
     ports:
       - "${NGINX_HOST_PORT}:80"
     volumes:

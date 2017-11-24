@@ -31,6 +31,8 @@ redis_exporter['flags'] = {
 gitlab_rails['redis_password'] = 'redis-meercat'
 gitlab_rails['redis_socket'] = nil
 
+gitlab_rails['ssh_host'] = "localhost"
+gitlab_rails['ssh_host'] << ":#{ENV['GITLAB_SSH_PORT']}" if ENV['GITLAB_SSH_PORT']
 gitlab_rails['secret_key_base'] = "678f063ed891fd6e431a1a22446ca5702fe7711730146f03169be2560b51b2176092a9fd6121f185a32e429ffea64a738af5ec56da74828a83eee101c081049b"
 gitlab_rails['db_key_base'] = "76fd4c76ad88731035c849ba42fbe298742776b52a2c27c25181a08a8d4b1755ae19870fec0bca8b21060a2f1b960ff958ba861e25580a1474e1f3bb63152883"
 gitlab_rails['otp_key_base'] = "e62021080e20756e9a650079ac9794a88f0d312331512d639e468d8aaf8bd44b45322884197f3cd5bd5c699fe4949aee29bb8fa9d749260cac37f7294c04d1de"
