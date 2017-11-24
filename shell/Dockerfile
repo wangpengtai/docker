@@ -4,6 +4,10 @@ FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${TAG}
 ARG GITLAB_SHELL_VERSION=5.9.4
 ARG GITLAB_USER=git
 
+# install runtime deps
+RUN apk add --no-cache \
+        openssh
+
 # install build deps
 RUN apk add --no-cache --virtual .build-deps \
         cmake g++ gcc linux-headers make go sudo
@@ -28,7 +32,7 @@ RUN mkdir -p /var/log/gitlab-shell && chown ${GITLAB_USER} /var/log/gitlab-shell
 RUN apk del .build-deps
 
 # Add scripts
-COPY shared/scripts/ /scripts
+COPY shared/scripts/ unicorn/script /scripts
 
 ENV CONFIG_TEMPLATE_DIRECTORY=/srv/gitlab-shell
 
