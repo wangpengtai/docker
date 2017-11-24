@@ -7,7 +7,7 @@ services:
     volumes:
     - ./dev/omnibus-config/gitlab.rb:/etc/gitlab/gitlab.rb
   unicorn:
-    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-unicorn:latest
+    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-unicorn:0af2df4682b39953c71c67bf8f12c9a228c2e4e0
     environment:
       - "GITLAB_HOST=localhost"
       - "GITLAB_PORT=${NGINX_HOST_PORT}"
@@ -26,3 +26,16 @@ services:
     user: git
     volumes:
       - ./dev/sidekiq-config:/var/opt/gitlab/config/gitlab
+  shell:
+    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:3aefa3c5e23e32ee7d0c5fdd057e1d934d8610ed
+    environment:
+      - "CONFIG_TEMPLATE_DIRECTORY=/srv/gitlab-config"
+      - "CONFIG_DIRECTORY=/srv/gitlab-shell"
+    depends_on:
+      - omnibus
+      - unicorn
+    user: git
+    ports:
+      - "${SSH_HOST_PORT}:22"
+    volumes:
+      - ./dev/shell-config:/srv/gitlab-config
