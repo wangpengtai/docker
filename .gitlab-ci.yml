@@ -1,10 +1,10 @@
 stages:
-  - base-container
-  - common-container
-  - target-container
+  - base-containers
+  - core-containers
+  - rails-containers
 
 gitlab-ruby:
-  stage: base-container
+  stage: base-containers
   image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
   variables:
     DOCKER_DRIVER: overlay2
@@ -32,7 +32,7 @@ gitlab-ruby:
   retry: 1
 
 gitlab-rails:
-  stage: common-container
+  stage: core-containers
   image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
   variables:
     DOCKER_DRIVER: overlay2
@@ -65,7 +65,7 @@ gitlab-rails:
   retry: 1
 
 unicorn:
-  stage: target-container
+  stage: rails-containers
   image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
   variables:
     DOCKER_DRIVER: overlay2
@@ -101,7 +101,7 @@ unicorn:
   retry: 1
 
 sidekiq:
-  stage: target-container
+  stage: rails-containers
   image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
   variables:
     DOCKER_DRIVER: overlay
@@ -137,7 +137,7 @@ sidekiq:
   retry: 1
 
 shell:
-  stage: target-container
+  stage: core-containers
   image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
   variables:
     DOCKER_DRIVER: overlay2

@@ -29,7 +29,7 @@ services:
     volumes:
       - ./dev/sidekiq-config:/var/opt/gitlab/config/gitlab
   shell:
-    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:3aefa3c5e23e32ee7d0c5fdd057e1d934d8610ed
+    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:e1ab299ab6a5095bb203094813b6a552fa752d19
     environment:
       - "CONFIG_TEMPLATE_DIRECTORY=/srv/gitlab-config"
       - "CONFIG_DIRECTORY=/srv/gitlab-shell"
