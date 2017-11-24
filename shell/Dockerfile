@@ -23,6 +23,10 @@ RUN mkdir /srv/gitlab-shell && chown ${GITLAB_USER}:${GITLAB_USER} /srv/gitlab-s
     rm gitlab-shell.tar.bz2 && \
     ./bin/compile
 
+RUN mkdir -p /var/log/gitlab-shell && chown ${GITLAB_USER} /var/log/gitlab-shell
+
 RUN apk del .build-deps
+
+VOLUME /var/log/gitlab-shell
 
 CMD bash
