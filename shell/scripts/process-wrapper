@@ -7,6 +7,7 @@ echo "Generating Host Keys"
 ssh-keygen -A
 
 echo "Starting OpenSSH"
+touch /var/log/gitlab-shell/ssh.log
 /usr/sbin/sshd -E /var/log/gitlab-shell/ssh.log &
 
 echo "Tailing Logs"

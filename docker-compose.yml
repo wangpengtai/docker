@@ -29,14 +29,13 @@ services:
     volumes:
       - ./dev/sidekiq-config:/var/opt/gitlab/config/gitlab
   shell:
-    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:e1ab299ab6a5095bb203094813b6a552fa752d19
+    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:5cf9484ddc106f42c10425763dc43ea5465fa10e
     environment:
       - "CONFIG_TEMPLATE_DIRECTORY=/srv/gitlab-config"
       - "CONFIG_DIRECTORY=/srv/gitlab-shell"
     depends_on:
       - omnibus
       - unicorn
-    user: git
     ports:
       - "${SSH_HOST_PORT}:22"
     volumes:
