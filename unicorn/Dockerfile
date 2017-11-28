@@ -25,3 +25,6 @@ COPY scripts/ /scripts
 COPY unicorn.rb /home/git/gitlab/config/unicorn.rb
 
 CMD /scripts/process-wrapper
+
+HEALTHCHECK --interval=30s --timeout=30s --retries=5 \
+CMD /scripts/healthcheck
