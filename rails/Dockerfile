@@ -145,13 +145,8 @@ RUN rm -rf \
     find /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} + && \
     apk del .build-deps sudo
 
-# Add scripts
-COPY scripts/ /scripts
-
 ENV RAILS_ENV=production \
     EXECJS_RUNTIME=Disabled \
     CONFIG_TEMPLATE_DIRECTORY=${CONFIG}
-
-ENTRYPOINT ["/scripts/entrypoint.sh"]
 
 VOLUME /var/opt/gitlab /var/log

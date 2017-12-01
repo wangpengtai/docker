@@ -58,4 +58,11 @@ RUN cd ${BUILD_DIR} && \
     gem update --system "$RUBYGEMS_VERSION" && \
     gem install bundler --version "$BUNDLER_VERSION" --force
 
+# Add scripts
+COPY scripts/ /scripts
+
+ENV CONFIG_TEMPLATE_DIRECTORY=/etc
+
+ENTRYPOINT ["/scripts/entrypoint.sh"]
+
 CMD [ "irb" ]
