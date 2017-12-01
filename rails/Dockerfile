@@ -73,18 +73,17 @@ RUN cd /home/${GITLAB_USER} && \
 RUN cd /home/${GITLAB_USER}/gitlab && \
     sudo -u ${GITLAB_USER} -H mkdir ${CONFIG} && \
     sudo -u ${GITLAB_USER} -H cp config/gitlab.yml.example ${CONFIG}/gitlab.yml && \
-    sudo -u ${GITLAB_USER} -H cp config/unicorn.rb.example ${CONFIG}/unicorn.rb && \
     sudo -u ${GITLAB_USER} -H cp config/resque.yml.example ${CONFIG}/resque.yml && \
     sudo -u ${GITLAB_USER} -H cp config/secrets.yml.example ${CONFIG}/secrets.yml && \
     sudo -u ${GITLAB_USER} -H cp config/database.yml.postgresql ${CONFIG}/database.yml && \
     sudo -u ${GITLAB_USER} -H cp config/initializers/rack_attack.rb.example ${CONFIG}/rack_attack.rb && \
     sudo -u ${GITLAB_USER} -H ln -s ${CONFIG}/* config && \
     sudo -u ${GITLAB_USER} -H mv config/rack_attack.rb config/initializers && \
-    sed --in-place "/host: localhost/d" config/gitlab.yml && \
-    sed --in-place "/port: 80/d" config/gitlab.yml && \
-    sed --in-place "s/# user:.*/user: ${GITLAB_USER}/" config/gitlab.yml && \
-    sed --in-place "s:/home/git/repositories:${DATADIR}/repo:" config/gitlab.yml && \
-    sed --in-place "s:/home/git:/home/${GITLAB_USER}:g" config/unicorn.rb
+    sed --in-place "/host: localhost/d" ${CONFIG}/gitlab.yml && \
+    sed --in-place "/port: 80/d" ${CONFIG}/gitlab.yml && \
+    sed --in-place "s/# user:.*/user: ${GITLAB_USER}/" ${CONFIG}/gitlab.yml && \
+    sed --in-place "s:/home/git/repositories:${DATADIR}/repo:" ${CONFIG}/gitlab.yml
+
 
 # Move log dir to /var/log data volume mount point
 RUN mv /home/${GITLAB_USER}/gitlab/log /var/log/gitlab && \

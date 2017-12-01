@@ -1,12 +1,15 @@
-# Disable all components except PostgreSQL
 postgresql['enable'] = true
 redis['enable'] = true
-#bootstrap['enable'] = false
 unicorn['enable'] = false
 sidekiq['enable'] = false
-gitaly['enable'] = false
 mailroom['enable'] = false
 gitlab_monitor['enable'] = false
+
+# gitaly
+gitaly['enable'] = true
+gitaly['socket_path'] = nil
+gitaly['listen_addr'] = "0.0.0.0:8075"
+gitaly['auth_token'] = 'gitalytokengitalytoken'
 
 gitlab_workhorse['enable'] = false
 gitlab_workhorse['listen_addr'] = 'unicorn:8181'
