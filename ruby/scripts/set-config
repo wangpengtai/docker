@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'erb'
+require 'fileutils'
 
 template_directory = ARGV.shift
 config_directory = ARGV.shift || template_directory
@@ -17,4 +18,13 @@ Dir.glob(File.join(template_directory, '*.erb')).each do |file|
   puts "Writing #{output_file}"
   template = ERB.new(File.read(file))
   File.write(output_file, template.result)
+end
+
+if config_directory != template_directory
+  puts "Copying other config files found in #{template_directory}"
+
+  Dir.glob(File.join(template_directory, '*.{yml,yaml,toml,rb,json}')).each do |file|
+    puts "Copying #{File.basename(file)} into #{config_directory}"
+    FileUtils.cp(file, config_directory)
+  end
 end
