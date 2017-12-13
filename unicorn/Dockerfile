@@ -24,6 +24,8 @@ RUN rm -rf ${BUILD_DIR} && \
 COPY scripts/ /scripts
 COPY unicorn.rb /home/git/gitlab/config/unicorn.rb
 
+ENV GITALY_FEATURE_DEFAULT_ON=1
+
 CMD /scripts/process-wrapper
 
 HEALTHCHECK --interval=30s --timeout=30s --retries=5 \

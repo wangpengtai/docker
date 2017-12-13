@@ -1,0 +1,43 @@
+# This file is managed by gitlab-ctl. Manual changes will be
+# erased! To change the contents below, edit /etc/gitlab/gitlab.rb
+# and run `sudo gitlab-ctl reconfigure`.
+
+# GitLab user. git by default
+user: git
+
+# Url to gitlab instance. Used for api calls. Should end with a slash.
+gitlab_url: "http://unicorn:8080/"
+
+secret_file: /srv/gitlab-secrets/.gitlab_shell_secret
+
+http_settings:
+  self_signed_cert: false
+
+# File used as authorized_keys for gitlab user
+auth_file: "/home/git/.ssh/authorized_keys"
+
+# Redis settings used for pushing commit notices to gitlab
+redis:
+  host: omnibus
+  port: 6379
+  pass: redis-meercat
+  database: nil
+  namespace: resque:gitlab
+
+# Log file.
+# Default is gitlab-shell.log in the root directory.
+log_file: "/var/log/gitlab-shell/gitlab-shell.log"
+
+# Log level. INFO by default
+log_level: INFO
+
+# Audit usernames.
+# Set to true to see real usernames in the logs instead of key ids, which is easier to follow, but
+# incurs an extra API call on every gitlab-shell command.
+audit_usernames: false
+
+<% if ENV['CUSTOM_HOOKS_DIR'] %>
+# Parent directory for global custom hook directories (pre-receive.d, update.d, post-receive.d)
+# Default is hooks in the gitlab-shell directory.
+custom_hooks_dir: "<%= ENV['CUSTOM_HOOKS_DIR'] %>"
+<% end %>

@@ -138,3 +138,38 @@ sidekiq:
   dependencies:
     - gitlab-rails
   retry: 1
+
+shell:
+  stage: common-container
+  image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_HOST: tcp://docker:2375
+  services:
+  - docker:dind
+  script:
+  - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
+  - TARGET_VERSION=$(git ls-tree HEAD -- shell | awk '{ print $3 }')
+  - CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION" | sha1sum))
+  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+  # Build container if it doesn't exist
+  - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" > /dev/null); then
+  #   Pull the base image
+  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
+  #   Pull the existing image to reuse existing layers
+  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-shell:latest" || true
+  #   Build new image
+  -   cd shell
+  -   docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-shell:latest" .
+  #   Push new image
+  -   docker push "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION"
+  - fi
+  # Push the latest tag if master
+  - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
+  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-shell:latest"
+  #   Push latest image
+  -   docker push "$CI_REGISTRY_IMAGE/gitlab-shell:latest"
+  - fi
+  dependencies:
+    - gitlab-ruby
+  retry: 1

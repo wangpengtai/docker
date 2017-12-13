@@ -53,10 +53,6 @@ RUN mkdir ${DATADIR} && \
     mkdir data repo config && \
     chown -R ${GITLAB_USER}:${GITLAB_USER} ${DATADIR}
 
-# openssh daemon does not allow locked user to login, change ! to *
-RUN sed -i "s/${GITLAB_USER}:!/${GITLAB_USER}:*/" /etc/shadow && \
-    echo "${GITLAB_USER} ALL=(ALL) NOPASSWD: ALL" >>/etc/sudoers # sudo no tty fix
-
 # adjust git settings
 RUN sudo -u ${GITLAB_USER} -H git config --global gc.auto 0 && \
     sudo -u ${GITLAB_USER} -H git config --global core.autocrlf input && \
@@ -83,7 +79,6 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
     sed --in-place "/port: 80/d" ${CONFIG}/gitlab.yml && \
     sed --in-place "s/# user:.*/user: ${GITLAB_USER}/" ${CONFIG}/gitlab.yml && \
     sed --in-place "s:/home/git/repositories:${DATADIR}/repo:" ${CONFIG}/gitlab.yml
-
 
 # Move log dir to /var/log data volume mount point
 RUN mv /home/${GITLAB_USER}/gitlab/log /var/log/gitlab && \

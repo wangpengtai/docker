@@ -2,8 +2,11 @@ version: "3"
 services:
   omnibus:
     image: gitlab/gitlab-ee:10.2.0-ee.0
+    environment:
+      - "GITLAB_SSH_PORT=${SSH_HOST_PORT}"
     ports:
       - "${NGINX_HOST_PORT}:80"
+      - "${GITALY_HOST_PORT}:8075"
     volumes:
     - ./dev/omnibus-config/gitlab.rb:/etc/gitlab/gitlab.rb
   unicorn:
@@ -11,6 +14,7 @@ services:
     environment:
       - "GITLAB_HOST=localhost"
       - "GITLAB_PORT=${NGINX_HOST_PORT}"
+      - "GITALY_FEATURE_DEFAULT_ON=1"
     depends_on:
       - omnibus
     user: git
@@ -19,6 +23,7 @@ services:
       - "${WORKHORSE_HOST_PORT}:8181"
     volumes:
       - ./dev/unicorn-config:/var/opt/gitlab/config/gitlab
+      - ./dev/shell-secret:/var/opt/gitlab/config/secrets
   sidekiq:
     image: registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq:latest
     depends_on:
@@ -26,3 +31,13 @@ services:
     user: git
     volumes:
       - ./dev/sidekiq-config:/var/opt/gitlab/config/gitlab
+  shell:
+    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:latest
+    environment:
+      - "CONFIG_TEMPLATE_DIRECTORY=/srv/gitlab-config"
+      - "CONFIG_DIRECTORY=/srv/gitlab-shell"
+    ports:
+      - "${SSH_HOST_PORT}:22"
+    volumes:
+      - ./dev/shell-config:/srv/gitlab-config
+      - ./dev/shell-secret:/srv/gitlab-secrets
