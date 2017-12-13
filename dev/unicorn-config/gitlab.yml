@@ -73,6 +73,7 @@ production: &base
   gitlab_shell:
     path: /home/git/gitlab-shell/
     hooks_path: /home/git/gitlab-shell/hooks/
+    secret_file: /var/opt/gitlab/config/secrets/.gitlab_shell_secret
     upload_pack: true
     receive_pack: true
   workhorse:

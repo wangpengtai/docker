@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+
+KEYS_DIRECTORY="${KEYS_DIRECTORY:-/etc/ssh}"
+
+if ls $KEYS_DIRECTORY/ssh_host_* 1> /dev/null 2>&1; then
+  echo "Using existing Host Keys"
+
+  if [ "$KEYS_DIRECTORY" != "/etc/ssh" ]; then
+    cp $KEYS_DIRECTORY/ssh_host_* "/etc/ssh/"
+  fi
+else
+  echo "Generating Host Keys"
+
+  ssh-keygen -A
+
+  if [ "$KEYS_DIRECTORY" != "/etc/ssh" ]; then
+    mkdir -p $KEYS_DIRECTORY
+    cp /etc/ssh/ssh_host_* "$KEYS_DIRECTORY/"
+  fi
+fi
+
+echo "Starting OpenSSH"
+touch /var/log/gitlab-shell/ssh.log
+/usr/sbin/sshd -E /var/log/gitlab-shell/ssh.log &
+
+echo "Tailing Logs"
+tail -f /var/log/gitlab-shell/*
+
+wait
