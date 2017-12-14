@@ -4,4 +4,4 @@ set -e
 
 # Workaround for disablign the authorized_keys write to the database.
 # A proper fix is being tracked in: https://gitlab.com/charts/helm.gitlab.io/issues/89
-/home/git/gitlab/bin/rails runner -e production 'include Gitlab::CurrentSettings; current_application_settings.update_attribute(:authorized_keys_enabled, false)' &
+/home/git/gitlab/bin/rails runner -e production 'include Gitlab::CurrentSettings; current_application_settings.update_attribute(:authorized_keys_enabled, false)'
