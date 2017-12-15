@@ -22,6 +22,9 @@ gitlab-ruby:
   -   docker build -t "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-rails:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION"
+  #   Create a tag based on Branch/Tag name for easy reference
+  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-ruby:$CI_COMMIT_REF_SLUG"
+  -   docker push "$CI_REGISTRY_IMAGE/gitlab-ruby:$CI_COMMIT_REF_SLUG"
   - fi
   # Push the latest tag if master
   - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
@@ -55,6 +58,9 @@ gitlab-rails:
   -   docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-rails:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION"
+  #   Create a tag based on Branch/Tag name for easy reference
+  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-rails:$CI_COMMIT_REF_SLUG"
+  -   docker push "$CI_REGISTRY_IMAGE/gitlab-rails:$CI_COMMIT_REF_SLUG"
   - fi
   # Push the latest tag if master
   - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
@@ -91,6 +97,9 @@ unicorn:
   -   docker build --build-arg "TAG=$RAILS_CONTAINER" -t "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-unicorn:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION"
+  #   Create a tag based on Branch/Tag name for easy reference
+  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CI_COMMIT_REF_SLUG"
+  -   docker push "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CI_COMMIT_REF_SLUG"
   - fi
   # Push the latest tag if master
   - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
@@ -128,6 +137,9 @@ sidekiq:
   -   docker build --build-arg "TAG=$RAILS_CONTAINER" -t "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-sidekiq:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION"
+  #   Create a tag based on Branch/Tag name for easy reference
+  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CI_COMMIT_REF_SLUG"
+  -   docker push "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CI_COMMIT_REF_SLUG"
   - fi
   # Push the latest tag if master
   - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
@@ -163,6 +175,9 @@ shell:
   -   docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-shell:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION"
+  #   Create a tag based on Branch/Tag name for easy reference
+  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-shell:$CI_COMMIT_REF_SLUG"
+  -   docker push "$CI_REGISTRY_IMAGE/gitlab-shell:$CI_COMMIT_REF_SLUG"
   - fi
   # Push the latest tag if master
   - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
