@@ -1,3 +1,6 @@
+variables:
+  GITLAB_VERSION: "master"
+
 stages:
   - base-container
   - common-container
@@ -19,7 +22,7 @@ gitlab-ruby:
   # Pull the existing image to reuse existing layers
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:latest" || true
   -   cd ruby
-  -   docker build -t "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-rails:latest" .
+  -   docker build --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" -t "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-rails:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION"
   #   Create a tag based on Branch/Tag name for easy reference
@@ -55,7 +58,7 @@ gitlab-rails:
   # Pull the existing image to reuse existing layers
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:latest" || true
   -   cd rails
-  -   docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-rails:latest" .
+  -   docker build --build-arg "TAG=$BASE_VERSION" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-rails:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION"
   #   Create a tag based on Branch/Tag name for easy reference
@@ -94,7 +97,7 @@ unicorn:
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-unicorn:latest" || true
   #   Build new image
   -   cd unicorn
-  -   docker build --build-arg "TAG=$RAILS_CONTAINER" -t "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-unicorn:latest" .
+  -   docker build --build-arg "TAG=$RAILS_CONTAINER" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" -t "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-unicorn:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION"
   #   Create a tag based on Branch/Tag name for easy reference
@@ -134,7 +137,7 @@ sidekiq:
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-sidekiq:latest" || true
   #   Build new image
   -   cd sidekiq
-  -   docker build --build-arg "TAG=$RAILS_CONTAINER" -t "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-sidekiq:latest" .
+  -   docker build --build-arg "TAG=$RAILS_CONTAINER" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" -t "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-sidekiq:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION"
   #   Create a tag based on Branch/Tag name for easy reference
@@ -172,7 +175,7 @@ shell:
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-shell:latest" || true
   #   Build new image
   -   cd shell
-  -   docker build --build-arg "TAG=$BASE_VERSION" -t "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-shell:latest" .
+  -   docker build --build-arg "TAG=$BASE_VERSION" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" -t "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" --cache-from "$CI_REGISTRY_IMAGE/gitlab-shell:latest" .
   #   Push new image
   -   docker push "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION"
   #   Create a tag based on Branch/Tag name for easy reference
