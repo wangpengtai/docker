@@ -52,7 +52,7 @@ gitlab-rails:
   - CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION" | sha1sum))
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
-  - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" > /dev/null); then
+  - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" > /dev/null); then
   #   Pull the base image
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
   # Pull the existing image to reuse existing layers
@@ -90,7 +90,7 @@ unicorn:
   - CONTAINER_VERSION=($(echo -n "$RAILS_CONTAINER$UNICORN_VERSION" | sha1sum))
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
-  - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" > /dev/null); then
+  - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" > /dev/null); then
   #   Pull the rails image
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$RAILS_CONTAINER"
   #   Pull the existing image to reuse existing layers
@@ -130,7 +130,7 @@ sidekiq:
   - CONTAINER_VERSION=($(echo -n "$RAILS_CONTAINER$SIDEKIQ_VERSION" | sha1sum))
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
-  - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" > /dev/null); then
+  - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" > /dev/null); then
   #   Pull the rails image
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$RAILS_CONTAINER"
   # Pull the existing image to reuse existing layers
@@ -168,7 +168,7 @@ shell:
   - CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION" | sha1sum))
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
-  - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" > /dev/null); then
+  - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" > /dev/null); then
   #   Pull the base image
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
   #   Pull the existing image to reuse existing layers
