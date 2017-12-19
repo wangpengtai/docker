@@ -20,6 +20,9 @@ in terms of services.
 Currently the containers do not wait for their dependant services to become available, so to run the environment:
 
 ```bash
+# Grab the latest Images
+docker-compose pull
+# Start omnibus
 docker-compose up omnibus
 # Wait for the omnibus to start and finish reconfigure
 docker-compose up

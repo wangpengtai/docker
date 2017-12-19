@@ -1,7 +1,7 @@
 ARG TAG=latest
 FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${TAG}
 
-ARG GITLAB_SHELL_VERSION=5.9.4
+ARG GITLAB_SHELL_VERSION=v5.9.4
 ARG GITLAB_USER=git
 
 # install runtime deps
@@ -20,7 +20,7 @@ RUN adduser -D -g 'GitLab' ${GITLAB_USER} && \
 # Download and compile GitLab Shell
 RUN mkdir /srv/gitlab-shell && chown ${GITLAB_USER}:${GITLAB_USER} /srv/gitlab-shell && \
     cd /srv/gitlab-shell && \
-    sudo -u ${GITLAB_USER} -H curl -o gitlab-shell.tar.bz2 https://gitlab.com/gitlab-org/gitlab-shell/repository/v${GITLAB_SHELL_VERSION}/archive.tar.bz2 && \
+    sudo -u ${GITLAB_USER} -H curl -o gitlab-shell.tar.bz2 https://gitlab.com/gitlab-org/gitlab-shell/repository/${GITLAB_SHELL_VERSION}/archive.tar.bz2 && \
     sudo -u ${GITLAB_USER} -H tar -xjf gitlab-shell.tar.bz2 --strip-components=1 && \
     rm gitlab-shell.tar.bz2 && \
     ./bin/compile

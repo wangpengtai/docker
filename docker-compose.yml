@@ -1,12 +1,9 @@
 version: "3"
 services:
   omnibus:
-    image: gitlab/gitlab-ee:10.2.0-ee.0
-    environment:
-      - "GITLAB_SSH_PORT=${SSH_HOST_PORT}"
+    image: gitlab/gitlab-ee:nightly
     ports:
       - "${NGINX_HOST_PORT}:80"
-      - "${GITALY_HOST_PORT}:8075"
     volumes:
     - ./dev/omnibus-config/gitlab.rb:/etc/gitlab/gitlab.rb
   unicorn-init:
@@ -14,7 +11,10 @@ services:
     environment:
       - "GITLAB_HOST=localhost"
       - "GITLAB_PORT=${NGINX_HOST_PORT}"
+      - "GITLAB_SSH_PORT=${SSH_HOST_PORT}"
       - "GITALY_FEATURE_DEFAULT_ON=1"
+      - "CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab/config/templates"
+      - "CONFIG_DIRECTORY=/var/opt/gitlab/config/gitlab"
     command: ["/scripts/disable-auth-keys-write"]
     depends_on:
       - omnibus
@@ -27,7 +27,10 @@ services:
     environment:
       - "GITLAB_HOST=localhost"
       - "GITLAB_PORT=${NGINX_HOST_PORT}"
+      - "GITLAB_SSH_PORT=${SSH_HOST_PORT}"
       - "GITALY_FEATURE_DEFAULT_ON=1"
+      - "CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab/config/templates"
+      - "CONFIG_DIRECTORY=/var/opt/gitlab/config/gitlab"
     depends_on:
       - unicorn-init
       - omnibus
@@ -36,13 +39,17 @@ services:
       - "${UNICORN_HOST_PORT}:8080"
       - "${WORKHORSE_HOST_PORT}:8181"
     volumes:
-      - ./dev/unicorn-config:/var/opt/gitlab/config/gitlab
+      - ./dev/unicorn-config:/var/opt/gitlab/config/templates
       - ./dev/shell-secret:/var/opt/gitlab/config/secrets
   sidekiq:
     image: registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq:latest
     depends_on:
       - omnibus
     user: git
+    environment:
+      - "GITLAB_HOST=localhost"
+      - "GITLAB_PORT=${NGINX_HOST_PORT}"
+      - "GITALY_FEATURE_DEFAULT_ON=1"
     volumes:
       - ./dev/sidekiq-config:/var/opt/gitlab/config/gitlab
   shell:
@@ -55,3 +62,9 @@ services:
     volumes:
       - ./dev/shell-config:/srv/gitlab-config
       - ./dev/shell-secret:/srv/gitlab-secrets
+  gitaly:
+    image: registry.gitlab.com/gitlab-org/build/cng/gitaly:latest
+    ports:
+      - "${GITALY_HOST_PORT}:8075"
+    volumes:
+      - ./dev/gitaly-config:/etc/gitaly

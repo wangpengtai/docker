@@ -6,7 +6,7 @@ mailroom['enable'] = false
 gitlab_monitor['enable'] = false
 
 # gitaly
-gitaly['enable'] = true
+gitaly['enable'] = false
 gitaly['socket_path'] = nil
 gitaly['listen_addr'] = "0.0.0.0:8075"
 gitaly['auth_token'] = 'gitalytokengitalytoken'

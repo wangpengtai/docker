@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+GITALY_CONFIG_FILE="${GITALY_CONFIG_FILE:-$CONFIG_TEMPLATE_DIRECTORY/config.toml}"
+
+echo "Starting Gitaly"
+/usr/local/bin/gitaly "$GITALY_CONFIG_FILE" >> /var/log/gitaly/gitaly.log 2>&1 &
+
+tail -f /var/log/gitaly/*
+
+wait
