@@ -210,7 +210,7 @@ gitaly:
   - CONTAINER_VERSION=($(echo -n "$SHELL_CONTAINER$TARGET_VERSION" | sha1sum))
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
-  - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitaly:$CONTAINER_VERSION" > /dev/null); then
+  - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitaly:$CONTAINER_VERSION" > /dev/null); then
   #   Pull the dependant images
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-shell:$SHELL_CONTAINER"
   #   Pull the existing image to reuse existing layers
