@@ -1,0 +1,14 @@
+#!/bin/bash
+
+WAIT_FOR_TIMEOUT="${WAIT_FOR_TIMEOUT:-5}"
+
+cd /home/git/gitlab
+
+for i in $(seq 1 $WAIT_FOR_TIMEOUT); do
+  echo "Checking database connection and schema version"
+  if /home/git/gitlab/bin/bundle exec rake db:version; then
+   exec "$@"
+  fi
+  sleep 1
+done
+exit 1

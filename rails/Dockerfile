@@ -63,12 +63,15 @@ ARG CACHE_BUSTER=false
 RUN cd /home/${GITLAB_USER} && \
     sudo -u ${GITLAB_USER} -H curl -o gitlab.tar.bz2 https://gitlab.com/gitlab-org/gitlab-ee/repository/${GITLAB_VERSION}/archive.tar.bz2 && \
     sudo -u ${GITLAB_USER} -H tar -xjf gitlab.tar.bz2 && \
+    REVISION=$(find -maxdepth 1 -name gitlab-ee-${GITLAB_VERSION}-* -print | awk -F '-' '{print $NF}' | cut -c -8) && \
     mv gitlab-ee-${GITLAB_VERSION}-* gitlab && \
+    echo -n ${REVISION} > gitlab/REVISION && \
     rm gitlab.tar.bz2
 
 # Configure GitLab
 RUN cd /home/${GITLAB_USER}/gitlab && \
     sudo -u ${GITLAB_USER} -H mkdir ${CONFIG} && \
+    sudo -u ${GITLAB_USER} -H mkdir ${DATADIR}/.upgrade-status && \
     sudo -u ${GITLAB_USER} -H cp config/gitlab.yml.example ${CONFIG}/gitlab.yml && \
     sudo -u ${GITLAB_USER} -H cp config/resque.yml.example ${CONFIG}/resque.yml && \
     sudo -u ${GITLAB_USER} -H cp config/secrets.yml.example ${CONFIG}/secrets.yml && \
@@ -76,6 +79,7 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
     sudo -u ${GITLAB_USER} -H cp config/initializers/rack_attack.rb.example ${CONFIG}/rack_attack.rb && \
     sudo -u ${GITLAB_USER} -H ln -s ${CONFIG}/* config && \
     sudo -u ${GITLAB_USER} -H mv config/rack_attack.rb config/initializers && \
+    sed --in-place "s/.*REVISION.*/REVISION = '$(cat REVISION)'/" config/initializers/2_app.rb && \
     sed --in-place "/host: localhost/d" ${CONFIG}/gitlab.yml && \
     sed --in-place "/port: 80/d" ${CONFIG}/gitlab.yml && \
     sed --in-place "s/# user:.*/user: ${GITLAB_USER}/" ${CONFIG}/gitlab.yml && \
@@ -141,8 +145,11 @@ RUN rm -rf \
     find /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} + && \
     apk del .build-deps sudo
 
+COPY scripts/ /scripts
+
 ENV RAILS_ENV=production \
     EXECJS_RUNTIME=Disabled \
-    CONFIG_TEMPLATE_DIRECTORY=${CONFIG}
+    CONFIG_TEMPLATE_DIRECTORY=${CONFIG} \
+    UPGRADE_STATUS_DIR=${DATADIR}/.upgrade-status
 
 VOLUME /var/opt/gitlab /var/log

@@ -36,6 +36,7 @@ redis_exporter['flags'] = {
 gitlab_rails['redis_password'] = 'redis-meercat'
 gitlab_rails['redis_socket'] = nil
 
+gitlab_rails['auto_migrate'] = false
 gitlab_rails['ssh_host'] = "localhost"
 gitlab_rails['ssh_host'] << ":#{ENV['GITLAB_SSH_PORT']}" if ENV['GITLAB_SSH_PORT']
 gitlab_rails['secret_key_base'] = "678f063ed891fd6e431a1a22446ca5702fe7711730146f03169be2560b51b2176092a9fd6121f185a32e429ffea64a738af5ec56da74828a83eee101c081049b"
