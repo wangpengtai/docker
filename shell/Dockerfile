@@ -18,6 +18,7 @@ RUN adduser -D -g 'GitLab' ${GITLAB_USER} && \
     sed -i "s/${GITLAB_USER}:!/${GITLAB_USER}:*/" /etc/shadow
 
 # Download and compile GitLab Shell
+ARG CACHE_BUSTER=false
 RUN mkdir /srv/gitlab-shell && chown ${GITLAB_USER}:${GITLAB_USER} /srv/gitlab-shell && \
     cd /srv/gitlab-shell && \
     sudo -u ${GITLAB_USER} -H curl -o gitlab-shell.tar.bz2 https://gitlab.com/gitlab-org/gitlab-shell/repository/${GITLAB_SHELL_VERSION}/archive.tar.bz2 && \
