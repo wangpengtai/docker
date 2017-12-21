@@ -24,6 +24,7 @@ RUN adduser -D -g 'GitLab' ${GITLAB_USER} && \
     echo "${GITLAB_USER} ALL=(ALL) NOPASSWD: ALL" >>/etc/sudoers
 
 # Download and compile Gitaly
+ARG CACHE_BUSTER=false
 RUN mkdir ${BUILD_DIR} && \
     cd ${BUILD_DIR} && \
     curl -o gitaly.tar.bz2 https://gitlab.com/gitlab-org/gitaly/repository/${GITALY_VERSION}/archive.tar.bz2 && \

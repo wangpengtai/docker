@@ -59,6 +59,7 @@ RUN sudo -u ${GITLAB_USER} -H git config --global gc.auto 0 && \
     sudo -u ${GITLAB_USER} -H git config --global repack.writeBitmaps true
 
 # Download GitLab
+ARG CACHE_BUSTER=false
 RUN cd /home/${GITLAB_USER} && \
     sudo -u ${GITLAB_USER} -H curl -o gitlab.tar.bz2 https://gitlab.com/gitlab-org/gitlab-ee/repository/${GITLAB_VERSION}/archive.tar.bz2 && \
     sudo -u ${GITLAB_USER} -H tar -xjf gitlab.tar.bz2 && \
