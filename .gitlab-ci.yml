@@ -51,7 +51,7 @@ gitlab-rails:
   script:
   - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - TARGET_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
-  - CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION" | sha1sum))
+  - CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$(date -u +%D)" | sha1sum))
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
   - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" > /dev/null); then
@@ -88,7 +88,7 @@ unicorn:
   - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - RAILS_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
   - UNICORN_VERSION=$(git ls-tree HEAD -- unicorn | awk '{ print $3 }')
-  - RAILS_CONTAINER=($(echo -n "$BASE_VERSION$RAILS_VERSION" | sha1sum))
+  - RAILS_CONTAINER=($(echo -n "$BASE_VERSION$RAILS_VERSION$(date -u +%D)" | sha1sum))
   - CONTAINER_VERSION=($(echo -n "$RAILS_CONTAINER$UNICORN_VERSION" | sha1sum))
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
@@ -128,7 +128,7 @@ sidekiq:
   - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - RAILS_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
   - SIDEKIQ_VERSION=$(git ls-tree HEAD -- sidekiq | awk '{ print $3 }')
-  - RAILS_CONTAINER=($(echo -n "$BASE_VERSION$RAILS_VERSION" | sha1sum))
+  - RAILS_CONTAINER=($(echo -n "$BASE_VERSION$RAILS_VERSION$(date -u +%D)" | sha1sum))
   - CONTAINER_VERSION=($(echo -n "$RAILS_CONTAINER$SIDEKIQ_VERSION" | sha1sum))
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
@@ -167,7 +167,7 @@ shell:
   script:
   - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - TARGET_VERSION=$(git ls-tree HEAD -- shell | awk '{ print $3 }')
-  - CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION" | sha1sum))
+  - CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$(date -u +%D)" | sha1sum))
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
   - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" > /dev/null); then
@@ -206,7 +206,7 @@ gitaly:
   - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - TARGET_VERSION=$(git ls-tree HEAD -- gitaly | awk '{ print $3 }')
   - SHELL_VERSION=$(git ls-tree HEAD -- shell | awk '{ print $3 }')
-  - SHELL_CONTAINER=($(echo -n "$BASE_VERSION$SHELL_VERSION" | sha1sum))
+  - SHELL_CONTAINER=($(echo -n "$BASE_VERSION$SHELL_VERSION$(date -u +%D)" | sha1sum))
   - CONTAINER_VERSION=($(echo -n "$SHELL_CONTAINER$TARGET_VERSION" | sha1sum))
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
