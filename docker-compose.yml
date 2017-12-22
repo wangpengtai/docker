@@ -6,22 +6,20 @@ services:
       - "${NGINX_HOST_PORT}:80"
     volumes:
     - ./dev/omnibus-config/gitlab.rb:/etc/gitlab/gitlab.rb
-  unicorn-init:
-    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-unicorn:latest
+    - db-upgrade:/tmp/db-upgrade
+  migrations:
+    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-rails:latest
     environment:
-      - "GITLAB_HOST=localhost"
-      - "GITLAB_PORT=${NGINX_HOST_PORT}"
-      - "GITLAB_SSH_PORT=${SSH_HOST_PORT}"
-      - "GITALY_FEATURE_DEFAULT_ON=1"
       - "CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab/config/templates"
       - "CONFIG_DIRECTORY=/var/opt/gitlab/config/gitlab"
-    command: ["/scripts/disable-auth-keys-write"]
+    command: ["/scripts/wait-for-deps", "/scripts/db-migrate"]
     depends_on:
       - omnibus
     user: git
     volumes:
-      - ./dev/unicorn-config:/var/opt/gitlab/config/gitlab
+      - ./dev/unicorn-config:/var/opt/gitlab/config/templates
       - ./dev/shell-secret:/var/opt/gitlab/config/secrets
+      - db-upgrade:/var/opt/gitlab/.upgrade-status
   unicorn:
     image: registry.gitlab.com/gitlab-org/build/cng/gitlab-unicorn:latest
     environment:
@@ -31,8 +29,8 @@ services:
       - "GITALY_FEATURE_DEFAULT_ON=1"
       - "CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab/config/templates"
       - "CONFIG_DIRECTORY=/var/opt/gitlab/config/gitlab"
+    command: ["/scripts/wait-for-deps", "/scripts/process-wrapper"]
     depends_on:
-      - unicorn-init
       - omnibus
     user: git
     ports:
@@ -43,6 +41,7 @@ services:
       - ./dev/shell-secret:/var/opt/gitlab/config/secrets
   sidekiq:
     image: registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq:latest
+    command: ["/scripts/wait-for-deps", "/scripts/process-wrapper"]
     depends_on:
       - omnibus
     user: git
@@ -68,3 +67,10 @@ services:
       - "${GITALY_HOST_PORT}:8075"
     volumes:
       - ./dev/gitaly-config:/etc/gitaly
+volumes:
+  db-upgrade:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: "size=10M"

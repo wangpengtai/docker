@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -e
+
+echo "Checking database migrations are up-to-date"
+
+UPGRADE_STATUS_DIR="${UPGRADE_STATUS_DIR:-/tmp/gitlab-upgrade}"
+GITLAB_REVISION=$(cat /home/git/gitlab/REVISION)
+CONNECTION_DIGEST=$(md5sum /home/git/gitlab/config/database.yml | awk '{ print $1 }' )
+MIGRATE_STATUS_FILE="${UPGRADE_STATUS_DIR}/db-migrate-${CONNECTION_DIGEST}-${GITLAB_REVISION}"
+
+# Exit if the database has already been updated
+if [ -f "${MIGRATE_STATUS_FILE}" ] && ( grep -qFx 0 "${MIGRATE_STATUS_FILE}" ); then
+  echo "Database migrations have already been run"
+  exit 0
+fi
+
+# Seed or migrate the database
+echo "Checking for new migrations"
+mkdir -p "${UPGRADE_STATUS_DIR}"
+umask 077
+cd /home/git/gitlab
+/home/git/gitlab/bin/rake gitlab:db:configure && STATUS=$? || STATUS=$?
+
+# Disable authorized keys write
+# Workaround for disabling the authorized_keys write to the database.
+# A proper fix is being tracked in: https://gitlab.com/charts/helm.gitlab.io/issues/89
+if [ "$STATUS" = "0" ]; then
+  echo "Disable authorized keys write in the database"
+  /scripts/disable-auth-keys-write && STATUS=$? || STATUS=$?
+fi
+
+# Update the status
+echo "Storing Migration Status"
+echo $STATUS > "${MIGRATE_STATUS_FILE}"
+exit $STATUS

@@ -11,6 +11,8 @@ infrastructure needed to run GitLab.
 * [rails](/rails) - The Rails code needed for both API and web.
 * [unicorn](/unicorn) - The Unicorn container that exposes Rails.
 * [sidekiq](/sidekiq) - The Sidekiq container that runs async Rails jobs
+* [shell](/shell) - Running GitLab Shell and OpenSSH to provide git over ssh, and authorized keys support from the database
+* [gitaly][/gitaly] - The Gitaly container that provides a distributed git repos
 
 ### Dev environment using Docker Compose
 
@@ -22,11 +24,8 @@ Currently the containers do not wait for their dependant services to become avai
 ```bash
 # Grab the latest Images
 docker-compose pull
-# Start omnibus
-docker-compose up omnibus
-# Wait for the omnibus to start and finish reconfigure
+# Start GitLab
 docker-compose up
-# To bring up the other containers
 ```
 
 ### Design of the Containers
