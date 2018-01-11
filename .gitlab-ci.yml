@@ -106,7 +106,7 @@ gitlab-shell:
   - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" > /dev/null); then
   #   Pull the base image
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
-  -   CONTAINER_VERSION=$CONTAINER_VERSION WORKDIR=shell build --build-arg "TAG=$BASE_VERSION" --build-arg "GITLAB_SHELL_VERSION=${GITLAB_SHELL_VERSION}" --build-arg "$CACHE_BUSTER=GITLAB_VERSION=${GITLAB_VERSION}"
+  -   CONTAINER_VERSION=$CONTAINER_VERSION WORKDIR=shell build --build-arg "TAG=$BASE_VERSION" --build-arg "GITLAB_SHELL_VERSION=${GITLAB_SHELL_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)"
   - fi
   # Push the latest tag if master
   - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
