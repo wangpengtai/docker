@@ -2,259 +2,137 @@ variables:
   GITLAB_VERSION: "master"
   GITLAB_SHELL_VERSION: "master"
   GITALY_VERSION: "master"
+  DOCKER_DRIVER: overlay2
+  DOCKER_HOST: tcp://docker:2375
+
+before_script:
+  - CONTAINER_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
+  - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
+  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+  - source build-scripts/build.sh
 
 stages:
   - base-container
   - common-container
   - target-container
 
-gitlab-ruby:
-  stage: base-container
+.job-base: &job-base
   image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_HOST: tcp://docker:2375
   services:
   - docker:dind
-  script:
-  - CONTAINER_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
-  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
-  # Build container if it doesn't exist
-  - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" > /dev/null); then
-  # Pull the existing image to reuse existing layers
-  -   CACHE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$CI_COMMIT_REF_SLUG"
-  -   if ! $(docker pull $CACHE_IMAGE > /dev/null); then
-  -     CACHE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:latest"
-  -     docker pull $CACHE_IMAGE || true
-  -   fi
-  -   cd ruby
-  -   docker build -t "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" --cache-from $CACHE_IMAGE .
-  #   Push new image
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION"
-  #   Create a tag based on Branch/Tag name for easy reference
-  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-ruby:$CI_COMMIT_REF_SLUG"
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-ruby:$CI_COMMIT_REF_SLUG"
-  - fi
-  # Push the latest tag if master
-  - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
-  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-ruby:latest"
-  #   Push latest image
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-ruby:latest"
-  - fi
   dependencies: []
   retry: 1
 
-gitlab-rails:
-  stage: common-container
-  image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_HOST: tcp://docker:2375
-  services:
-  - docker:dind
+gitlab-ruby:
+  <<: *job-base
+  stage: base-container
   script:
-  - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
+  - CONTAINER_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
+  # Build container if it doesn't exist
+  - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" > /dev/null); then
+  -   CONTAINER_VERSION=$CONTAINER_VERSION WORKDIR=ruby build
+  - fi
+  # Push the latest tag if master
+  - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
+  -   push_latest
+  - fi
+
+gitlab-rails:
+  <<: *job-base
+  stage: common-container
+  script:
   - TARGET_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
   - CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$(date -u +%D)" | sha1sum))
-  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
   - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" > /dev/null); then
   #   Pull the base image
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
-  # Pull the existing image to reuse existing layers
-  -   CACHE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails:$CI_COMMIT_REF_SLUG"
-  -   if ! $(docker pull $CACHE_IMAGE > /dev/null); then
-  -     CACHE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails:latest"
-  -     docker pull $CACHE_IMAGE || true
-  -   fi
-  -   cd rails
-  -   docker build --build-arg "TAG=$BASE_VERSION" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)" -t "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" --cache-from $CACHE_IMAGE .
-  #   Push new image
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION"
-  #   Create a tag based on Branch/Tag name for easy reference
-  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-rails:$CI_COMMIT_REF_SLUG"
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-rails:$CI_COMMIT_REF_SLUG"
+  -   CONTAINER_VERSION=$CONTAINER_VERSION WORKDIR=rails build --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)"
   - fi
   # Push the latest tag if master
   - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
-  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-rails:latest"
-  #   Push latest image
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-rails:latest"
+  -   push_latest
   - fi
-  dependencies: []
-  retry: 1
 
-unicorn:
+gitlab-unicorn:
+  <<: *job-base
   stage: target-container
-  image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_HOST: tcp://docker:2375
-  services:
-  - docker:dind
   script:
-  - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - RAILS_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
   - UNICORN_VERSION=$(git ls-tree HEAD -- unicorn | awk '{ print $3 }')
   - RAILS_CONTAINER=($(echo -n "$BASE_VERSION$RAILS_VERSION$(date -u +%D)" | sha1sum))
   - CONTAINER_VERSION=($(echo -n "$RAILS_CONTAINER$UNICORN_VERSION" | sha1sum))
-  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
   - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" > /dev/null); then
   #   Pull the rails image
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$RAILS_CONTAINER"
-  #   Pull the existing image to reuse existing layers
-  -   CACHE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-unicorn:$CI_COMMIT_REF_SLUG"
-  -   if ! $(docker pull $CACHE_IMAGE > /dev/null); then
-  -     CACHE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-unicorn:latest"
-  -     docker pull $CACHE_IMAGE || true
-  -   fi
-  #   Build new image
-  -   cd unicorn
-  -   docker build --build-arg "TAG=$RAILS_CONTAINER" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" -t "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" --cache-from $CACHE_IMAGE .
-  #   Push new image
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION"
-  #   Create a tag based on Branch/Tag name for easy reference
-  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CI_COMMIT_REF_SLUG"
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CI_COMMIT_REF_SLUG"
+  -   CONTAINER_VERSION=$CONTAINER_VERSION WORKDIR=unicorn build --build-arg "TAG=$RAILS_CONTAINER"
   - fi
   # Push the latest tag if master
   - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
-  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-unicorn:latest"
-  #   Push latest image
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-unicorn:latest"
+  -   push_latest
   - fi
   dependencies:
     - gitlab-rails
-  retry: 1
 
-sidekiq:
+gitlab-sidekiq:
+  <<: *job-base
   stage: target-container
-  image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_HOST: tcp://docker:2375
-  services:
-  - docker:dind
   script:
-  - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - RAILS_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
   - SIDEKIQ_VERSION=$(git ls-tree HEAD -- sidekiq | awk '{ print $3 }')
   - RAILS_CONTAINER=($(echo -n "$BASE_VERSION$RAILS_VERSION$(date -u +%D)" | sha1sum))
   - CONTAINER_VERSION=($(echo -n "$RAILS_CONTAINER$SIDEKIQ_VERSION" | sha1sum))
-  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
   - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" > /dev/null); then
   #   Pull the rails image
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$RAILS_CONTAINER"
-  # Pull the existing image to reuse existing layers
-  -   CACHE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CI_COMMIT_REF_SLUG"
-  -   if ! $(docker pull $CACHE_IMAGE > /dev/null); then
-  -     CACHE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-sidekiq:latest"
-  -     docker pull $CACHE_IMAGE || true
-  -   fi
-  #   Build new image
-  -   cd sidekiq
-  -   docker build --build-arg "TAG=$RAILS_CONTAINER" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" -t "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" --cache-from $CACHE_IMAGE .
-  #   Push new image
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION"
-  #   Create a tag based on Branch/Tag name for easy reference
-  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CI_COMMIT_REF_SLUG"
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CI_COMMIT_REF_SLUG"
+  -   CONTAINER_VERSION=$CONTAINER_VERSION WORKDIR=sidekiq build --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "TAG=$RAILS_CONTAINER"
   - fi
   # Push the latest tag if master
   - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
-  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-sidekiq:latest"
-  #   Push latest image
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-sidekiq:latest"
+  -   push_latest
   - fi
   dependencies:
     - gitlab-rails
-  retry: 1
 
-shell:
+gitlab-shell:
+  <<: *job-base
   stage: common-container
-  image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_HOST: tcp://docker:2375
-  services:
-  - docker:dind
   script:
-  - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - TARGET_VERSION=$(git ls-tree HEAD -- shell | awk '{ print $3 }')
   - CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$(date -u +%D)" | sha1sum))
-  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
   - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" > /dev/null); then
   #   Pull the base image
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
-  #   Pull the existing image to reuse existing layers
-  -   CACHE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-shell:$CI_COMMIT_REF_SLUG"
-  -   if ! $(docker pull $CACHE_IMAGE > /dev/null); then
-  -     CACHE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-shell:latest"
-  -     docker pull $CACHE_IMAGE || true
-  -   fi
-  #   Build new image
-  -   cd shell
-  -   docker build --build-arg "TAG=$BASE_VERSION" --build-arg "GITLAB_SHELL_VERSION=${GITLAB_SHELL_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)" -t "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" --cache-from $CACHE_IMAGE .
-  #   Push new image
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION"
-  #   Create a tag based on Branch/Tag name for easy reference
-  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-shell:$CI_COMMIT_REF_SLUG"
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-shell:$CI_COMMIT_REF_SLUG"
+  -   CONTAINER_VERSION=$CONTAINER_VERSION WORKDIR=shell build --build-arg "TAG=$BASE_VERSION" --build-arg "GITLAB_SHELL_VERSION=${GITLAB_SHELL_VERSION}" --build-arg "$CACHE_BUSTER=GITLAB_VERSION=${GITLAB_VERSION}"
   - fi
   # Push the latest tag if master
   - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
-  -   docker tag "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitlab-shell:latest"
-  #   Push latest image
-  -   docker push "$CI_REGISTRY_IMAGE/gitlab-shell:latest"
+  -   push_latest
   - fi
   dependencies:
     - gitlab-ruby
-  retry: 1
 
 gitaly:
+  <<: *job-base
   stage: target-container
-  image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_HOST: tcp://docker:2375
-  services:
-  - docker:dind
   script:
-  - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
   - TARGET_VERSION=$(git ls-tree HEAD -- gitaly | awk '{ print $3 }')
   - SHELL_VERSION=$(git ls-tree HEAD -- shell | awk '{ print $3 }')
   - SHELL_CONTAINER=($(echo -n "$BASE_VERSION$SHELL_VERSION$(date -u +%D)" | sha1sum))
   - CONTAINER_VERSION=($(echo -n "$SHELL_CONTAINER$TARGET_VERSION" | sha1sum))
-  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   # Build container if it doesn't exist
   - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitaly:$CONTAINER_VERSION" > /dev/null); then
   #   Pull the dependant images
   -   docker pull "$CI_REGISTRY_IMAGE/gitlab-shell:$SHELL_CONTAINER"
-  #   Pull the existing image to reuse existing layers
-  -   CACHE_IMAGE="$CI_REGISTRY_IMAGE/gitaly:$CI_COMMIT_REF_SLUG"
-  -   if ! $(docker pull $CACHE_IMAGE > /dev/null); then
-  -     CACHE_IMAGE="$CI_REGISTRY_IMAGE/gitaly:latest"
-  -     docker pull $CACHE_IMAGE || true
-  -   fi
-  #   Build new image
-  -   cd gitaly
-  -   docker build --build-arg "GITALY_VERSION=${GITALY_VERSION}" --build-arg "TAG=$BASE_VERSION" --build-arg "SHELL_CONTAINER=$SHELL_CONTAINER" --build-arg "CACHE_BUSTER=$(date -uI)" -t "$CI_REGISTRY_IMAGE/gitaly:$CONTAINER_VERSION" --cache-from $CACHE_IMAGE .
-  #   Push new image
-  -   docker push "$CI_REGISTRY_IMAGE/gitaly:$CONTAINER_VERSION"
-  #   Create a tag based on Branch/Tag name for easy reference
-  -   docker tag "$CI_REGISTRY_IMAGE/gitaly:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitaly:$CI_COMMIT_REF_SLUG"
-  -   docker push "$CI_REGISTRY_IMAGE/gitaly:$CI_COMMIT_REF_SLUG"
+  -   CONTAINER_VERSION=$CONTAINER_VERSION WORKDIR=gitaly build --build-arg "GITALY_VERSION=${GITALY_VERSION}" --build-arg "TAG=$BASE_VERSION" --build-arg "SHELL_CONTAINER=$SHELL_CONTAINER" --build-arg "CACHE_BUSTER=$(date -uI)"
   - fi
   # Push the latest tag if master
   - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
-  -   docker tag "$CI_REGISTRY_IMAGE/gitaly:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/gitaly:latest"
-  #   Push latest image
-  -   docker push "$CI_REGISTRY_IMAGE/gitaly:latest"
+  -   push_latest
   - fi
   dependencies:
     - gitlab-ruby
-    - shell
-  retry: 1
+    - gitlab-shell
