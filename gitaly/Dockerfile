@@ -49,13 +49,16 @@ RUN cp /srv/gitlab-shell/config.yml.example /etc/gitaly/shell-config.yml && ln -
 
 RUN mkdir -p /var/log/gitaly && \
     touch /var/log/gitaly/gitaly.log && \
-    touch /var/log/gitaly/gitlab-shell.log && chown ${GITLAB_USER} /var/log/gitaly/gitlab-shell.log
+    touch /var/log/gitaly/gitlab-shell.log && chown -R ${GITLAB_USER} /var/log/gitaly
 
 RUN apk del .build-deps
 
 # Add scripts
 COPY scripts/  /scripts/
 COPY config.toml /etc/gitaly/config.toml
+
+RUN chown -R ${GITLAB_USER}:${GITLAB_USER} /etc/gitaly /scripts
+USER ${GITLAB_USER}:${GITLAB_USER}
 
 ENV CONFIG_TEMPLATE_DIRECTORY=/etc/gitaly
 

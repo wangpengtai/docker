@@ -2,6 +2,7 @@ ARG TAG=latest
 FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-rails:${TAG}
 
 ARG BUILD_DIR=/tmp/build
+ARG GITLAB_USER=git
 
 # install build deps
 RUN apk add --no-cache --virtual .build-deps \
@@ -20,6 +21,8 @@ RUN cd ${BUILD_DIR} && \
 
 RUN rm -rf ${BUILD_DIR} && \
     apk del .build-deps
+
+USER $GITLAB_USER:$GITLAB_USER
 
 COPY scripts/ /scripts
 COPY unicorn.rb /home/git/gitlab/config/unicorn.rb
