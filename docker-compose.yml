@@ -15,7 +15,6 @@ services:
     command: ["/scripts/wait-for-deps", "/scripts/db-migrate"]
     depends_on:
       - omnibus
-    user: git
     volumes:
       - ./dev/unicorn-config:/var/opt/gitlab/config/templates
       - ./dev/shell-secret:/var/opt/gitlab/config/secrets
@@ -32,7 +31,6 @@ services:
     command: ["/scripts/wait-for-deps", "/scripts/process-wrapper"]
     depends_on:
       - omnibus
-    user: git
     ports:
       - "${UNICORN_HOST_PORT}:8080"
       - "${WORKHORSE_HOST_PORT}:8181"
@@ -44,7 +42,6 @@ services:
     command: ["/scripts/wait-for-deps", "/scripts/process-wrapper"]
     depends_on:
       - omnibus
-    user: git
     environment:
       - "GITLAB_HOST=localhost"
       - "GITLAB_PORT=${NGINX_HOST_PORT}"
