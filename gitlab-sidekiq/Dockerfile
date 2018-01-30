@@ -12,4 +12,4 @@ RUN chown -R $GITLAB_USER:$GITLAB_USER /scripts
 
 USER $GITLAB_USER:$GITLAB_USER
 
-CMD /scripts/process-wrapper
+CMD ["/scripts/wait-for-deps", "/scripts/process-wrapper"]

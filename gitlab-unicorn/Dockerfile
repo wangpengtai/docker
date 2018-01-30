@@ -29,7 +29,7 @@ COPY unicorn.rb /home/git/gitlab/config/unicorn.rb
 
 ENV GITALY_FEATURE_DEFAULT_ON=1
 
-CMD /scripts/process-wrapper
+CMD ["/scripts/wait-for-deps", "/scripts/process-wrapper"]
 
 HEALTHCHECK --interval=30s --timeout=30s --retries=5 \
 CMD /scripts/healthcheck
