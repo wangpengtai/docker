@@ -6,10 +6,10 @@ variables:
   DOCKER_HOST: tcp://docker:2375
 
 before_script:
-  - CONTAINER_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
-  - BASE_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
-  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
   - source build-scripts/build.sh
+  - export {CONTAINER_VERSION,BASE_VERSION}=$(get_version ruby)
+  - export TARGET_VERSION=$(get_target_version)
+  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
 
 stages:
   - base-container
@@ -27,51 +27,28 @@ gitlab-ruby:
   <<: *job-base
   stage: base-container
   script:
-  - CONTAINER_VERSION=$(git ls-tree HEAD -- ruby | awk '{ print $3 }')
-  # Build container if it doesn't exist
-  - if ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$CONTAINER_VERSION" > /dev/null); then
-  -   CONTAINER_VERSION=$CONTAINER_VERSION WORKDIR=ruby build
-  - fi
-  # Push the latest tag if master
-  - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
-  -   push_latest
-  - fi
+  - build_if_needed
+  - push_if_master
 
 gitlab-rails:
   <<: *job-base
   stage: common-container
   script:
-  - TARGET_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
-  - CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$(date -u +%D)" | sha1sum))
-  # Build container if it doesn't exist
-  - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$CONTAINER_VERSION" > /dev/null); then
-  #   Pull the base image
-  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
-  -   CONTAINER_VERSION=$CONTAINER_VERSION WORKDIR=rails build --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)"
-  - fi
-  # Push the latest tag if master
-  - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
-  -   push_latest
-  - fi
+  - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$(date -u +%D)" | sha1sum))
+  - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
+  - build_if_needed --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)"
+  - push_if_master
 
 gitlab-unicorn:
   <<: *job-base
   stage: target-container
   script:
-  - RAILS_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
-  - UNICORN_VERSION=$(git ls-tree HEAD -- unicorn | awk '{ print $3 }')
-  - RAILS_CONTAINER=($(echo -n "$BASE_VERSION$RAILS_VERSION$(date -u +%D)" | sha1sum))
-  - CONTAINER_VERSION=($(echo -n "$RAILS_CONTAINER$UNICORN_VERSION" | sha1sum))
-  # Build container if it doesn't exist
-  - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-unicorn:$CONTAINER_VERSION" > /dev/null); then
-  #   Pull the rails image
-  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$RAILS_CONTAINER"
-  -   CONTAINER_VERSION=$CONTAINER_VERSION WORKDIR=unicorn build --build-arg "TAG=$RAILS_CONTAINER"
-  - fi
-  # Push the latest tag if master
-  - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
-  -   push_latest
-  - fi
+  - rails_version=$(get_version rails)
+  - rails_container=($(echo -n "$BASE_VERSION$rails_version$(date -u +%D)" | sha1sum))
+  - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
+  - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails:$rails_container"
+  - build_if_needed --build-arg "TAG=$rails_container"
+  - push_if_master
   dependencies:
     - gitlab-rails
 
@@ -79,20 +56,12 @@ gitlab-sidekiq:
   <<: *job-base
   stage: target-container
   script:
-  - RAILS_VERSION=$(git ls-tree HEAD -- rails | awk '{ print $3 }')
-  - SIDEKIQ_VERSION=$(git ls-tree HEAD -- sidekiq | awk '{ print $3 }')
-  - RAILS_CONTAINER=($(echo -n "$BASE_VERSION$RAILS_VERSION$(date -u +%D)" | sha1sum))
-  - CONTAINER_VERSION=($(echo -n "$RAILS_CONTAINER$SIDEKIQ_VERSION" | sha1sum))
-  # Build container if it doesn't exist
-  - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-sidekiq:$CONTAINER_VERSION" > /dev/null); then
-  #   Pull the rails image
-  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-rails:$RAILS_CONTAINER"
-  -   CONTAINER_VERSION=$CONTAINER_VERSION WORKDIR=sidekiq build --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "TAG=$RAILS_CONTAINER"
-  - fi
-  # Push the latest tag if master
-  - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
-  -   push_latest
-  - fi
+  - rails_version=$(get_version rails)
+  - rails_container=($(echo -n "$BASE_VERSION$rails_version$(date -u +%D)" | sha1sum))
+  - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
+  - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails:$rails_container"
+  - build_if_needed --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "TAG=$rails_container"
+  - push_if_master
   dependencies:
     - gitlab-rails
 
@@ -100,18 +69,10 @@ gitlab-shell:
   <<: *job-base
   stage: common-container
   script:
-  - TARGET_VERSION=$(git ls-tree HEAD -- shell | awk '{ print $3 }')
-  - CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$(date -u +%D)" | sha1sum))
-  # Build container if it doesn't exist
-  - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitlab-shell:$CONTAINER_VERSION" > /dev/null); then
-  #   Pull the base image
-  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
-  -   CONTAINER_VERSION=$CONTAINER_VERSION WORKDIR=shell build --build-arg "TAG=$BASE_VERSION" --build-arg "GITLAB_SHELL_VERSION=${GITLAB_SHELL_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)"
-  - fi
-  # Push the latest tag if master
-  - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
-  -   push_latest
-  - fi
+  - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$(date -u +%D)" | sha1sum))
+  - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
+  - build_if_needed --build-arg "TAG=$BASE_VERSION" --build-arg "GITLAB_SHELL_VERSION=${GITLAB_SHELL_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)"
+  - push_if_master
   dependencies:
     - gitlab-ruby
 
@@ -119,20 +80,12 @@ gitaly:
   <<: *job-base
   stage: target-container
   script:
-  - TARGET_VERSION=$(git ls-tree HEAD -- gitaly | awk '{ print $3 }')
-  - SHELL_VERSION=$(git ls-tree HEAD -- shell | awk '{ print $3 }')
-  - SHELL_CONTAINER=($(echo -n "$BASE_VERSION$SHELL_VERSION$(date -u +%D)" | sha1sum))
-  - CONTAINER_VERSION=($(echo -n "$SHELL_CONTAINER$TARGET_VERSION" | sha1sum))
-  # Build container if it doesn't exist
-  - if [ -n "$NIGHTLY" ] || ! $(docker pull "$CI_REGISTRY_IMAGE/gitaly:$CONTAINER_VERSION" > /dev/null); then
-  #   Pull the dependant images
-  -   docker pull "$CI_REGISTRY_IMAGE/gitlab-shell:$SHELL_CONTAINER"
-  -   CONTAINER_VERSION=$CONTAINER_VERSION WORKDIR=gitaly build --build-arg "GITALY_VERSION=${GITALY_VERSION}" --build-arg "TAG=$BASE_VERSION" --build-arg "SHELL_CONTAINER=$SHELL_CONTAINER" --build-arg "CACHE_BUSTER=$(date -uI)"
-  - fi
-  # Push the latest tag if master
-  - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
-  -   push_latest
-  - fi
+  - shell_version=$(get_version shell)
+  - export shell_container=($(echo -n "$BASE_VERSION$shell_version$(date -u +%D)" | sha1sum))
+  - export CONTAINER_VERSION=($(echo -n "$shell_container$TARGET_VERSION" | sha1sum))
+  - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-shell:$shell_container"
+  - build_if_needed --build-arg "GITALY_VERSION=${GITALY_VERSION}" --build-arg "TAG=$BASE_VERSION" --build-arg "shell_container=$shell_container" --build-arg "CACHE_BUSTER=$(date -uI)"
+  - push_if_master
   dependencies:
     - gitlab-ruby
     - gitlab-shell
