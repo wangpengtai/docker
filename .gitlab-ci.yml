@@ -7,7 +7,7 @@ variables:
 
 before_script:
   - source build-scripts/build.sh
-  - export {CONTAINER_VERSION,BASE_VERSION}=$(get_version ruby)
+  - export {CONTAINER_VERSION,BASE_VERSION}=$(get_version gitlab-ruby)
   - export TARGET_VERSION=$(get_target_version)
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
 
@@ -43,7 +43,7 @@ gitlab-unicorn:
   <<: *job-base
   stage: target-container
   script:
-  - rails_version=$(get_version rails)
+  - rails_version=$(get_version gitlab-rails)
   - rails_container=($(echo -n "$BASE_VERSION$rails_version$(date -u +%D)" | sha1sum))
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails:$rails_container"
@@ -56,7 +56,7 @@ gitlab-sidekiq:
   <<: *job-base
   stage: target-container
   script:
-  - rails_version=$(get_version rails)
+  - rails_version=$(get_version gitlab-rails)
   - rails_container=($(echo -n "$BASE_VERSION$rails_version$(date -u +%D)" | sha1sum))
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails:$rails_container"
@@ -80,7 +80,7 @@ gitaly:
   <<: *job-base
   stage: target-container
   script:
-  - shell_version=$(get_version shell)
+  - shell_version=$(get_version gitlab-shell)
   - export shell_container=($(echo -n "$BASE_VERSION$shell_version$(date -u +%D)" | sha1sum))
   - export CONTAINER_VERSION=($(echo -n "$shell_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-shell:$shell_container"
