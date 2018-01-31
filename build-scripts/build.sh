@@ -22,7 +22,7 @@ function needs_build(){
 }
 
 function build_if_needed(){
-  if needs_builds; then
+  if needs_build; then
     if [ -n $BASE_IMAGE ]; then
       docker pull $BASE_IMAGE
     fi
