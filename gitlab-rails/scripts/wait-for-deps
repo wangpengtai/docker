@@ -7,7 +7,11 @@ cd /home/git/gitlab
 for i in $(seq 1 $WAIT_FOR_TIMEOUT); do
   echo "Checking database connection and schema version"
   if /home/git/gitlab/bin/bundle exec rake db:version; then
-   exec "$@"
+    if [ "$@" ]; then
+      exec "$@"
+    else
+      exit 0
+    fi
   fi
   sleep 1
 done
