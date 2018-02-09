@@ -7,6 +7,7 @@ variables:
 
 before_script:
   - source build-scripts/build.sh
+  - docker version
   - export {CONTAINER_VERSION,BASE_VERSION}=$(get_version gitlab-ruby)
   - export TARGET_VERSION=$(get_target_version)
   - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
