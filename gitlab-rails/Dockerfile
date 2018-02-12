@@ -1,5 +1,5 @@
 ARG TAG=latest
-FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${TAG}
+FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${TAG} as builder
 
 ARG BUILD_DIR=/tmp/build
 ARG DATADIR=/var/opt/gitlab
@@ -13,7 +13,7 @@ ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SK
 # We need the latest and greatest at lesat for yarn
 RUN apk update && apk upgrade
 
-# install runtime deps
+# install build deps
 RUN apk add --no-cache \
         icu-libs \
         libre2 \
@@ -21,10 +21,7 @@ RUN apk add --no-cache \
         libc6-compat \
         postgresql-client \
         sudo \
-        busybox
-
-# install build deps
-RUN apk add --no-cache --virtual .build-deps \
+        busybox \
         cmake \
         g++ \
         gcc \
@@ -36,6 +33,7 @@ RUN apk add --no-cache --virtual .build-deps \
         make \
         musl-dev \
         postgresql-dev \
+        sudo \
         zlib-dev && \
         mkdir -p ${BUILD_DIR}
 
@@ -52,11 +50,6 @@ RUN mkdir ${DATADIR} && \
     cd ${DATADIR} && \
     mkdir data repo config && \
     chown -R ${GITLAB_USER}:${GITLAB_USER} ${DATADIR}
-
-# adjust git settings
-RUN sudo -u ${GITLAB_USER} -H git config --global gc.auto 0 && \
-    sudo -u ${GITLAB_USER} -H git config --global core.autocrlf input && \
-    sudo -u ${GITLAB_USER} -H git config --global repack.writeBitmaps true
 
 # Download GitLab
 ARG CACHE_BUSTER=false
@@ -85,42 +78,14 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
     sed --in-place "s/# user:.*/user: ${GITLAB_USER}/" ${CONFIG}/gitlab.yml && \
     sed --in-place "s:/home/git/repositories:${DATADIR}/repo:" ${CONFIG}/gitlab.yml
 
-# Move log dir to /var/log data volume mount point
-RUN mv /home/${GITLAB_USER}/gitlab/log /var/log/gitlab && \
-    sudo -u ${GITLAB_USER} -H ln -s /var/log/gitlab /home/${GITLAB_USER}/gitlab/log
-
-# Set permissions
-RUN cd /home/${GITLAB_USER}/gitlab && \
-    chmod o-rwx config/database.yml && \
-    chmod 0600 config/secrets.yml && \
-    chown -R ${GITLAB_USER} log/ && \
-    chown -R ${GITLAB_USER} tmp/ && \
-    chmod -R u+rwX,go-w log/ && \
-    chmod -R u+rwX tmp/ && \
-    chmod -R u+rwX tmp/pids/ && \
-    chmod -R u+rwX tmp/sockets/ && \
-    chmod -R u+rwX builds/ && \
-    chmod -R u+rwX shared/artifacts/ && \
-    chmod -R ug+rwX shared/pages/ && \
-    chmod -R ug+rwX,o-rwx ${DATADIR}/repo && \
-    chmod -R ug-s ${DATADIR}/repo && \
-    find ${DATADIR}/repo -type d -print0 | sudo xargs -0 chmod g+s && \
-    sudo -u ${GITLAB_USER} -H mkdir public/uploads && \
-    chmod 0700 public/uploads
-
-# Maybe we should add these to the upstream Gemfile?
-# RUN cd /home/${GITLAB_USER}/gitlab && \
-#     echo "gem 'bigdecimal'" >> Gemfile && \
-#     echo "gem 'tzinfo-data'" >> Gemfile
-
 # Install gems
 RUN cd /home/${GITLAB_USER}/gitlab && \
     sudo -u git -H bundle install --deployment --without development test mysql aws kerberos --jobs 4 --retry 5
 
 # Some Gems are skipping extension compilation on alpine for some reason, Force them to compile
 RUN cd /home/${GITLAB_USER}/gitlab && \
-    sudo -u git -H bundle exec gem uninstall --force google-protobuf grpc && \
-    sudo -u git -H BUNDLE_FORCE_RUBY_PLATFORM=true bundle install
+    sudo -u ${GITLAB_USER} -H bundle exec gem uninstall --force google-protobuf grpc && \
+    sudo -u ${GITLAB_USER} -H BUNDLE_FORCE_RUBY_PLATFORM=true bundle install
 
 # Install node dependencies
 RUN cd /home/${GITLAB_USER}/gitlab && \
@@ -139,13 +104,52 @@ RUN rm -rf \
         /home/${GITLAB_USER}/gitlab/node_modules \
         /home/${GITLAB_USER}/gitlab/tmp \
         /home/${GITLAB_USER}/gitlab/spec \
-        /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/cache \
-        /home/${GITLAB_USER}/.cache/yarn && \
+        /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/cache && \
     find /home/${GITLAB_USER}/gitlab -name '*.gem' -type f -print -delete && \
-    find /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} + && \
-    apk del .build-deps sudo
+    find /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} +
+
+# Final image
+FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${TAG}
+ARG DATADIR=/var/opt/gitlab
+ARG CONFIG=$DATADIR/config/gitlab
+ARG GITLAB_USER=git
+
+RUN apk add --no-cache \
+        icu-libs \
+        libre2 \
+        tzdata \
+        libc6-compat \
+        postgresql-client \
+        sudo \
+        busybox
+
+RUN adduser -D -g 'GitLab' ${GITLAB_USER}
+# adjust git settings
+
+RUN sudo -u ${GITLAB_USER} -H git config --global gc.auto 0 && \
+    sudo -u ${GITLAB_USER} -H git config --global core.autocrlf input && \
+    sudo -u ${GITLAB_USER} -H git config --global repack.writeBitmaps true
+
+COPY --chown=git --from=builder /home/git/gitlab /home/git/gitlab
+COPY --chown=git --from=builder /var/opt/gitlab /var/opt/gitlab
+
+RUN mv /home/${GITLAB_USER}/gitlab/log /var/log/gitlab && \
+    ln -s /var/log/gitlab /home/${GITLAB_USER}/gitlab/log && \
+    cd /home/${GITLAB_USER}/gitlab && \
+    chmod o-rwx config/database.yml && \
+    chmod 0600 config/secrets.yml && \
+    chmod -R u+rwX builds/ && \
+    chmod -R u+rwX shared/artifacts/ && \
+    chmod -R ug+rwX shared/pages/ && \
+    chmod -R ug+rwX,o-rwx ${DATADIR}/repo && \
+    chmod -R ug-s ${DATADIR}/repo && \
+    find ${DATADIR}/repo -type d -print0 | sudo xargs -0 chmod g+s && \
+    mkdir -p public/uploads && \
+    chmod 0700 public/uploads
 
 COPY scripts/ /scripts
+
+RUN chown -R ${GITLAB_USER} /scripts
 
 ENV RAILS_ENV=production \
     EXECJS_RUNTIME=Disabled \
