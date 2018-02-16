@@ -15,33 +15,32 @@ RUN apk update && apk upgrade
 
 # install build deps
 RUN apk add --no-cache \
-        icu-libs \
-        libre2 \
-        tzdata \
-        libc6-compat \
-        postgresql-client \
-        sudo \
-        busybox \
-        cmake \
-        g++ \
-        gcc \
-        icu-dev \
-        libffi-dev \
-        libre2-dev \
-        nodejs-lts \
-        linux-headers \
-        make \
-        musl-dev \
-        postgresql-dev \
-        sudo \
-        zlib-dev && \
+        icu-libs=58.2-r2 \
+        libre2=2017.05.01-r0 \
+        tzdata=2017a-r0 \
+        libc6-compat=1.1.16-r14 \
+        postgresql-client=9.6.7-r0 \
+        sudo=1.8.19_p2-r0 \
+        busybox=1.26.2-r9 \
+        cmake=3.8.1-r0 \
+        g++=6.3.0-r4\
+        gcc=6.3.0-r4 \
+        icu-dev=58.2-r2 \
+        libffi-dev=3.2.1-r3 \
+        libre2-dev=2017.05.01-r0 \
+        nodejs=6.10.3-r1 \
+        linux-headers=4.4.6-r2 \
+        make=4.2.1-r0 \
+        musl-dev=1.1.16-r14 \
+        postgresql-dev=9.6.7-r0 \
+        zlib-dev=1.2.11-r0 \
+        bash=4.3.48-r1 && \
         mkdir -p ${BUILD_DIR}
 
 # create gitlab user
 RUN adduser -D -g 'GitLab' ${GITLAB_USER}
 
-RUN apk --no-cache add bash && \
-    sudo -u $GITLAB_USER -H touch /home/${GITLAB_USER}/.bashrc && \
+RUN sudo -u $GITLAB_USER -H touch /home/${GITLAB_USER}/.bashrc && \
     sudo -u $GITLAB_USER -H /usr/bin/curl -so- -L https://yarnpkg.com/install.sh | sudo -u ${GITLAB_USER} -H /bin/bash -s -- --version ${YARN_VERSION} && \
     /bin/ln -s /home/${GITLAB_USER}/.yarn/bin/yarn /usr/bin/yarn
 
@@ -115,13 +114,13 @@ ARG CONFIG=$DATADIR/config/gitlab
 ARG GITLAB_USER=git
 
 RUN apk add --no-cache \
-        icu-libs \
-        libre2 \
-        tzdata \
-        libc6-compat \
-        postgresql-client \
-        sudo \
-        busybox
+        icu-libs=58.2-r2 \
+        libre2=2017.05.01-r0 \
+        tzdata=2017a-r0 \
+        libc6-compat=1.1.16-r14 \
+        postgresql-client=9.6.7-r0 \
+        sudo=1.8.19_p2-r0 \
+        busybox=1.26.2-r9
 
 RUN adduser -D -g 'GitLab' ${GITLAB_USER}
 # adjust git settings
