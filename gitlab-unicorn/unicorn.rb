@@ -6,7 +6,7 @@
 #
 # ENV['RAILS_RELATIVE_URL_ROOT'] = "/gitlab"
 
-worker_processes 1
+worker_processes 2
 working_directory "/home/git/gitlab"
 listen "0.0.0.0:8080", :tcp_nopush => true
 

@@ -2,6 +2,8 @@ ARG TAG=latest
 FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-rails:${TAG}
 
 ARG BUILD_DIR=/tmp/build
+ARG DATADIR=/var/opt/gitlab
+ARG CONFIG=$DATADIR/config/gitlab
 ARG GITLAB_USER=git
 
 # install build deps
@@ -25,7 +27,10 @@ RUN rm -rf ${BUILD_DIR} && \
 USER $GITLAB_USER:$GITLAB_USER
 
 COPY scripts/ /scripts
-COPY unicorn.rb /home/git/gitlab/config/unicorn.rb
+COPY unicorn.rb ${CONFIG}/unicorn.rb
+
+RUN cd /home/${GITLAB_USER}/gitlab && \
+    ln -s ${CONFIG}/unicorn.rb config/unicorn.rb
 
 ENV GITALY_FEATURE_DEFAULT_ON=1
 
