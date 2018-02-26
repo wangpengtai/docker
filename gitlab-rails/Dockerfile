@@ -143,7 +143,7 @@ RUN mv /home/${GITLAB_USER}/gitlab/log /var/log/gitlab && \
     chmod -R ug+rwX,o-rwx ${DATADIR}/repo && \
     chmod -R ug-s ${DATADIR}/repo && \
     find ${DATADIR}/repo -type d -print0 | sudo xargs -0 chmod g+s && \
-    mkdir -p public/uploads && \
+    mkdir -p public/uploads && chown ${GITLAB_USER}:${GITLAB_USER} public/uploads && \
     chmod 0700 public/uploads
 
 COPY scripts/ /scripts
