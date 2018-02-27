@@ -23,6 +23,7 @@ stages:
   dependencies: []
   retry: 1
 
+
 gitlab-ruby:
   <<: *job-base
   stage: base-container
@@ -37,6 +38,14 @@ gitlab-rails:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
   - build_if_needed --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)"
+  - push_if_master
+
+cluster-admin:
+  <<: *job-base
+  stage: target-container
+  script:
+  - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$(date -u +%D)" | sha1sum))
+  - build_if_needed
   - push_if_master
 
 gitlab-unicorn:
