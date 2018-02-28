@@ -23,7 +23,6 @@ stages:
   dependencies: []
   retry: 1
 
-
 gitlab-ruby:
   <<: *job-base
   stage: base-container
