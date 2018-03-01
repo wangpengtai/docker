@@ -1,5 +1,4 @@
 #!/bin/bash
-
 declare -a nightly_builds=( gitlab-rails gitlab-unicorn gitaly gitlab-sidekiq )
 
 function _containsElement () {
@@ -23,7 +22,7 @@ function needs_build(){
 
 function build_if_needed(){
   if needs_build; then
-    if [ -n $BASE_IMAGE ]; then
+    if [ -n "$BASE_IMAGE" ]; then
       docker pull $BASE_IMAGE
     fi
 
