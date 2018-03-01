@@ -39,7 +39,7 @@ gitlab-rails:
   - build_if_needed --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)"
   - push_if_master
 
-cluster-admin:
+kubectl:
   <<: *job-base
   stage: target-container
   script:
