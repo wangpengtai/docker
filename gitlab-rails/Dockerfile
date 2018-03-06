@@ -32,7 +32,7 @@ RUN apk add --no-cache \
         linux-headers=4.4.6-r2 \
         make=4.2.1-r0 \
         musl-dev=1.1.16-r14 \
-        postgresql-dev=9.6.7-r0 \
+        postgresql-dev=9.6.8-r0 \
         zlib-dev=1.2.11-r0 \
         bash=4.3.48-r1 && \
         mkdir -p ${BUILD_DIR}
