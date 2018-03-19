@@ -1,7 +1,8 @@
 ARG TAG=latest
 FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${TAG}
 
-ARG GITLAB_SHELL_VERSION=v5.9.4
+ARG GITLAB_SHELL_VERSION=master
+ARG SSH_USER=gitlab-ssh
 ARG GITLAB_USER=git
 
 # install runtime deps
@@ -12,9 +13,10 @@ RUN apk add --no-cache \
 RUN apk add --no-cache --virtual .build-deps \
         cmake g++ gcc linux-headers make go sudo
 
-# create gitlab user
+# create gitlab-ssh and gitlab user
 # openssh daemon does not allow locked user to login, change ! to *
-RUN adduser -D -g 'GitLab' ${GITLAB_USER} && \
+RUN adduser -D -g 'GitLab SSH' ${SSH_USER} && \
+    adduser -D -g 'GitLab' ${GITLAB_USER} && \
     sed -i "s/${GITLAB_USER}:!/${GITLAB_USER}:*/" /etc/shadow
 
 # Download and compile GitLab Shell
@@ -34,6 +36,9 @@ RUN apk del .build-deps
 # Add scripts
 COPY scripts/  /scripts/
 COPY sshd_config /etc/ssh/
+RUN chown -R $SSH_USER:$SSH_USER /scripts /etc/ssh
+
+USER $SSH_USER:$SSH_USER
 
 # Fix copied permissions
 RUN chmod 0755 /scripts/authorized_keys
