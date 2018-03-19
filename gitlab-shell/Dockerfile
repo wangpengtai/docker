@@ -37,12 +37,13 @@ RUN apk del .build-deps
 # Add scripts
 COPY scripts/  /scripts/
 COPY sshd_config /etc/ssh/
+
+# AuthrorizedKeysCommand must be owned by root, and have all parent paths owned as root
+RUN mv /scripts/authorized_keys /authorized_keys && chmod 0755 /authorized_keys
+
 RUN chown -R $GITLAB_USER:$GITLAB_USER /scripts /etc/ssh
 
 USER $GITLAB_USER:$GITLAB_USER
-
-# Fix copied permissions
-RUN chmod 0755 /scripts/authorized_keys
 
 ENV CONFIG_TEMPLATE_DIRECTORY=/srv/gitlab-shell
 
