@@ -15,8 +15,8 @@ RUN apk add --no-cache --virtual .build-deps \
 
 # create gitlab-ssh and gitlab user
 # openssh daemon does not allow locked user to login, change ! to *
-RUN adduser -D -g 'GitLab SSH' ${SSH_USER} && \
-    adduser -D -g 'GitLab' ${GITLAB_USER} && \
+RUN adduser -D -g 'GitLab' ${GITLAB_USER} && \
+    adduser -D -g 'GitLab SSH' ${SSH_USER} && \
     sed -i "s/${GITLAB_USER}:!/${GITLAB_USER}:*/" /etc/shadow
 
 # Download and compile GitLab Shell
