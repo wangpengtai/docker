@@ -21,14 +21,14 @@ RUN adduser -D -g 'GitLab' ${GITLAB_USER} && \
 
 # Download and compile GitLab Shell
 ARG CACHE_BUSTER=false
-RUN mkdir /srv/gitlab-shell && chown ${GITLAB_USER}:${GITLAB_USER} /srv/gitlab-shell && \
+RUN mkdir /srv/gitlab-shell && chown ${GITLAB_USER}:${SSH_USER} /srv/gitlab-shell && \
     cd /srv/gitlab-shell && \
     sudo -u ${GITLAB_USER} -H curl -o gitlab-shell.tar.bz2 https://gitlab.com/gitlab-org/gitlab-shell/repository/${GITLAB_SHELL_VERSION}/archive.tar.bz2 && \
     sudo -u ${GITLAB_USER} -H tar -xjf gitlab-shell.tar.bz2 --strip-components=1 && \
     rm gitlab-shell.tar.bz2 && \
     ./bin/compile
 
-RUN mkdir -p /var/log/gitlab-shell && chown ${GITLAB_USER} /var/log/gitlab-shell && \
+RUN mkdir -p /var/log/gitlab-shell && chown ${GITLAB_USER}:${SSH_USER} /var/log/gitlab-shell && \
     sudo -u ${GITLAB_USER} -H touch /var/log/gitlab-shell/gitlab-shell.log
 
 RUN apk del .build-deps
