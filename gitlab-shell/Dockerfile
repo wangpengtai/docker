@@ -17,6 +17,9 @@ RUN apk add --no-cache --virtual .build-deps \
 RUN adduser -D -g 'GitLab' ${GITLAB_USER} && \
     sed -i "s/${GITLAB_USER}:!/${GITLAB_USER}:*/" /etc/shadow
 
+# Create a run environment for SSHD
+RUN mkdir /srv/sshd && chown ${GITLAB_USER}:${GITLAB_USER} /srv/sshd
+
 # Download and compile GitLab Shell
 ARG CACHE_BUSTER=false
 RUN mkdir /srv/gitlab-shell && chown ${GITLAB_USER}:${GITLAB_USER} /srv/gitlab-shell && \
