@@ -72,7 +72,6 @@ PermitRootLogin no
 # PAM authentication, then enable this but set PasswordAuthentication
 # and ChallengeResponseAuthentication to 'no'.
 #UsePAM no
-UsePrivilegeSeparation no
 
 #AllowAgentForwarding yes
 #AllowTcpForwarding yes
@@ -90,7 +89,7 @@ UsePrivilegeSeparation no
 #ClientAliveInterval 0
 #ClientAliveCountMax 3
 #UseDNS no
-#PidFile /run/sshd.pid
+PidFile /var/run/sshd.pid
 #MaxStartups 10:30:100
 #PermitTunnel no
 #ChrootDirectory none
