@@ -12,7 +12,7 @@ RUN apk add --no-cache \
 RUN apk add --no-cache --virtual .build-deps \
         cmake g++ gcc linux-headers make go sudo
 
-# create gitlab-ssh and gitlab user
+# create gitlab user
 # openssh daemon does not allow locked user to login, change ! to *
 RUN adduser -D -g 'GitLab' ${GITLAB_USER} && \
     sed -i "s/${GITLAB_USER}:!/${GITLAB_USER}:*/" /etc/shadow
