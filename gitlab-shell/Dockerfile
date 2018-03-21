@@ -1,7 +1,7 @@
 ARG TAG=latest
 FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${TAG}
 
-ARG GITLAB_SHELL_VERSION=v5.9.4
+ARG GITLAB_SHELL_VERSION=master
 ARG GITLAB_USER=git
 
 # install runtime deps
@@ -16,6 +16,9 @@ RUN apk add --no-cache --virtual .build-deps \
 # openssh daemon does not allow locked user to login, change ! to *
 RUN adduser -D -g 'GitLab' ${GITLAB_USER} && \
     sed -i "s/${GITLAB_USER}:!/${GITLAB_USER}:*/" /etc/shadow
+
+# Create a run environment for SSHD
+RUN mkdir /srv/sshd && chown ${GITLAB_USER}:${GITLAB_USER} /srv/sshd
 
 # Download and compile GitLab Shell
 ARG CACHE_BUSTER=false
@@ -35,8 +38,12 @@ RUN apk del .build-deps
 COPY scripts/  /scripts/
 COPY sshd_config /etc/ssh/
 
-# Fix copied permissions
-RUN chmod 0755 /scripts/authorized_keys
+# AuthrorizedKeysCommand must be owned by root, and have all parent paths owned as root
+RUN mv /scripts/authorized_keys /authorized_keys && chmod 0755 /authorized_keys
+
+RUN chown -R $GITLAB_USER:$GITLAB_USER /scripts /etc/ssh
+
+USER $GITLAB_USER:$GITLAB_USER
 
 ENV CONFIG_TEMPLATE_DIRECTORY=/srv/gitlab-shell
 
