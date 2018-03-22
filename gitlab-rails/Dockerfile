@@ -40,7 +40,7 @@ RUN apk add --no-cache \
 # Build NodeJS
 RUN cd ${BUILD_DIR} && \
   /usr/bin/curl -SLO "https://nodejs.org/dist/v${NODEJS_VERSION}/node-v${NODEJS_VERSION}.tar.gz" && \
-  tar -xf "node-v${NODEJS_VERSION}.tar.xz" && \
+  tar -xzf "node-v${NODEJS_VERSION}.tar.gz" && \
   cd "node-v${NODEJS_VERSION}" && \
   ./configure && \
   make -j${CPU_COUNT} && \
