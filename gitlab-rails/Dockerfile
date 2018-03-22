@@ -8,6 +8,7 @@ ARG CPU_COUNT=4
 ARG GITLAB_USER=git
 ARG GITLAB_VERSION=v10.2.0-ee
 ARG YARN_VERSION=0.20.3
+ARG NODEJS_VERSION=8.9.4
 ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SKIP_STORAGE_VALIDATION=true"
 
 # We need the latest and greatest at lesat for yarn
@@ -28,7 +29,6 @@ RUN apk add --no-cache \
         icu-dev=58.2-r2 \
         libffi-dev=3.2.1-r3 \
         libre2-dev=2017.05.01-r0 \
-        nodejs=6.10.3-r1 \
         linux-headers=4.4.6-r2 \
         make=4.2.1-r0 \
         musl-dev=1.1.16-r14 \
@@ -36,6 +36,10 @@ RUN apk add --no-cache \
         zlib-dev=1.2.11-r0 \
         bash=4.3.48-r1 && \
         mkdir -p ${BUILD_DIR}
+
+# Install NodeJS
+RUN /usr/bin/curl -fsSL "https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz" \
+  | tar --strip-components 1 -xzC /usr/local/
 
 # create gitlab user
 RUN adduser -D -g 'GitLab' ${GITLAB_USER}
