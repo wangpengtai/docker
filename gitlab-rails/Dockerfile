@@ -37,9 +37,14 @@ RUN apk add --no-cache \
         bash=4.3.48-r1 && \
         mkdir -p ${BUILD_DIR}
 
-# Install NodeJS
-RUN /usr/bin/curl -fsSL "https://nodejs.org/download/release/v${NODEJS_VERSION}/node-v${NODEJS_VERSION}-linux-x64.tar.gz" \
-  | tar --strip-components 1 -xzC /usr/local/
+# Build NodeJS
+RUN cd ${BUILD_DIR} && \
+  /usr/bin/curl -SLO "https://nodejs.org/dist/v${NODEJS_VERSION}/node-v${NODEJS_VERSION}.tar.gz" && \
+  tar -xf "node-v${NODEJS_VERSION}.tar.xz" && \
+  cd "node-v${NODEJS_VERSION}" && \
+  ./configure && \
+  make -j${CPU_COUNT} && \
+  make install
 
 # create gitlab user
 RUN adduser -D -g 'GitLab' ${GITLAB_USER}
