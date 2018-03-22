@@ -31,6 +31,7 @@ RUN apk add --no-cache --virtual .build-deps \
         libxml2-dev \
         libxslt-dev \
         linux-headers \
+        python \
         make \
         ncurses-dev \
         procps \
