@@ -38,7 +38,7 @@ RUN apk add --no-cache \
         mkdir -p ${BUILD_DIR}
 
 # Install NodeJS
-RUN /usr/bin/curl -fsSL "https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz" \
+RUN /usr/bin/curl -fsSL "https://nodejs.org/download/release/v${NODEJS_VERSION}/node-v${NODEJS_VERSION}-linux-x64.tar.gz" \
   | tar --strip-components 1 -xzC /usr/local/
 
 # create gitlab user
