@@ -102,7 +102,6 @@ gitlab-redis-ha:
   <<: *job-base
   stage: target-container
   script:
-  - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$(date -u +%D)" | sha1sum))
-  - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-redis-ha:$BASE_VERSION"
-  - build_if_needed --build-arg "TAG=$BASE_VERSION"
+  - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$(date -u +%D)" | sha1sum))
+  - build_if_needed
   - push_if_master
