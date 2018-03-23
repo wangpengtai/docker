@@ -97,3 +97,11 @@ gitaly:
   dependencies:
     - gitlab-ruby
     - gitlab-shell
+
+gitlab-redis-ha:
+  <<: *job-base
+  stage: target-container
+  script:
+  - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$(date -u +%D)" | sha1sum))
+  - build_if_needed
+  - push_if_master
