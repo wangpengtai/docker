@@ -31,6 +31,7 @@ RUN apk add --no-cache \
         libre2-dev=2017.05.01-r0 \
         linux-headers=4.4.6-r2 \
         make=4.2.1-r0 \
+        python \
         musl-dev=1.1.16-r14 \
         postgresql-dev=9.6.8-r0 \
         zlib-dev=1.2.11-r0 \
