@@ -28,7 +28,6 @@ RUN apk add --no-cache \
         icu-dev=58.2-r2 \
         libffi-dev=3.2.1-r3 \
         libre2-dev=2017.05.01-r0 \
-        nodejs=6.10.3-r1 \
         linux-headers=4.4.6-r2 \
         make=4.2.1-r0 \
         musl-dev=1.1.16-r14 \
@@ -36,6 +35,11 @@ RUN apk add --no-cache \
         zlib-dev=1.2.11-r0 \
         bash=4.3.48-r1 && \
         mkdir -p ${BUILD_DIR}
+
+# Copy NodeJS
+COPY --from=node:8.9.4-alpine /usr/local/bin/node /usr/local/bin/node
+COPY --from=node:8.9.4-alpine /usr/local/lib/node_modules /usr/local/lib/node_modules
+COPY --from=node:8.9.4-alpine /usr/local/include/node /usr/local/include/node
 
 # create gitlab user
 RUN adduser -D -g 'GitLab' ${GITLAB_USER}
