@@ -122,7 +122,7 @@ RUN apk add --no-cache \
         libre2=2017.05.01-r0 \
         tzdata=2017a-r0 \
         libc6-compat=1.1.16-r14 \
-        postgresql-client=9.6.7-r0 \
+        postgresql-client=9.6.8-r0 \
         sudo=1.8.19_p2-r0 \
         busybox=1.26.2-r9
 
