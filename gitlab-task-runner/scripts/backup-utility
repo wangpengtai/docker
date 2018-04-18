@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+rails_dir=/home/git/gitlab
 
 function usage()
 {
@@ -26,8 +27,8 @@ function get_local_file_url(){
   if is_url $1; then
     >&2 echo "Downloading from $1";
 
-    mkdir -p /tmp/backups
-    output_path=/tmp/backups/0_gitlab_backup.tar
+    mkdir -p $rails_dir/tmp/backups
+    output_path=$rails_dir/tmp/backups/0_gitlab_backup.tar
     curl --progress-bar -o $output_path $1
     echo $output_path
   else
@@ -44,21 +45,16 @@ function restore(){
 
   file=$(get_local_file_url $BACKUP_LOCATION)
 
-  # Verify that its a valid tar
-  if ! tar -tzf $file >/dev/null; then
-    >&2 echo "Bad tar file"
-    exit 1
-  fi
-
   dir_name=$(dirname $file)
   file_name=$(basename $file)
   timestamp="${file_name%%_*}"
 
-  gitlab-rake gitlab:backup:restore DIRECTORY=/tmp/backups BACKUP=$timestamp
+  gitlab-rake gitlab:backup:restore BACKUP=$timestamp
 }
 
 function backup(){
-  echo 0
+  # TODO
+  echo "Not implemented yet!"
 }
 
 
@@ -81,9 +77,8 @@ case $key in
     RESTORE="true"
     shift
     ;;
-    *)    # unknown option
-    POSITIONAL+=("$1") # save it in an array for later
-    shift # past argument
+    *)
+    shift
     ;;
 esac
 done
