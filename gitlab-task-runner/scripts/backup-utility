@@ -1,5 +1,20 @@
 #!/bin/bash
 set -e
+
+
+function usage()
+{
+   cat << HEREDOC
+
+   Usage: backup-utility [--restore] [-f URL]
+
+   optional arguments:
+     -h, --help           show this help message and exit
+     -f, --file  URL      url to a remote backup tar to restore from
+     --restore            when specified utility restores from an existing backup specified using -f
+HEREDOC
+}
+
 # Checks if provided argument is a url for downloading it
 function is_url() {
   regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
@@ -13,7 +28,7 @@ function get_local_file_url(){
 
     mkdir -p /tmp/backups
     output_path=/tmp/backups/0_gitlab_backup.tar
-    # curl --progress-bar -o $output_path $1
+    curl --progress-bar -o $output_path $1
     echo $output_path
   else
     >&2 echo "Invalid Url $1"
@@ -46,5 +61,35 @@ function backup(){
   echo 0
 }
 
-restore
+
+
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    -h)
+    usage
+    shift
+    ;;
+    -f|--file)
+    BACKUP_LOCATION="$2"
+    shift
+    shift
+    ;;
+    --restore)
+    RESTORE="true"
+    shift
+    ;;
+    *)    # unknown option
+    POSITIONAL+=("$1") # save it in an array for later
+    shift # past argument
+    ;;
+esac
+done
+
+if [ "$RESTORE" = "true" ]; then
+  echo $BACKUP_LOCATION;
+  restore
+fi
 
