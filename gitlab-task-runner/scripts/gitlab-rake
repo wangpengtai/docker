@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rails_dir=/home/git/gitlab
+$rails_dir/bin/bundle exec rake -f $rails_dir/Rakefile "$@"
