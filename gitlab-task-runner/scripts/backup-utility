@@ -20,10 +20,9 @@ function usage()
    Usage: backup-utility [--restore] [-f URL]
 
    optional arguments:
-     -h, --help           show this help message and exit
-     -f, --file  URL      url to a remote backup tar to restore from
-     -t, --timestamp      timestamp of backup (on object storage) to restore from
-     --restore            when specified utility restores from an existing backup specified using -f
+     -h, --help                             show this help message and exit
+     --restore [-t TIMESTAMP | -f URL]      when specified utility restores from an existing backup specified
+                                            as a url or a timestamp of an existing backup in object storage
 HEREDOC
 }
 
@@ -81,7 +80,7 @@ do
 key="$1"
 
 case $key in
-    -h)
+    -h|--help)
     usage
     shift
     ;;
