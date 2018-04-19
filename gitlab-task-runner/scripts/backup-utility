@@ -1,6 +1,16 @@
 #!/bin/bash
 set -e
 
+S3_CONFIG_DIR=${S3_CONFIG_DIR-/etc/gitlab}
+
+if [ ! -f $S3_CONFIG_DIR/accesskey ]; then
+  echo "Can not find s3 config file at $S3_CONFIG_DIR/accesskey or $S3_CONFIG_DIR/secretkey"
+fi
+
+export S3_ACCESS_KEY=$(cat $S3_CONFIG_DIR/accesskey)
+export S3_SECRET_KEY=$(cat $S3_CONFIG_DIR/secretkey)
+export BUCKET_NAME=${BUCKET_NAME-gitlab-backups}
+
 rails_dir=/home/git/gitlab
 
 function usage()
@@ -12,6 +22,7 @@ function usage()
    optional arguments:
      -h, --help           show this help message and exit
      -f, --file  URL      url to a remote backup tar to restore from
+     -t, --timestamp      timestamp of backup (on object storage) to restore from
      --restore            when specified utility restores from an existing backup specified using -f
 HEREDOC
 }
@@ -23,27 +34,33 @@ function is_url() {
   [[ $1 =~ $regex ]]
 }
 
-function get_local_file_url(){
+function fetch_remote_backup(){
+  mkdir -p $rails_dir/tmp/backups
+  output_path=$rails_dir/tmp/backups/0_gitlab_backup.tar
+
   if is_url $1; then
     >&2 echo "Downloading from $1";
-
-    mkdir -p $rails_dir/tmp/backups
-    output_path=$rails_dir/tmp/backups/0_gitlab_backup.tar
     curl --progress-bar -o $output_path $1
-    echo $output_path
-  else
-    >&2 echo "Invalid Url $1"
-    exit 1
+  else # It's a timestamp
+    file_name="$1_gitlab_backup.tar"
+    s3-simple get "s3://$BUCKET_NAME/$file_name" $output_path
   fi
+
+  echo $output_path
 }
 
 function restore(){
-  if [ -z "$BACKUP_LOCATION" ]; then
-    echo "You need to set BACKUP_LOCATION variable"
+  if [ -z "$BACKUP_URL" ] && [ -z "$BACKUP_TIMESTAMP" ]; then
+    echo "You need to set BACKUP_URL or BACKUP_TIMESTAMP variable"
     exit 1
   fi
 
-  file=$(get_local_file_url $BACKUP_LOCATION)
+  BACKUP=${BACKUP_URL-}
+  if [ -z "$BACKUP" ]; then
+    BACKUP=$BACKUP_TIMESTAMP
+  fi
+
+  file=$(fetch_remote_backup $BACKUP)
 
   dir_name=$(dirname $file)
   file_name=$(basename $file)
@@ -69,7 +86,12 @@ case $key in
     shift
     ;;
     -f|--file)
-    BACKUP_LOCATION="$2"
+    BACKUP_URL="$2"
+    shift
+    shift
+    ;;
+    -t|--timestamp)
+    BACKUP_TIMESTAMP="$2"
     shift
     shift
     ;;
@@ -84,7 +106,6 @@ esac
 done
 
 if [ "$RESTORE" = "true" ]; then
-  echo $BACKUP_LOCATION;
   restore
 fi
 
