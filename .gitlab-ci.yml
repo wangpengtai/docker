@@ -49,7 +49,7 @@ gitlab-task-runner:
 
 kubectl:
   <<: *job-base
-  stage: target-container
+  stage: base-container
   script:
   - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$(date -u +%D)" | sha1sum))
   - build_if_needed
