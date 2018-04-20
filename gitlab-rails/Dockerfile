@@ -7,6 +7,7 @@ ARG CONFIG=$DATADIR/config/gitlab
 ARG CPU_COUNT=4
 ARG GITLAB_USER=git
 ARG GITLAB_VERSION=v10.2.0-ee
+ARG GITLAB_EDITION=gitlab-ee
 ARG YARN_VERSION=0.20.3
 ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SKIP_STORAGE_VALIDATION=true"
 
@@ -57,10 +58,10 @@ RUN mkdir ${DATADIR} && \
 # Download GitLab
 ARG CACHE_BUSTER=false
 RUN cd /home/${GITLAB_USER} && \
-    sudo -u ${GITLAB_USER} -H curl -o gitlab.tar.bz2 https://gitlab.com/gitlab-org/gitlab-ee/repository/${GITLAB_VERSION}/archive.tar.bz2 && \
+    sudo -u ${GITLAB_USER} -H curl -o gitlab.tar.bz2 https://gitlab.com/gitlab-org/${GITLAB_EDITION}/repository/${GITLAB_VERSION}/archive.tar.bz2 && \
     sudo -u ${GITLAB_USER} -H tar -xjf gitlab.tar.bz2 && \
-    REVISION=$(find -maxdepth 1 -name gitlab-ee-${GITLAB_VERSION}-* -print | awk -F '-' '{print $NF}' | cut -c -8) && \
-    mv gitlab-ee-${GITLAB_VERSION}-* gitlab && \
+    REVISION=$(find -maxdepth 1 -name ${GITLAB_EDITION}-${GITLAB_VERSION}-* -print | awk -F '-' '{print $NF}' | cut -c -8) && \
+    mv ${GITLAB_EDITION}-${GITLAB_VERSION}-* gitlab && \
     echo -n ${REVISION} > gitlab/REVISION && \
     rm gitlab.tar.bz2
 

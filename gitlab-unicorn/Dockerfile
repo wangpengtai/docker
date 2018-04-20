@@ -1,5 +1,6 @@
 ARG TAG=latest
-FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-rails:${TAG}
+ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-rails-ee
+FROM ${FROM_IMAGE}:${TAG}
 
 ARG BUILD_DIR=/tmp/build
 ARG DATADIR=/var/opt/gitlab
