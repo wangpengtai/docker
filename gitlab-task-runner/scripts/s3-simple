@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Forked from https://github.com/paulhammond
+
+set -e
+
+s3simple() {
+  local command="$1"
+  local url="$2"
+  local file="${3:--}"
+
+  # todo: nice error message if unsupported command?
+
+  if [ "${url:0:5}" != "s3://" ]; then
+    >&2 echo "Need an s3 url"
+    exit 1
+  fi
+  local path="${url:4}"
+
+  if [ -z "${S3_ACCESS_KEY-}"  ]; then
+    >&2 echo "Need S3_ACCESS_KEY to be set"
+    exit 1
+  fi
+
+  if [ -z "${S3_SECRET_KEY-}" ]; then
+    >&2  echo "Need S3_SECRET_KEY to be set"
+    exit 1
+  fi
+
+  if [ -z "${S3_ENDPOINT-}" ]; then
+    >&2 echo "Need S3_ENDPOINT to be set!"
+    exit 1
+  fi
+
+  local method md5 args
+  case "$command" in
+  get)
+    method="GET"
+    md5=""
+    args="-o $file"
+    ;;
+  put)
+    method="PUT"
+    if [ ! -f "$file" ]; then
+      >&2 echo "file not found"
+      exit 1
+    fi
+    md5="$(openssl md5 -binary $file | openssl base64)"
+    args="-T $file -H Content-MD5:$md5"
+    ;;
+  *)
+    >&2 echo "Unsupported command"
+    exit 1
+  esac
+
+  local date="$(date -u '+%a, %e %b %Y %H:%M:%S +0000')"
+  local string_to_sign
+  printf -v string_to_sign "%s\n%s\n\n%s\n%s" "$method" "$md5" "$date" "$path"
+  local signature=$(echo -n "$string_to_sign" | openssl sha1 -binary -hmac "${S3_SECRET_KEY}" | openssl base64)
+  local authorization="AWS ${S3_ACCESS_KEY}:${signature}"
+
+  curl $args -s -f -H Date:"${date}" -H Authorization:"${authorization}" $S3_ENDPOINT "${path}"
+}
+
+s3simple "$@"

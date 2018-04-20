@@ -1,0 +1,110 @@
+#!/bin/bash
+set -e
+
+S3_CONFIG_DIR=${S3_CONFIG_DIR-/etc/gitlab}
+
+if [ ! -f $S3_CONFIG_DIR/accesskey ]; then
+  echo "Can not find s3 config file at $S3_CONFIG_DIR/accesskey or $S3_CONFIG_DIR/secretkey"
+fi
+
+export S3_ACCESS_KEY=$(cat $S3_CONFIG_DIR/accesskey)
+export S3_SECRET_KEY=$(cat $S3_CONFIG_DIR/secretkey)
+export BACKUP_BACKUP_NAME=${BACKUP_BACKUP_NAME-gitlab-backups}
+
+rails_dir=/home/git/gitlab
+
+function usage()
+{
+   cat << HEREDOC
+
+   Usage: backup-utility [--restore] [-f URL]
+
+   optional arguments:
+     -h, --help                             show this help message and exit
+     --restore [-t TIMESTAMP | -f URL]      when specified utility restores from an existing backup specified
+                                            as a url or a timestamp of an existing backup in object storage
+HEREDOC
+}
+
+# Checks if provided argument is a url for downloading it
+function is_url() {
+  regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
+
+  [[ $1 =~ $regex ]]
+}
+
+function fetch_remote_backup(){
+  mkdir -p $rails_dir/tmp/backups
+  output_path=$rails_dir/tmp/backups/0_gitlab_backup.tar
+
+  if is_url $1; then
+    >&2 echo "Downloading from $1";
+    curl --progress-bar -o $output_path $1
+  else # It's a timestamp
+    file_name="$1_gitlab_backup.tar"
+    s3-simple get "s3://$BACKUP_BACKUP_NAME/$file_name" $output_path
+  fi
+
+  echo $output_path
+}
+
+function restore(){
+  if [ -z "$BACKUP_URL" ] && [ -z "$BACKUP_TIMESTAMP" ]; then
+    echo "You need to set BACKUP_URL or BACKUP_TIMESTAMP variable"
+    exit 1
+  fi
+
+  BACKUP=${BACKUP_URL-}
+  if [ -z "$BACKUP" ]; then
+    BACKUP=$BACKUP_TIMESTAMP
+  fi
+
+  file=$(fetch_remote_backup $BACKUP)
+
+  dir_name=$(dirname $file)
+  file_name=$(basename $file)
+  timestamp="${file_name%%_*}"
+
+  gitlab-rake gitlab:backup:restore BACKUP=$timestamp
+}
+
+function backup(){
+  # TODO
+  echo "Not implemented yet!"
+}
+
+
+
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    -h|--help)
+    usage
+    shift
+    ;;
+    -f|--file)
+    BACKUP_URL="$2"
+    shift
+    shift
+    ;;
+    -t|--timestamp)
+    BACKUP_TIMESTAMP="$2"
+    shift
+    shift
+    ;;
+    --restore)
+    RESTORE="true"
+    shift
+    ;;
+    *)
+    shift
+    ;;
+esac
+done
+
+if [ "$RESTORE" = "true" ]; then
+  restore
+fi
+
