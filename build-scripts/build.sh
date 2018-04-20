@@ -1,5 +1,5 @@
 #!/bin/bash
-declare -a nightly_builds=( gitlab-rails gitlab-unicorn gitaly gitlab-sidekiq )
+declare -a nightly_builds=( gitlab-rails-ee gitlab-rails-ce gitlab-unicorn-ce gitlab-unicorn-ee gitaly gitlab-sidekiq-ee gitlab-sidekiq-ce )
 
 function _containsElement () {
   local e match="$1"
@@ -33,7 +33,7 @@ function build_if_needed(){
       docker pull $CACHE_IMAGE || true
     fi
 
-    cd $CI_JOB_NAME
+    cd $(get_trimmed_job_name)
 
     docker build -t "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION" "${DOCKER_ARGS[@]}" --cache-from $CACHE_IMAGE .
     # Push new image
@@ -55,7 +55,11 @@ function get_version(){
 }
 
 function get_target_version(){
-  get_version $CI_JOB_NAME
+  get_version $(get_trimmed_job_name)
+}
+
+function get_trimmed_job_name(){
+  echo $CI_JOB_NAME | sed -e "s/-.e$//"
 }
 
 function push_if_master(){

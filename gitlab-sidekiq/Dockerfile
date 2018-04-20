@@ -1,6 +1,7 @@
 ARG TAG=latest
+ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-rails-ee
+FROM ${FROM_IMAGE}:${TAG}
 
-FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-rails:${TAG}
 ARG GITLAB_USER=git
 
 ENV SIDEKIQ_CONCURRENCY=25

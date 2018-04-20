@@ -1,14 +1,14 @@
 version: "3"
 services:
   omnibus:
-    image: gitlab/gitlab-ee:nightly
+    image: gitlab/gitlab-${GITLAB_EDITION}:nightly
     ports:
       - "${NGINX_HOST_PORT}:80"
     volumes:
     - ./dev/omnibus-config/gitlab.rb:/etc/gitlab/gitlab.rb
     - db-upgrade:/tmp/db-upgrade
   migrations:
-    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-rails:latest
+    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-rails-${GITLAB_EDITION}:latest
     environment:
       - "CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab/config/templates"
       - "CONFIG_DIRECTORY=/var/opt/gitlab/config/gitlab"
@@ -20,7 +20,7 @@ services:
       - ./dev/shell-secret:/var/opt/gitlab/config/secrets
       - db-upgrade:/var/opt/gitlab/.upgrade-status
   unicorn:
-    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-unicorn:latest
+    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-unicorn-${GITLAB_EDITION}:latest
     environment:
       - "GITLAB_HOST=localhost"
       - "GITLAB_PORT=${NGINX_HOST_PORT}"
@@ -38,7 +38,7 @@ services:
       - ./dev/unicorn-config:/var/opt/gitlab/config/templates
       - ./dev/shell-secret:/var/opt/gitlab/config/secrets
   sidekiq:
-    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq:latest
+    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-${GITLAB_EDITION}:latest
     command: ["/scripts/wait-for-deps", "/scripts/process-wrapper"]
     depends_on:
       - omnibus
