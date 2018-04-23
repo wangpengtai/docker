@@ -76,7 +76,7 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
     sudo -u ${GITLAB_USER} -H cp config/initializers/rack_attack.rb.example ${CONFIG}/rack_attack.rb && \
     sudo -u ${GITLAB_USER} -H ln -s ${CONFIG}/* config && \
     sudo -u ${GITLAB_USER} -H mv config/rack_attack.rb config/initializers && \
-    sed --in-place "s/.*REVISION.*/REVISION = '$(cat REVISION)'/" config/initializers/2_app.rb && \
+    sed --in-place "s/.*REVISION.*/REVISION = '$(cat REVISION)'/" lib/gitlab.rb && \
     sed --in-place "/host: localhost/d" ${CONFIG}/gitlab.yml && \
     sed --in-place "/port: 80/d" ${CONFIG}/gitlab.yml && \
     sed --in-place "s/# user:.*/user: ${GITLAB_USER}/" ${CONFIG}/gitlab.yml && \
