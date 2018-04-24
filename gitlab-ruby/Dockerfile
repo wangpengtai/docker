@@ -19,6 +19,8 @@ RUN apk add --no-cache \
         procps \
         yaml-dev \
         zlib-dev \
+        ncurses \
+        libedit \
         curl \
         git \
         bash
