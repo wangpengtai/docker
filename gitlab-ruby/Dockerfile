@@ -36,6 +36,7 @@ RUN apk add --no-cache --virtual .build-deps \
         libffi-dev \
         libxml2-dev \
         libxslt-dev \
+        libedit-dev \
         linux-headers \
         make \
         ncurses-dev \
@@ -55,7 +56,7 @@ RUN cd ${BUILD_DIR} && \
     tar -xjf ruby.tar.bz2 && \
     rm ruby.tar.bz2 && \
     cd ruby-${RUBY_MINOR_VERSION} && \
-    ac_cv_func_isnan=yes ac_cv_func_isinf=yes ./configure --prefix=/usr --with-out-ext=dbm,readline  --enable-shared --disable-install-doc --without-gmp --without-gdbm --without-tk --disable-dtrace && \
+    ac_cv_func_isnan=yes ac_cv_func_isinf=yes ./configure --prefix=/usr --with-libedit --with-out-ext=dbm --enable-shared --disable-install-doc --without-gmp --without-gdbm --without-tk --disable-dtrace && \
     make -j "$(nproc)" && \
     make -j "$(nproc)" install && \
     cd && \
