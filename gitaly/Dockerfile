@@ -5,7 +5,7 @@ FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:${SHELL_CONTAINER} as
 FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${TAG}
 
 ARG GITLAB_USER=git
-ARG GITALY_VERSION=v0.52.1
+ARG GITALY_VERSION=v0.96.1
 ARG BUILD_DIR=/tmp/build
 
 # install runtime deps
