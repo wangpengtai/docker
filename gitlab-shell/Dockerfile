@@ -1,5 +1,7 @@
 ARG TAG=latest
-FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${TAG}
+ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby
+
+FROM ${FROM_IMAGE}:${TAG}
 
 ARG GITLAB_SHELL_VERSION=master
 ARG GITLAB_USER=git

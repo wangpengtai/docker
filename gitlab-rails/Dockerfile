@@ -1,5 +1,7 @@
 ARG TAG=latest
-FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${TAG} as builder
+ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby
+
+FROM ${FROM_IMAGE}:${TAG} as builder
 
 ARG BUILD_DIR=/tmp/build
 ARG DATADIR=/var/opt/gitlab

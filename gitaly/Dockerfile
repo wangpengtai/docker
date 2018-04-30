@@ -1,8 +1,10 @@
 ARG TAG=latest
 ARG SHELL_CONTAINER=latest
-FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:${SHELL_CONTAINER} as shell
+ARG FROM_SHELL_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-shell
+ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby
 
-FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${TAG}
+FROM ${FROM_SHELL_IMAGE}:${SHELL_CONTAINER} as shell
+FROM ${FROM_IMAGE}:${TAG}
 
 ARG GITLAB_USER=git
 ARG GITALY_VERSION=v0.52.1
