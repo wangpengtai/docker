@@ -59,7 +59,7 @@ s3simple() {
   local signature=$(echo -n "$string_to_sign" | openssl sha1 -binary -hmac "${S3_SECRET_KEY}" | openssl base64)
   local authorization="AWS ${S3_ACCESS_KEY}:${signature}"
 
-  curl $args -s -f -H Date:"${date}" -H Authorization:"${authorization}" $S3_ENDPOINT "${path}"
+  curl $args -s -f -H Date:"${date}" -H Authorization:"${authorization}" "${S3_ENDPOINT}${path}"
 }
 
 s3simple "$@"
