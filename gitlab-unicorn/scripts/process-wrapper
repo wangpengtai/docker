@@ -3,6 +3,7 @@
 set -e
 
 echo "Starting workhorse"
+touch /var/log/gitlab/workhorse.log
 /scripts/start-workhorse &
 
 echo "Starting unicorn"
