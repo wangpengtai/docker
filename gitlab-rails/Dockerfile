@@ -22,7 +22,7 @@ RUN apk add --no-cache \
         libre2=2017.05.01-r0 \
         tzdata=2017a-r0 \
         libc6-compat=1.1.16-r14 \
-        postgresql-client=9.6.8-r0 \
+        postgresql-client=9.6.9-r0 \
         sudo=1.8.19_p2-r0 \
         busybox=1.26.2-r9 \
         cmake=3.8.1-r0 \
@@ -34,7 +34,7 @@ RUN apk add --no-cache \
         linux-headers=4.4.6-r2 \
         make=4.2.1-r0 \
         musl-dev=1.1.16-r14 \
-        postgresql-dev=9.6.8-r0 \
+        postgresql-dev=9.6.9-r0 \
         zlib-dev=1.2.11-r0 \
         bash=4.3.48-r1 && \
         mkdir -p ${BUILD_DIR}
@@ -125,7 +125,7 @@ RUN apk add --no-cache \
         libre2=2017.05.01-r0 \
         tzdata=2017a-r0 \
         libc6-compat=1.1.16-r14 \
-        postgresql-client=9.6.8-r0 \
+        postgresql-client=9.6.9-r0 \
         sudo=1.8.19_p2-r0 \
         busybox=1.26.2-r9
 
