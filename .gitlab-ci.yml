@@ -39,6 +39,9 @@ gitlab-rails-ee:
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
   - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_EE_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)" --build-arg "TAG=$BASE_VERSION"
   - push_if_master
+  only:
+    variables:
+      - $ee
 
 gitlab-rails-ce:
   <<: *job-base
@@ -48,6 +51,9 @@ gitlab-rails-ce:
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
   - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce" --build-arg "GITLAB_VERSION=${GITLAB_CE_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)" --build-arg "TAG=$BASE_VERSION"
   - push_if_master
+  except:
+    variables:
+      - $ee
 
 gitlab-task-runner-ee:
   <<: *job-base
@@ -61,6 +67,9 @@ gitlab-task-runner-ee:
   - push_if_master
   dependencies:
     - gitlab-rails-ee
+  only:
+    variables:
+      - $ee
 
 gitlab-task-runner-ce:
   <<: *job-base
@@ -74,6 +83,9 @@ gitlab-task-runner-ce:
   - push_if_master
   dependencies:
     - gitlab-rails-ce
+  except:
+    variables:
+      - $ee
 
 kubectl:
   <<: *job-base
@@ -95,6 +107,9 @@ gitlab-unicorn-ee:
   - push_if_master
   dependencies:
     - gitlab-rails-ee
+  only:
+    variables:
+      - $ee
 
 gitlab-unicorn-ce:
   <<: *job-base
@@ -108,6 +123,9 @@ gitlab-unicorn-ce:
   - push_if_master
   dependencies:
     - gitlab-rails-ce
+  except:
+    variables:
+      - $ee
 
 gitlab-sidekiq-ee:
   <<: *job-base
@@ -121,6 +139,9 @@ gitlab-sidekiq-ee:
   - push_if_master
   dependencies:
     - gitlab-rails-ee
+  only:
+    variables:
+      - $ee
 
 gitlab-sidekiq-ce:
   <<: *job-base
@@ -134,6 +155,9 @@ gitlab-sidekiq-ce:
   - push_if_master
   dependencies:
     - gitlab-rails-ce
+  except:
+    variables:
+      - $ee
 
 gitlab-shell:
   <<: *job-base
