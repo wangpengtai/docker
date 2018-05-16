@@ -178,7 +178,7 @@ gitaly:
   - export shell_container=($(echo -n "$BASE_VERSION$shell_version$GITLAB_SHELL_VERSION$(date -u +%D)" | sha1sum))
   - export CONTAINER_VERSION=($(echo -n "$shell_container$GITALY_VERSION$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-shell:$shell_container"
-  - build_if_needed --build-arg "GITALY_VERSION=${GITALY_VERSION}" --build-arg "TAG=$BASE_VERSION" --build-arg "shell_container=$shell_container" --build-arg "CACHE_BUSTER=$GITALY_VERSION$(date -uI)"
+  - build_if_needed --build-arg "GITALY_VERSION=${GITALY_VERSION}" --build-arg "TAG=$BASE_VERSION" --build-arg "SHELL_CONTAINER=$shell_container" --build-arg "CACHE_BUSTER=$GITALY_VERSION$(date -uI)"
   - push_if_master
   dependencies:
     - gitlab-ruby
