@@ -126,11 +126,15 @@ ARG GITLAB_USER=git
 
 RUN apk add --no-cache \
         openssl=1.0.2o-r0 \
+        g++=6.3.0-r4 \
+        gcc=6.3.0-r4 \
         icu-libs=58.2-r2 \
         libre2=2017.05.01-r0 \
         tzdata=2017a-r0 \
         libc6-compat=1.1.16-r14 \
         sudo=1.8.19_p2-r0 \
+        cmake=3.8.1-r0 \
+        make=4.2.1-r0 \
         busybox=1.26.2-r9
 
 COPY scripts/postgresql-client.sh .
