@@ -35,9 +35,9 @@ gitlab-rails-ee:
   <<: *job-base
   stage: common-container
   script:
-  - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$(date -u +%D)" | sha1sum))
+  - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
-  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_EE_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)" --build-arg "TAG=$BASE_VERSION"
+  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_EE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_EE_VERSION$(date -uI)" --build-arg "TAG=$BASE_VERSION"
   - push_if_master
   except:
     variables:
@@ -47,9 +47,9 @@ gitlab-rails-ce:
   <<: *job-base
   stage: common-container
   script:
-  - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$(date -u +%D)" | sha1sum))
+  - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
-  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce" --build-arg "GITLAB_VERSION=${GITLAB_CE_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)" --build-arg "TAG=$BASE_VERSION"
+  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce" --build-arg "GITLAB_VERSION=${GITLAB_CE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_CE_VERSION$(date -uI)" --build-arg "TAG=$BASE_VERSION"
   - push_if_master
   except:
     variables:
@@ -60,7 +60,7 @@ gitlab-task-runner-ee:
   stage: target-container
   script:
   - rails_version=$(get_version gitlab-rails)
-  - rails_container=($(echo -n "$BASE_VERSION$rails_version$(date -u +%D)" | sha1sum))
+  - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee:$rails_container"
   - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ee" --build-arg "TAG=$rails_container"
@@ -76,7 +76,7 @@ gitlab-task-runner-ce:
   stage: target-container
   script:
   - rails_version=$(get_version gitlab-rails)
-  - rails_container=($(echo -n "$BASE_VERSION$rails_version$(date -u +%D)" | sha1sum))
+  - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ce:$rails_container"
   - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce" --build-arg "TAG=$rails_container"
@@ -100,7 +100,7 @@ gitlab-unicorn-ee:
   stage: target-container
   script:
   - rails_version=$(get_version gitlab-rails)
-  - rails_container=($(echo -n "$BASE_VERSION$rails_version$(date -u +%D)" | sha1sum))
+  - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee:$rails_container"
   - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ee" --build-arg "TAG=$rails_container"
@@ -116,7 +116,7 @@ gitlab-unicorn-ce:
   stage: target-container
   script:
   - rails_version=$(get_version gitlab-rails)
-  - rails_container=($(echo -n "$BASE_VERSION$rails_version$(date -u +%D)" | sha1sum))
+  - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ce:$rails_container"
   - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce" --build-arg "TAG=$rails_container"
@@ -132,7 +132,7 @@ gitlab-sidekiq-ee:
   stage: target-container
   script:
   - rails_version=$(get_version gitlab-rails)
-  - rails_container=($(echo -n "$BASE_VERSION$rails_version$(date -u +%D)" | sha1sum))
+  - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee:$rails_container"
   - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ee" --build-arg "TAG=$rails_container"
@@ -148,7 +148,7 @@ gitlab-sidekiq-ce:
   stage: target-container
   script:
   - rails_version=$(get_version gitlab-rails)
-  - rails_container=($(echo -n "$BASE_VERSION$rails_version$(date -u +%D)" | sha1sum))
+  - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ce:$rails_container"
   - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce" --build-arg "TAG=$rails_container"
@@ -163,9 +163,9 @@ gitlab-shell:
   <<: *job-base
   stage: common-container
   script:
-  - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$(date -u +%D)" | sha1sum))
+  - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_SHELL_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$BASE_VERSION"
-  - build_if_needed --build-arg "TAG=$BASE_VERSION" --build-arg "GITLAB_SHELL_VERSION=${GITLAB_SHELL_VERSION}" --build-arg "CACHE_BUSTER=$(date -uI)"
+  - build_if_needed --build-arg "TAG=$BASE_VERSION" --build-arg "GITLAB_SHELL_VERSION=${GITLAB_SHELL_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_SHELL_VERSION$(date -uI)"
   - push_if_master
   dependencies:
     - gitlab-ruby
@@ -175,10 +175,10 @@ gitaly:
   stage: target-container
   script:
   - shell_version=$(get_version gitlab-shell)
-  - export shell_container=($(echo -n "$BASE_VERSION$shell_version$(date -u +%D)" | sha1sum))
-  - export CONTAINER_VERSION=($(echo -n "$shell_container$TARGET_VERSION" | sha1sum))
+  - export shell_container=($(echo -n "$BASE_VERSION$shell_version$GITLAB_SHELL_VERSION$(date -u +%D)" | sha1sum))
+  - export CONTAINER_VERSION=($(echo -n "$shell_container$GITALY_VERSION$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-shell:$shell_container"
-  - build_if_needed --build-arg "GITALY_VERSION=${GITALY_VERSION}" --build-arg "TAG=$BASE_VERSION" --build-arg "shell_container=$shell_container" --build-arg "CACHE_BUSTER=$(date -uI)"
+  - build_if_needed --build-arg "GITALY_VERSION=${GITALY_VERSION}" --build-arg "TAG=$BASE_VERSION" --build-arg "shell_container=$shell_container" --build-arg "CACHE_BUSTER=$GITALY_VERSION$(date -uI)"
   - push_if_master
   dependencies:
     - gitlab-ruby
