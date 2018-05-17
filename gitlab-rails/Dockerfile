@@ -18,7 +18,7 @@ RUN apk update && apk upgrade
 
 # install build deps
 RUN apk add --no-cache \
-        openssl=1.0.2o-r0 \
+        libressl=2.5.5-r0 \
         icu-libs=58.2-r2 \
         libre2=2017.05.01-r0 \
         tzdata=2017a-r0 \
@@ -125,20 +125,17 @@ ARG CONFIG=$DATADIR/config/gitlab
 ARG GITLAB_USER=git
 
 RUN apk add --no-cache \
-        openssl=1.0.2o-r0 \
-        g++=6.3.0-r4 \
-        gcc=6.3.0-r4 \
         icu-libs=58.2-r2 \
         libre2=2017.05.01-r0 \
         tzdata=2017a-r0 \
         libc6-compat=1.1.16-r14 \
         sudo=1.8.19_p2-r0 \
-        cmake=3.8.1-r0 \
-        make=4.2.1-r0 \
-        busybox=1.26.2-r9
-
-COPY scripts/postgresql-client.sh .
-RUN ./postgresql-client.sh
+        busybox=1.26.2-r9 \
+        libedit-dev=20170329.3.1-r2 \
+        zlib-dev=1.2.11-r0 \
+        libxml2-dev=2.9.5-r0 \
+        util-linux-dev=2.28.2-r2 \
+        openldap-dev=2.4.44-r5
 
 RUN adduser -D -g 'GitLab' ${GITLAB_USER}
 # adjust git settings
@@ -146,6 +143,10 @@ RUN adduser -D -g 'GitLab' ${GITLAB_USER}
 RUN sudo -u ${GITLAB_USER} -H git config --global gc.auto 0 && \
     sudo -u ${GITLAB_USER} -H git config --global core.autocrlf input && \
     sudo -u ${GITLAB_USER} -H git config --global repack.writeBitmaps true
+
+COPY --from=builder /usr/bin/pg_* /usr/bin/
+COPY --from=builder /usr/bin/psql /usr/bin/
+COPY --from=builder /usr/lib/libpq.so* /usr/lib/
 
 COPY --chown=git --from=builder /home/git/gitlab /home/git/gitlab
 COPY --chown=git --from=builder /var/opt/gitlab /var/opt/gitlab
