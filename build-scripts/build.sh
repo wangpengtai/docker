@@ -40,14 +40,17 @@ function build_if_needed(){
     docker push "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION"
 
     # Create a tag based on Branch/Tag name for easy reference
-    docker tag "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CI_COMMIT_REF_SLUG"
-    docker push "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CI_COMMIT_REF_SLUG"
+    tag_and_push $CI_COMMIT_REF_SLUG
   fi
 }
 
+function tag_and_push(){
+  docker tag "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$1"
+  docker push "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$1"
+}
+
 function push_latest(){
-  docker tag "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:latest"
-  docker push "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:latest"
+  tag_and_push "latest"
 }
 
 function get_version(){
@@ -64,6 +67,10 @@ function get_trimmed_job_name(){
 
 function push_if_master(){
   if is_master; then
-    push_latest
+    if [ -z "$1"] || [ "$1" == "master" ]; then
+      push_latest
+    else
+      tag_and_push $1
+    fi
   fi
 }
