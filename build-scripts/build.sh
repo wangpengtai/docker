@@ -67,7 +67,7 @@ function get_trimmed_job_name(){
 
 function push_if_master(){
   if is_master; then
-    if [ -z "$1"] || [ "$1" == "master" ]; then
+    if [ -z "$1" ] || [ "$1" == "master" ]; then
       push_latest
     else
       tag_and_push $1
