@@ -23,6 +23,7 @@ RUN apk add --no-cache \
         libedit \
         curl \
         git \
+        gnupg \
         bash
 
 # install build deps
