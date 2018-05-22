@@ -71,7 +71,7 @@ gitlab-task-runner-ce:
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ce:$rails_container"
   - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce" --build-arg "TAG=$rails_container"
-  - push_if_master
+  - push_latest
   dependencies:
     - gitlab-rails-ce
 
