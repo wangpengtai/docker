@@ -15,7 +15,7 @@ RUN apk add --no-cache \
         bzip2 \
         ca-certificates \
         libffi-dev \
-        libressl-dev \
+        libressl-dev=2.5.5-r1 \
         procps \
         yaml-dev \
         zlib-dev \
