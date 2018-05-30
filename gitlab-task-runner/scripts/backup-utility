@@ -92,7 +92,9 @@ function restore(){
   gitlab-rake gitlab:backup:artifacts:restore
   gitlab-rake gitlab:backup:pages:restore
   gitlab-rake gitlab:backup:lfs:restore
-  registry-restore $backup_path/registry.tar.gz
+  if [ -f $backup_path/registry.tar.gz ]; then
+    registry-restore $backup_path/registry.tar.gz
+  fi
   gitlab-rake gitlab:shell:setup
   gitlab-rake cache:clear
 }
