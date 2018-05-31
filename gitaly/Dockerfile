@@ -9,6 +9,7 @@ FROM ${FROM_IMAGE}:${TAG}
 ARG GITLAB_USER=git
 ARG GITALY_VERSION=v0.96.1
 ARG BUILD_DIR=/tmp/build
+ARG GO_VERSION=1.9.2
 
 # install runtime deps
 RUN apk add --no-cache \
@@ -16,7 +17,13 @@ RUN apk add --no-cache \
 
 # install build deps
 RUN apk add --no-cache --virtual .build-deps \
-    cmake g++ gcc linux-headers make go sudo icu-dev
+    cmake g++ gcc linux-headers make sudo icu-dev
+
+# install go
+RUN curl -fsSL "https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz" \
+	| tar -xzC /usr/local \
+  && ln -sf /usr/local/go/bin/go /usr/local/go/bin/gofmt /usr/local/go/bin/godoc /usr/local/bin/ \
+  && mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
 
 # create gitlab user
 # openssh daemon does not allow locked user to login, change ! to *
