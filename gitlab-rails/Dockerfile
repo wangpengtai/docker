@@ -18,13 +18,13 @@ RUN apk update && apk upgrade
 
 # install build deps
 RUN apk add --no-cache \
-        libressl=2.5.5-r1 \
+        libressl=2.5.5-r2 \
         icu-libs=58.2-r2 \
         libre2=2017.05.01-r0 \
         tzdata=2017a-r0 \
         libc6-compat=1.1.16-r14 \
         sudo=1.8.19_p2-r0 \
-        busybox=1.26.2-r10 \
+        busybox=1.26.2-r11 \
         cmake=3.8.1-r0 \
         g++=6.3.0-r4 \
         gcc=6.3.0-r4 \
@@ -129,7 +129,7 @@ RUN apk add --no-cache \
         tzdata=2017a-r0 \
         libc6-compat=1.1.16-r14 \
         sudo=1.8.19_p2-r0 \
-        busybox=1.26.2-r10 \
+        busybox=1.26.2-r11 \
         libedit-dev=20170329.3.1-r2 \
         zlib-dev=1.2.11-r0 \
         libxml2-dev=2.9.5-r0 \
