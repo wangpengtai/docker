@@ -69,6 +69,7 @@ RUN cd /home/${GITLAB_USER} && \
 RUN cd /home/${GITLAB_USER}/gitlab && \
     sudo -u ${GITLAB_USER} -H mkdir ${CONFIG} && \
     sudo -u ${GITLAB_USER} -H mkdir ${DATADIR}/.upgrade-status && \
+    sudo -u ${GITLAB_USER} -H echo 'gitlab-cloud-native-image' > INSTALLATION_TYPE && \
     sudo -u ${GITLAB_USER} -H cp config/gitlab.yml.example ${CONFIG}/gitlab.yml && \
     sudo -u ${GITLAB_USER} -H cp config/resque.yml.example ${CONFIG}/resque.yml && \
     sudo -u ${GITLAB_USER} -H cp config/secrets.yml.example ${CONFIG}/secrets.yml && \
