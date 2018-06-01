@@ -61,7 +61,7 @@ def restore_from_backup(registry_tar_path)
 end
 
 def run_cmd(cmd)
-  _, stdout, _, wait_thr = Open3.popen3(*cmd)
+  _, stdout, wait_thr = Open3.popen2e(*cmd)
   return stdout.read, wait_thr.value.exitstatus
 end
 

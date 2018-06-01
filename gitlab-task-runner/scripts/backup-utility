@@ -95,7 +95,6 @@ function restore(){
   if [ -f $backup_path/registry.tar.gz ]; then
     registry-restore $backup_path/registry.tar.gz
   fi
-  gitlab-rake gitlab:shell:setup
   gitlab-rake cache:clear
 }
 
