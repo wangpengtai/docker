@@ -64,7 +64,7 @@ RUN mkdir ${DATADIR} && \
 # Download GitLab
 ARG CACHE_BUSTER=false
 RUN cd /home/${GITLAB_USER} && \
-    sudo -u ${GITLAB_USER} -H curl -o gitlab.tar.bz2 https://gitlab.com/gitlab-org/${GITLAB_EDITION}/repository/${GITLAB_VERSION}/archive.tar.bz2 && \
+    sudo -u ${GITLAB_USER} -H curl -o gitlab.tar.bz2 https://gitlab.com/gitlab-org/gitlab-ce/-/archive/use-restore-custom-hooks-gitaly/gitlab-ce-use-restore-custom-hooks-gitaly.tar.bz2 && \
     sudo -u ${GITLAB_USER} -H tar -xjf gitlab.tar.bz2 && \
     REVISION=$(find -maxdepth 1 -name ${GITLAB_EDITION}-${GITLAB_VERSION}-* -print | awk -F '-' '{print $NF}' | cut -c -8) && \
     mv ${GITLAB_EDITION}-${GITLAB_VERSION}-* gitlab && \

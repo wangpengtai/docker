@@ -53,7 +53,7 @@ s3simple() {
     exit 1
   esac
 
-  local date="$(date -u '+%a, %e %b %Y %H:%M:%S +0000')"
+  local date=$(date -u +"%Y%m%dT%H%M%SZ")
   local string_to_sign
   printf -v string_to_sign "%s\n%s\n\n%s\n%s" "$method" "$md5" "$date" "$path"
   local signature=$(echo -n "$string_to_sign" | openssl sha1 -binary -hmac "${S3_SECRET_KEY}" | openssl base64)
