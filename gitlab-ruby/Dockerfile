@@ -1,10 +1,10 @@
 FROM alpine:3.6
 
-ARG BUILD_DIR=/tmp/build
 ARG RUBY_MAJOR_VERSION=2.3
 ARG RUBY_MINOR_VERSION=2.3.5
 ARG RUBYGEMS_VERSION=2.6.13
 ARG BUNDLER_VERSION=1.15.4
+ARG BUILD_DIR=/tmp/build
 
 # Alpine ships C.UTF-8 by default, but doesn't set the ENV.
 # ref: https://bugs.alpinelinux.org/issues/7374
