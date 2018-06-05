@@ -10,50 +10,55 @@ ARG CPU_COUNT=4
 ARG GITLAB_USER=git
 ARG GITLAB_VERSION=v10.7.0-ee
 ARG GITLAB_EDITION=gitlab-ee
-ARG YARN_VERSION=0.20.3
 ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SKIP_STORAGE_VALIDATION=true"
+ARG NODE_VERSION=8.9.4
+ARG YARN_VERSION=0.20.3
+ARG GIT_VERSION=2.17.1
 
-# We need the latest and greatest at lesat for yarn
-RUN apk update && apk upgrade
+# install runtime deps
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=866729
+RUN mkdir -p /usr/share/man/man7 \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata postgresql-client-9.6=9.6.7-0+deb9u1 git
 
-# install build deps
-RUN apk add --no-cache \
-        libressl=2.5.5-r2 \
-        icu-libs=58.2-r2 \
-        libre2=2017.05.01-r0 \
-        tzdata=2017a-r0 \
-        libc6-compat=1.1.16-r14 \
-        sudo=1.8.19_p2-r0 \
-        busybox=1.26.2-r11 \
-        cmake=3.8.1-r0 \
-        g++=6.3.0-r4 \
-        gcc=6.3.0-r4 \
-        icu-dev=58.2-r2 \
-        libffi-dev=3.2.1-r3 \
-        libre2-dev=2017.05.01-r0 \
-        linux-headers=4.4.6-r2 \
-        make=4.2.1-r0 \
-        musl-dev=1.1.16-r14 \
-        zlib-dev=1.2.11-r0 \
-        bash=4.3.48-r1 && \
-        mkdir -p ${BUILD_DIR}
+RUN buildDeps=' \
+    make \
+    cmake \
+    gcc \
+    g++ \
+    libicu-dev \
+    libffi-dev \
+    libre2-dev \
+    musl-dev \
+    pkg-config \
+    libkrb5-3 \
+    libpq-dev \
+    sudo' \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $buildDeps \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p ${BUILD_DIR}
 
-COPY scripts/postgresql-client.sh .
-RUN ./postgresql-client.sh
+#RUN cd ${BUILD_DIR} \
+#    && curl -so git.tar.gz "https://mirrors.edge.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz" \
+#    && tar -xf git.tar.gz \
+#    && cd ${BUILD_DIR}/git-${GIT_VERSION} \
+#    && ./configure \
+#    && make all \
+#    && make install \
+#    && cd .. \
+#    && rm -rf git.tar.gz git-${GIT_VERSION}
 
-## Install postgresql dependencies
+RUN curl -fsSL "https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz" \
+  | tar --strip-components 1 -xzC /usr/local/
 
-# Copy NodeJS
-COPY --from=node:8.9.4-alpine /usr/local/bin/node /usr/local/bin/node
-COPY --from=node:8.9.4-alpine /usr/local/lib/node_modules /usr/local/lib/node_modules
-COPY --from=node:8.9.4-alpine /usr/local/include/node /usr/local/include/node
+RUN mkdir /usr/local/yarn \
+  && curl -fsSL "https://yarnpkg.com/downloads/${YARN_VERSION}/yarn-v${YARN_VERSION}.tar.gz" \
+  | tar -xzC /usr/local/yarn --strip 1 \
+  && ln -sf /usr/local/yarn/bin/yarn /usr/local/bin/
 
 # create gitlab user
-RUN adduser -D -g 'GitLab' ${GITLAB_USER}
-
-RUN sudo -u $GITLAB_USER -H touch /home/${GITLAB_USER}/.bashrc && \
-    sudo -u $GITLAB_USER -H /usr/bin/curl -so- -L https://yarnpkg.com/install.sh | sudo -u ${GITLAB_USER} -H /bin/bash -s -- --version ${YARN_VERSION} && \
-    /bin/ln -s /home/${GITLAB_USER}/.yarn/bin/yarn /usr/bin/yarn
+RUN adduser --disabled-password --gecos 'GitLab' ${GITLAB_USER}
 
 # $DATADIR is the main mountpoint for gitlab data volume
 RUN mkdir ${DATADIR} && \
@@ -91,11 +96,6 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
 RUN cd /home/${GITLAB_USER}/gitlab && \
     sudo -u git -H bundle install --deployment --without development test mysql aws kerberos --jobs 4 --retry 5
 
-# Some Gems are skipping extension compilation on alpine for some reason, Force them to compile
-RUN cd /home/${GITLAB_USER}/gitlab && \
-    sudo -u ${GITLAB_USER} -H bundle exec gem uninstall --force google-protobuf grpc && \
-    sudo -u ${GITLAB_USER} -H BUNDLE_FORCE_RUBY_PLATFORM=true bundle install
-
 # Install node dependencies
 RUN cd /home/${GITLAB_USER}/gitlab && \
     sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV yarn install --production --pure-lockfile
@@ -123,29 +123,33 @@ ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
 ARG GITLAB_USER=git
 
-RUN apk add --no-cache \
-        icu-libs=58.2-r2 \
-        libre2=2017.05.01-r0 \
-        tzdata=2017a-r0 \
-        libc6-compat=1.1.16-r14 \
-        sudo=1.8.19_p2-r0 \
-        busybox=1.26.2-r11 \
-        libedit-dev=20170329.3.1-r2 \
-        zlib-dev=1.2.11-r0 \
-        libxml2-dev=2.9.5-r0 \
-        util-linux-dev=2.28.2-r2 \
-        openldap-dev=2.4.44-r5
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=866729
+RUN mkdir -p /usr/share/man/man7 \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata postgresql-client-9.6=9.6.7-0+deb9u1
 
-RUN adduser -D -g 'GitLab' ${GITLAB_USER}
+RUN buildDeps=' \
+    libicu-dev \
+    libffi-dev \
+    libre2-dev \
+    libedit-dev \
+    libxml2-dev \
+    sudo \
+    git' \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends $buildDeps \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN adduser --disabled-password --gecos 'GitLab' ${GITLAB_USER}
+
 # adjust git settings
-
 RUN sudo -u ${GITLAB_USER} -H git config --global gc.auto 0 && \
     sudo -u ${GITLAB_USER} -H git config --global core.autocrlf input && \
     sudo -u ${GITLAB_USER} -H git config --global repack.writeBitmaps true
 
 COPY --from=builder /usr/bin/pg_* /usr/bin/
 COPY --from=builder /usr/bin/psql /usr/bin/
-COPY --from=builder /usr/lib/libpq.so* /usr/lib/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libpq.so* /usr/lib/x86_64-linux-gnu/
 
 COPY --chown=git --from=builder /home/git/gitlab /home/git/gitlab
 COPY --chown=git --from=builder /var/opt/gitlab /var/opt/gitlab
