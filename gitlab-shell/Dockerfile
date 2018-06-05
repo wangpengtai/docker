@@ -11,15 +11,15 @@ ARG GO_VERSION=1.9.6
 # install runtime deps
 RUN apt-get update \
   && apt-get install -y --no-install-recommends openssh-server \
-  && rm -rf /var/lib/apt/lists/* \
-  && mkdir -p ${BUILD_DIR}
+  && rm -rf /var/lib/apt/lists/*
 
 # install build deps
 RUN buildDeps=' \
     sudo' \
     && apt-get update \
     && apt-get install -y --no-install-recommends $buildDeps \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p ${BUILD_DIR}
 
 RUN cd ${BUILD_DIR} \
   && curl -so golang.tar.xz "https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz" \
