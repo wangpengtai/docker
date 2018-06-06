@@ -7,7 +7,8 @@ RUN apk update && apk add postgresql openssl tar py-pip && pip install s3cmd==2.
 ARG GITLAB_USER=git
 
 COPY scripts/ /scripts
-RUN cp /scripts/gitlab-rake /scripts/registry-restore /scripts/backup-utility /usr/local/bin
+
+RUN cp /scripts/gitlab-rake /scripts/registry-restore /scripts/uploads-restore /scripts/backup-utility /usr/local/bin && cp /scripts/object_storage_backup.rb /usr/lib/ruby/vendor_ruby
 
 USER $GITLAB_USER:$GITLAB_USER
 
