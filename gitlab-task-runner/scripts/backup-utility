@@ -88,7 +88,6 @@ function restore(){
   gitlab-rake gitlab:backup:db:restore
   gitlab-rake gitlab:backup:repo:restore
   gitlab-rake gitlab:backup:builds:restore
-  gitlab-rake gitlab:backup:artifacts:restore
   gitlab-rake gitlab:backup:pages:restore
   gitlab-rake gitlab:backup:lfs:restore
 
@@ -98,6 +97,10 @@ function restore(){
 
   if [ -f $backup_path/uploads.tar.gz ]; then
     uploads-restore $backup_path/uploads.tar.gz
+  fi
+
+  if [ -f $backup_path/artifacts.tar.gz ]; then
+    artifacts-restore $backup_path/artifacts.tar.gz
   fi
 
   gitlab-rake cache:clear

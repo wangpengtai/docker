@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+require 'object_storage_backup'
+
+abort("artifacts_tar_path needs to be passed as an argument to the script") unless ARGV.length
+
+artifacts_bucket_name = ENV['ARTIFACTS_BUCKET_NAME'] || 'gitlab-artifacts'
+ObjectStorageBackup.new('artifacts', ARGV[0], artifacts_bucket_name).restore
