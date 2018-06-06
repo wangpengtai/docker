@@ -1,8 +1,0 @@
-#!/usr/bin/env ruby
-
-require 'object_storage_backup'
-
-abort("uploads_tar_path needs to be passed as an argument to the script") unless ARGV.length
-
-uploads_bucket_name = ENV['UPLOADS_BUCKET_NAME'] || 'gitlab-uploads'
-ObjectStorageBackup.new('uploads', ARGV[0], uploads_bucket_name).restore

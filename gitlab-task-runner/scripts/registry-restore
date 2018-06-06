@@ -1,8 +1,0 @@
-#!/usr/bin/env ruby
-
-require 'object_storage_backup'
-
-abort("registry_tar_path needs to be passed as an argument to the script") unless ARGV.length
-
-registry_bucket_name = ENV['REGISTRY_BUCKET_NAME'] || 'registry'
-ObjectStorageBackup.new('registry', ARGV[0], registry_bucket_name).restore
