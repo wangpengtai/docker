@@ -8,8 +8,8 @@ ARG GITLAB_USER=git
 
 COPY scripts/ /scripts
 
-RUN cp /scripts/* /usr/local/bin && cp /scripts/object_storage_backup.rb /usr/lib/ruby/vendor_ruby
+RUN cp scripts/bin/* /usr/local/bin && cp scripts/lib/* /usr/lib/ruby/vendor_ruby
 
 USER $GITLAB_USER:$GITLAB_USER
 
-ENTRYPOINT ["/scripts/entrypoint.sh"]
+ENTRYPOINT ["/scripts/bin/entrypoint.sh"]

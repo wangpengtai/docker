@@ -65,7 +65,7 @@ class ObjectStorageBackup
     failure_abort(output) unless status.zero?
 
     Dir.glob("#{extracted_tar_path}/*").each do |file|
-     upload_to_object_storage(File.join(extracted_tar_path, file))
+     upload_to_object_storage(file)
     end
   end
 
