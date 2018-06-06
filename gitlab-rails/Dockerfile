@@ -13,13 +13,12 @@ ARG GITLAB_EDITION=gitlab-ee
 ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SKIP_STORAGE_VALIDATION=true"
 ARG NODE_VERSION=8.9.4
 ARG YARN_VERSION=0.20.3
-ARG GIT_VERSION=2.17.1
 
 # install runtime deps
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=866729
 RUN mkdir -p /usr/share/man/man7 \
     && apt-get update \
-    && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata postgresql-client-9.6=9.6.7-0+deb9u1 git
+    && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata postgresql-client-9.6=9.6.7-0+deb9u1
 
 RUN buildDeps=' \
     make \
@@ -38,16 +37,6 @@ RUN buildDeps=' \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $buildDeps \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p ${BUILD_DIR}
-
-#RUN cd ${BUILD_DIR} \
-#    && curl -so git.tar.gz "https://mirrors.edge.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz" \
-#    && tar -xf git.tar.gz \
-#    && cd ${BUILD_DIR}/git-${GIT_VERSION} \
-#    && ./configure \
-#    && make all \
-#    && make install \
-#    && cd .. \
-#    && rm -rf git.tar.gz git-${GIT_VERSION}
 
 RUN curl -fsSL "https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz" \
   | tar --strip-components 1 -xzC /usr/local/
@@ -134,18 +123,12 @@ RUN buildDeps=' \
     libre2-dev \
     libedit-dev \
     libxml2-dev \
-    sudo \
-    git' \
+    sudo' \
     && apt-get update \
     && apt-get install -y --no-install-recommends $buildDeps \
     && rm -rf /var/lib/apt/lists/*
 
 RUN adduser --disabled-password --gecos 'GitLab' ${GITLAB_USER}
-
-# adjust git settings
-RUN sudo -u ${GITLAB_USER} -H git config --global gc.auto 0 && \
-    sudo -u ${GITLAB_USER} -H git config --global core.autocrlf input && \
-    sudo -u ${GITLAB_USER} -H git config --global repack.writeBitmaps true
 
 COPY --from=builder /usr/bin/pg_* /usr/bin/
 COPY --from=builder /usr/bin/psql /usr/bin/

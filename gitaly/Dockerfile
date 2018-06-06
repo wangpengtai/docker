@@ -10,10 +10,11 @@ ARG GITLAB_USER=git
 ARG GITALY_VERSION=v0.96.1
 ARG BUILD_DIR=/tmp/build
 ARG GO_VERSION=1.9.6
+ARG GIT_VERSION=2.17.1
 
 # install runtime deps
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libicu57
+    && apt-get install -y --no-install-recommends libicu57 libpcre2-dev
 
 RUN buildDeps=' \
     make \
@@ -22,7 +23,8 @@ RUN buildDeps=' \
     g++ \
     libicu-dev \
     pkg-config \
-    sudo' \
+    sudo \
+    libcurl4-gnutls-dev' \
     && apt-get update \
     && apt-get install -y --no-install-recommends $buildDeps \
     && rm -rf /var/lib/apt/lists/* \
@@ -37,11 +39,32 @@ RUN cd ${BUILD_DIR} \
   && rm -rf /var/lib/apt/lists/* \
   && ln -sf /usr/local/go/bin/go /usr/local/go/bin/gofmt /usr/local/go/bin/godoc /usr/local/bin/
 
+RUN cd ${BUILD_DIR} \
+    && curl -so git.tar.gz "https://mirrors.edge.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz" \
+    && tar -xf git.tar.gz \
+    && cd ${BUILD_DIR}/git-${GIT_VERSION} \
+    && echo "USE_LIBPCRE2=YesPlease \n\
+NO_PERL=YesPlease \n\
+NO_EXPAT=YesPlease \n\
+NO_TCLTK=YesPlease \n\
+NO_GETTEXT=YesPlease\n\
+NO_PYTHON=YesPlease \n\
+NO_INSTALL_HARDLINKS=YesPlease \n\
+NO_R_TO_GCC_LINKER=YesPlease" > config.mak \
+    && make all prefix=/usr/local \
+    && make install prefix=/usr/local \
+    && cd .. \
+    && rm -rf git.tar.gz git-${GIT_VERSION}
+
 # create gitlab user
 # openssh daemon does not allow locked user to login, change ! to *
 RUN adduser --disabled-password --gecos 'GitLab' ${GITLAB_USER} && \
       sed -i "s/${GITLAB_USER}:!/${GITLAB_USER}:*/" /etc/shadow
 
+# adjust git settings
+RUN sudo -u ${GITLAB_USER} -H git config --global gc.auto 0 && \
+    sudo -u ${GITLAB_USER} -H git config --global core.autocrlf input && \
+    sudo -u ${GITLAB_USER} -H git config --global repack.writeBitmaps true
 
 # Download and compile Gitaly
 ARG CACHE_BUSTER=false
@@ -76,7 +99,8 @@ RUN buildDeps=' \
     gcc \
     g++ \
     libicu-dev \
-    sudo' \
+    sudo \
+    libcurl4-gnutls-dev' \
     && SUDO_FORCE_REMOVE=yes apt-get purge -y --auto-remove $buildDeps \
     && rm -rf ${BUILD_DIR}
 
