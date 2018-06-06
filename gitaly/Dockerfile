@@ -14,7 +14,7 @@ ARG GIT_VERSION=2.17.1
 
 # install runtime deps
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libicu57 libpcre2-dev
+    && apt-get install -y --no-install-recommends libicu57 libpcre2-dev libcurl4-gnutls-dev
 
 RUN buildDeps=' \
     make \
@@ -23,8 +23,7 @@ RUN buildDeps=' \
     g++ \
     libicu-dev \
     pkg-config \
-    sudo \
-    libcurl4-gnutls-dev' \
+    sudo' \
     && apt-get update \
     && apt-get install -y --no-install-recommends $buildDeps \
     && rm -rf /var/lib/apt/lists/* \
@@ -99,8 +98,7 @@ RUN buildDeps=' \
     gcc \
     g++ \
     libicu-dev \
-    sudo \
-    libcurl4-gnutls-dev' \
+    sudo' \
     && SUDO_FORCE_REMOVE=yes apt-get purge -y --auto-remove $buildDeps \
     && rm -rf ${BUILD_DIR}
 
