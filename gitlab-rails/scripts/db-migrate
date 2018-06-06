@@ -30,6 +30,13 @@ if [ "$STATUS" = "0" ]; then
   /scripts/disable-auth-keys-write && STATUS=$? || STATUS=$?
 fi
 
+# Enable `ci_enable_live_trace` feature flag, placing job traces in object storage
+if [ "$STATUS" = "0" ]; then
+  echo "Enabling 'ci_enable_live_trace' feature flag"
+  /home/git/gitlab/bin/rails runner -e production \
+    "Feature.enable('ci_enable_live_trace')" && STATUS=$? || STATUS=$?
+fi
+
 # Update the status
 echo "Storing Migration Status"
 echo $STATUS > "${MIGRATE_STATUS_FILE}"
