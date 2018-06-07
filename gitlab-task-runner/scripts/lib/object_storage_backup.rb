@@ -8,12 +8,13 @@ class String
 end
 
 class ObjectStorageBackup
-  attr_accessor :name, :local_tar_path, :remote_bucket_name
+  attr_accessor :name, :local_tar_path, :remote_bucket_name, :tmp_bucket_name
 
-  def initialize(name, local_tar_path, remote_bucket_name)
+  def initialize(name, local_tar_path, remote_bucket_name, tmp_bucket_name = 'tmp')
     @name = name
     @local_tar_path = local_tar_path
     @remote_bucket_name = remote_bucket_name
+    @tmp_bucket_name = tmp_bucket_name
   end
 
   def restore
@@ -40,7 +41,7 @@ class ObjectStorageBackup
 
   def backup_existing
     backup_file_name = "#{@name}.#{Time.now.to_i}"
-    cmd = %W(s3cmd sync s3://#{@remote_bucket_name} s3://tmp/#{backup_file_name}/)
+    cmd = %W(s3cmd sync s3://#{@remote_bucket_name} s3://#{@tmp_bucket_name}/#{backup_file_name}/)
     output, status = run_cmd(cmd)
 
     failure_abort(output) unless status.zero?
