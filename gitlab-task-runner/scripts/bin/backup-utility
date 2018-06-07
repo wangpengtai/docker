@@ -87,14 +87,16 @@ function restore(){
   gitlab-rake gitlab:db:drop_tables
   gitlab-rake gitlab:backup:db:restore
   gitlab-rake gitlab:backup:repo:restore
-  gitlab-rake gitlab:backup:uploads:restore
   gitlab-rake gitlab:backup:builds:restore
-  gitlab-rake gitlab:backup:artifacts:restore
   gitlab-rake gitlab:backup:pages:restore
-  gitlab-rake gitlab:backup:lfs:restore
-  if [ -f $backup_path/registry.tar.gz ]; then
-    registry-restore $backup_path/registry.tar.gz
-  fi
+
+  object_storage_backed=(registry uploads artifacts lfs)
+  for restore_item in ${object_storage_backed[@]}; do
+    if [ -f $backup_path/${restore_item}.tar.gz ]; then
+      object-storage-restore $restore_item $backup_path/${restore_item}.tar.gz
+    fi
+  done
+
   gitlab-rake cache:clear
 }
 
