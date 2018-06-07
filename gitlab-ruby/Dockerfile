@@ -18,6 +18,7 @@ RUN apt-get update \
   libssl1.0-dev \
   libyaml-dev \
   procps \
+	busybox \
   zlib1g-dev \
   coreutils \
   curl \
