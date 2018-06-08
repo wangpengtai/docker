@@ -3,20 +3,35 @@ ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby
 
 FROM ${FROM_IMAGE}:${TAG}
 
+ARG BUILD_DIR=/tmp/build
 ARG GITLAB_SHELL_VERSION=master
 ARG GITLAB_USER=git
+ARG GO_VERSION=1.9.6
 
 # install runtime deps
-RUN apk add --no-cache \
-        openssh
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssh-server \
+  && rm -rf /var/lib/apt/lists/*
 
 # install build deps
-RUN apk add --no-cache --virtual .build-deps \
-        cmake g++ gcc linux-headers make go sudo
+RUN buildDeps=' \
+    sudo' \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends $buildDeps \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p ${BUILD_DIR}
+
+RUN cd ${BUILD_DIR} \
+  && curl -so golang.tar.xz "https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz" \
+  && tar -xf golang.tar.xz \
+  && mv ${BUILD_DIR}/go /usr/local/go \
+  && rm golang.tar.xz \
+  && rm -rf /var/lib/apt/lists/* \
+  && ln -sf /usr/local/go/bin/go /usr/local/go/bin/gofmt /usr/local/go/bin/godoc /usr/local/bin/
 
 # create gitlab user
 # openssh daemon does not allow locked user to login, change ! to *
-RUN adduser -D -g 'GitLab' ${GITLAB_USER} && \
+RUN adduser --disabled-password --gecos 'GitLab' ${GITLAB_USER} && \
     sed -i "s/${GITLAB_USER}:!/${GITLAB_USER}:*/" /etc/shadow
 
 # Create a run environment for SSHD
@@ -34,7 +49,10 @@ RUN mkdir /srv/gitlab-shell && chown ${GITLAB_USER}:${GITLAB_USER} /srv/gitlab-s
 RUN mkdir -p /var/log/gitlab-shell && chown ${GITLAB_USER} /var/log/gitlab-shell && \
     sudo -u ${GITLAB_USER} -H touch /var/log/gitlab-shell/gitlab-shell.log
 
-RUN apk del .build-deps
+RUN buildDeps=' \
+    sudo' \
+    && SUDO_FORCE_REMOVE=yes apt-get purge -y --auto-remove $buildDeps \
+    && rm -rf ${BUILD_DIR}
 
 # Add scripts
 COPY scripts/  /scripts/

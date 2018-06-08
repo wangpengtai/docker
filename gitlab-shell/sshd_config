@@ -89,6 +89,7 @@ PermitRootLogin no
 #ClientAliveInterval 0
 #ClientAliveCountMax 3
 #UseDNS no
+UsePrivilegeSeparation no
 PidFile /srv/sshd/sshd.pid
 #MaxStartups 10:30:100
 #PermitTunnel no
