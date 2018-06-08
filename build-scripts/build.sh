@@ -67,7 +67,11 @@ function get_target_version(){
 }
 
 function get_trimmed_job_name(){
-  echo $CI_JOB_NAME | sed -e "s/-.e$//"
+  trim_edition $CI_JOB_NAME
+}
+
+function trim_edition(){
+  echo $1 | sed -e "s/-.e$//"
 }
 
 function push_if_master(){
@@ -75,7 +79,7 @@ function push_if_master(){
     if [ -z "$1" ] || [ "$1" == "master" ]; then
       push_latest
     else
-      tag_and_push $1
+      tag_and_push $(trim_edition $1)
     fi
   fi
 }
