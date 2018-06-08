@@ -47,11 +47,6 @@ function build_if_needed(){
 function tag_and_push(){
   docker tag "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$1"
   docker push "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$1"
-  # Push GCR registry
-  if [ -n "$GCR_AUTH_CONFIG" ]; then
-    docker tag "$GCR_REGISTRY/$CI_JOB_NAME:$CONTAINER_VERSION" "$GCR_REGISTRY/$CI_JOB_NAME:$1"
-    docker push "$GCR_REGISTRY/$CI_JOB_NAME:$1"
-  fi
 }
 
 function push_latest(){
