@@ -86,7 +86,7 @@ function cleanup(){
 
 function write_backup_info(){
  cat << EOF > $backups_path/backup_information.yml
-:db_version: $(grep -o -E '(version: [0-9]+)' $rails_dir/db/schema.rb | grep -o -E [0-9]+)
+:db_version: $($rails_dir/bin/rails runner "File.write('/tmp/db_version', ActiveRecord::Migrator.current_version.to_s)" && cat /tmp/db_version)
 :backup_created_at: $(date "+%Y-%m-%d %H:%M:%S %z")
 :gitlab_version: $(get_version)
 :tar_version: $(tar --version | head -n 1)
