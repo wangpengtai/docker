@@ -12,6 +12,8 @@ export S3_SECRET_KEY=$(cat $S3_CONFIG_DIR/secretkey)
 export BACKUP_BUCKET_NAME=${BACKUP_BUCKET_NAME-gitlab-backups}
 
 rails_dir=/home/git/gitlab
+backups_path=$rails_dir/tmp/backups
+backup_tars_path=$rails_dir/tmp/backup_tars
 
 function usage()
 {
@@ -34,15 +36,15 @@ function is_url() {
 }
 
 function fetch_remote_backup(){
-  mkdir -p $rails_dir/tmp/backups
-  output_path=$rails_dir/tmp/backups/0_gitlab_backup.tar
+  mkdir -p $backups_path
+  output_path=$backups_path/0_gitlab_backup.tar
 
   if is_url $1; then
     >&2 echo "Downloading from $1";
     curl --progress-bar -o $output_path $1
   else # It's a timestamp
     file_name="$1_gitlab_backup.tar"
-    s3cmd sync "s3://$BACKUP_BUCKET_NAME/$file_name" $output_path > /dev/null 2>&1
+    s3cmd sync "s3://$BACKUP_BUCKET_NAME/$file_name" $output_path > /dev/null
   fi
 
   echo $output_path
@@ -60,6 +62,47 @@ function unpack_backup(){
   fi
 
   tar -xf $file_path
+}
+
+function pack_backup(){
+  echo "Packing up backup tar"
+  local backup_name=$1
+  tar -cf ${backup_tars_path}/${backup_name}.tar -C $backups_path .
+}
+
+function get_version(){
+  cat $rails_dir/VERSION
+}
+
+function get_backup_name(){
+  now_timestamp=$(date +%s_%Y_%m_%d)
+  gitlab_version=$(get_version)
+  echo ${now_timestamp}_${gitlab_version}_gitlab_backup
+}
+
+function cleanup(){
+  rm -rf $backups_path/*
+}
+
+function write_backup_info(){
+ cat << EOF > $backups_path/backup_information.yml
+:db_version: $($rails_dir/bin/rails runner "File.write('/tmp/db_version', ActiveRecord::Migrator.current_version.to_s)" && cat /tmp/db_version)
+:backup_created_at: $(date "+%Y-%m-%d %H:%M:%S %z")
+:gitlab_version: $(get_version)
+:tar_version: $(tar --version | head -n 1)
+EOF
+}
+
+function backup(){
+  backup_name=$(get_backup_name)
+  mkdir -p $backup_tars_path
+
+  gitlab-rake gitlab:backup:db:create
+
+  write_backup_info
+  pack_backup $backup_name
+  s3cmd sync ${backup_tars_path}/${backup_name}.tar s3://$BACKUP_BUCKET_NAME > /dev/null
+  cleanup
 }
 
 function restore(){
@@ -81,8 +124,6 @@ function restore(){
 
   export BACKUP=$timestamp
 
-  backup_path=$rails_dir/tmp/backups
-
   unpack_backup $file
   gitlab-rake gitlab:db:drop_tables
   gitlab-rake gitlab:backup:db:restore
@@ -92,20 +133,13 @@ function restore(){
 
   object_storage_backed=(registry uploads artifacts lfs)
   for restore_item in ${object_storage_backed[@]}; do
-    if [ -f $backup_path/${restore_item}.tar.gz ]; then
-      object-storage-restore $restore_item $backup_path/${restore_item}.tar.gz
+    if [ -f $backups_path/${restore_item}.tar.gz ]; then
+      object-storage-restore $restore_item $backups_path/${restore_item}.tar.gz
     fi
   done
 
   gitlab-rake cache:clear
 }
-
-function backup(){
-  # TODO
-  echo "Not implemented yet!"
-}
-
-
 
 while [[ $# -gt 0 ]]
 do
@@ -138,5 +172,7 @@ done
 
 if [ "$RESTORE" = "true" ]; then
   restore
+else
+  backup
 fi
 
