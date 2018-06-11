@@ -11,8 +11,7 @@ RUN apt-get update \
   python-pip \
   && pip install setuptools \
   && pip install --upgrade s3cmd==2.0.1 \
-  && rm -rf /var/lib/apt/lists/* \
-  && apt-get purge -y --auto-remove python-pip
+  && rm -rf /var/lib/apt/lists/*
 
 ARG GITLAB_USER=git
 
