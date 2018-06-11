@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+require 'object_storage_backup'
+
+abort ("backup_item and output_tar_path arguments needs to be passed to the script") unless ARGV.length == 2
+
+bucket_name = ENV["#{ARGV[0].upcase}_BUCKET_NAME"] || "gitlab-#{ARGV[0]}"
+ObjectStorageBackup.new(ARGV[0], ARGV[1], bucket_name).backup
