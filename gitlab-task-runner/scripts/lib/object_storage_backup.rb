@@ -17,6 +17,21 @@ class ObjectStorageBackup
     @tmp_bucket_name = tmp_bucket_name
   end
 
+  def backup
+    puts "Dumping #{@name} ...".blue
+
+    cmd = %W(s3cmd sync s3://#{@remote_bucket_name} /tmp/#{@name})
+    output, status = run_cmd(cmd)
+    failure_abort(output) unless status.zero?
+
+    return unless File.exist? "/tmp/#{@name}" # Bucket may be empty
+    cmd = %W(tar -czf #{@local_tar_path} -C /tmp/#{@name} . )
+    output, status = run_cmd(cmd)
+    failure_abort(output) unless status.zero?
+
+    puts "done".green
+  end
+
   def restore
     puts "Restoring #{@name} ...".blue
 
