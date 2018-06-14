@@ -15,7 +15,7 @@
 FROM debian:stretch-slim
 
 # Add kubectl to enable sentinels to change labels during promotion
-ADD https://storage.googleapis.com/kubernetes-release/release/v1.6.4/bin/linux/amd64/kubectl /usr/local/bin/kubectl
+ADD https://storage.googleapis.com/kubernetes-release/release/v1.10.4/bin/linux/amd64/kubectl /usr/local/bin/kubectl
 RUN chmod +x /usr/local/bin/kubectl
 
 RUN  apt-get update \
@@ -23,8 +23,8 @@ RUN  apt-get update \
   ca-certificates \
   sed \
   curl \
-  redis-server \
-  redis-sentinel \
+  redis-server=3:3.2.6-1 \
+  redis-sentinel=3:3.2.6-1 \
   && rm -rf /var/lib/apt/lists/*
 
 
