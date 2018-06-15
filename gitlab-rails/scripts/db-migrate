@@ -8,7 +8,7 @@ UPGRADE_STATUS_DIR="${UPGRADE_STATUS_DIR:-/tmp/gitlab-upgrade}"
 GITLAB_REVISION=$(cat /home/git/gitlab/REVISION)
 CONNECTION_DIGEST=$(md5sum /home/git/gitlab/config/database.yml | awk '{ print $1 }' )
 MIGRATE_STATUS_FILE="${UPGRADE_STATUS_DIR}/db-migrate-${CONNECTION_DIGEST}-${GITLAB_REVISION}"
-ROOT_PASSWORD_FILE="/home/git/gitlab/config/initial_root_password"
+ROOT_PASSWORD_FILE="${ROOT_PASSWORD_FILE:-/home/git/gitlab/config/initial_root_password}"
 
 # Exit if the database has already been updated
 if [ -f "${MIGRATE_STATUS_FILE}" ] && ( grep -qFx 0 "${MIGRATE_STATUS_FILE}" ); then
@@ -17,7 +17,7 @@ if [ -f "${MIGRATE_STATUS_FILE}" ] && ( grep -qFx 0 "${MIGRATE_STATUS_FILE}" ); 
 fi
 
 if [ -f "${ROOT_PASSWORD_FILE}" ]; then
-        INITIAL_PASSWORD=$(cat "${ROOT_PASSWORD_FILE}")
+  INITIAL_PASSWORD=$(cat "${ROOT_PASSWORD_FILE}")
 fi
 
 # Seed or migrate the database
