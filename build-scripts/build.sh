@@ -81,7 +81,5 @@ function push_if_master(){
     else
       tag_and_push $(trim_edition $1)
     fi
-  else
-    tag_and_push "branch-${CI_COMMIT_REF_NAME}"
   fi
 }
