@@ -2,6 +2,8 @@
 
 require 'erb'
 require 'fileutils'
+require 'yaml'
+require 'json'
 
 template_directory = ARGV.shift
 config_directory = ARGV.shift || template_directory
