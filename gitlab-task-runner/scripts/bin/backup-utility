@@ -75,9 +75,13 @@ function get_version(){
 }
 
 function get_backup_name(){
-  now_timestamp=$(date +%s_%Y_%m_%d)
-  gitlab_version=$(get_version)
-  echo ${now_timestamp}_${gitlab_version}_gitlab_backup
+  if [ -n "$BACKUP_TIMESTAMP" ]; then
+    echo ${BACKUP_TIMESTAMP}_gitlab_backup
+  else
+    now_timestamp=$(date +%s_%Y_%m_%d)
+    gitlab_version=$(get_version)
+    echo ${now_timestamp}_${gitlab_version}_gitlab_backup
+  fi
 }
 
 function cleanup(){
