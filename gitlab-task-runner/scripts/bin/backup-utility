@@ -17,7 +17,7 @@ backup_tars_path=$rails_dir/tmp/backup_tars
 
 function usage()
 {
-   cat << HEREDOC
+  cat << HEREDOC
 
    Usage: backup-utility [--restore] [-f URL]
 
@@ -75,9 +75,13 @@ function get_version(){
 }
 
 function get_backup_name(){
-  now_timestamp=$(date +%s_%Y_%m_%d)
-  gitlab_version=$(get_version)
-  echo ${now_timestamp}_${gitlab_version}_gitlab_backup
+  if [ -n "$BACKUP_TIMESTAMP" ]; then
+    echo ${BACKUP_TIMESTAMP}_gitlab_backup
+  else
+    now_timestamp=$(date +%s_%Y_%m_%d)
+    gitlab_version=$(get_version)
+    echo ${now_timestamp}_${gitlab_version}_gitlab_backup
+  fi
 }
 
 function cleanup(){
@@ -85,12 +89,26 @@ function cleanup(){
 }
 
 function write_backup_info(){
- cat << EOF > $backups_path/backup_information.yml
+  cat << EOF > $backups_path/backup_information.yml
 :db_version: $($rails_dir/bin/rails runner "File.write('/tmp/db_version', ActiveRecord::Migrator.current_version.to_s)" && cat /tmp/db_version)
 :backup_created_at: $(date "+%Y-%m-%d %H:%M:%S %z")
 :gitlab_version: $(get_version)
 :tar_version: $(tar --version | head -n 1)
+:skipped: $1
 EOF
+}
+
+function get_skipped(){
+  all=( artifacts.tar.gz uploads.tar.gz builds.tar.gz db lfs.tar.gz registry.tar.gz pages.tar.gz )
+  skipped_string=""
+
+  for backup_item in ${all[@]}; do
+    if [ ! -e $backups_path/$backup_item ]; then
+      skipped_string="$skipped_string,${backup_item%.tar.gz}";
+    fi;
+  done;
+
+  echo ${skipped_string#,}
 }
 
 function backup(){
@@ -98,11 +116,21 @@ function backup(){
   mkdir -p $backup_tars_path
 
   gitlab-rake gitlab:backup:db:create
+  object_storage_backed=(registry uploads artifacts lfs)
 
-  write_backup_info
+  for backup_item in ${object_storage_backed[@]}; do
+    object-storage-backup $backup_item $backups_path/${backup_item}.tar.gz
+  done
+
+  skipped=$(get_skipped $backup_name)
+  write_backup_info $skipped
   pack_backup $backup_name
   s3cmd sync ${backup_tars_path}/${backup_name}.tar s3://$BACKUP_BUCKET_NAME > /dev/null
   cleanup
+}
+
+function is_skipped() {
+  [[ $SKIPPED =~ $1 ]]
 }
 
 function restore(){
@@ -121,20 +149,21 @@ function restore(){
   dir_name=$(dirname $file)
   file_name=$(basename $file)
   timestamp="${file_name%%_*}"
-
   export BACKUP=$timestamp
+  skipped_line=$(tar -xf $file ./backup_information.yml -O | grep skipped)
+  export SKIPPED=$(echo ${skipped_line#:skipped:})
 
   unpack_backup $file
-  gitlab-rake gitlab:db:drop_tables
-  gitlab-rake gitlab:backup:db:restore
-  gitlab-rake gitlab:backup:repo:restore
-  gitlab-rake gitlab:backup:builds:restore
-  gitlab-rake gitlab:backup:pages:restore
+
+  ! is_skipped "db"           && gitlab-rake gitlab:db:drop_tables
+  ! is_skipped "db"           && gitlab-rake gitlab:backup:db:restore
+  ! is_skipped "repositories" && gitlab-rake gitlab:backup:repo:restore
+  ! is_skipped "builds"       && gitlab-rake gitlab:backup:builds:restore
 
   object_storage_backed=(registry uploads artifacts lfs)
   for restore_item in ${object_storage_backed[@]}; do
     if [ -f $backups_path/${restore_item}.tar.gz ]; then
-      object-storage-restore $restore_item $backups_path/${restore_item}.tar.gz
+      ! is_skipped $restore_item && object-storage-restore $restore_item $backups_path/${restore_item}.tar.gz
     fi
   done
 
@@ -143,31 +172,31 @@ function restore(){
 
 while [[ $# -gt 0 ]]
 do
-key="$1"
+  key="$1"
 
-case $key in
+  case $key in
     -h|--help)
-    usage
-    shift
-    ;;
+      usage
+      shift
+      ;;
     -f|--file)
-    BACKUP_URL="$2"
-    shift
-    shift
-    ;;
+      BACKUP_URL="$2"
+      shift
+      shift
+      ;;
     -t|--timestamp)
-    BACKUP_TIMESTAMP="$2"
-    shift
-    shift
-    ;;
+      BACKUP_TIMESTAMP="$2"
+      shift
+      shift
+      ;;
     --restore)
-    RESTORE="true"
-    shift
-    ;;
+      RESTORE="true"
+      shift
+      ;;
     *)
-    shift
-    ;;
-esac
+      shift
+      ;;
+  esac
 done
 
 if [ "$RESTORE" = "true" ]; then

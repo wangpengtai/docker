@@ -8,7 +8,7 @@ RUN apt-get update \
   ca-certificates \
   openssl \
   tar \
-  python-pip \
+  python python-pip \
   && pip install setuptools \
   && pip install --upgrade s3cmd==2.0.1 \
   && rm -rf /var/lib/apt/lists/*
