@@ -125,6 +125,10 @@ function backup(){
   cleanup
 }
 
+function is_skipped() {
+  [[ $SKIPPED =~ $1 ]]
+}
+
 function restore(){
   if [ -z "$BACKUP_URL" ] && [ -z "$BACKUP_TIMESTAMP" ]; then
     echo "You need to set BACKUP_URL or BACKUP_TIMESTAMP variable"
@@ -141,20 +145,21 @@ function restore(){
   dir_name=$(dirname $file)
   file_name=$(basename $file)
   timestamp="${file_name%%_*}"
-
   export BACKUP=$timestamp
+  skipped_line=$(tar -xf $file ./backup_information.yml -O | grep skipped)
+  export SKIPPED=$(echo ${skipped_line#:skipped:})
 
   unpack_backup $file
-  gitlab-rake gitlab:db:drop_tables
-  gitlab-rake gitlab:backup:db:restore
-  gitlab-rake gitlab:backup:repo:restore
-  gitlab-rake gitlab:backup:builds:restore
-  gitlab-rake gitlab:backup:pages:restore
+
+  ! is_skipped "db"           && gitlab-rake gitlab:db:drop_tables
+  ! is_skipped "db"           && gitlab-rake gitlab:backup:db:restore
+  ! is_skipped "repositories" && gitlab-rake gitlab:backup:repo:restore
+  ! is_skipped "builds"       && gitlab-rake gitlab:backup:builds:restore
 
   object_storage_backed=(registry uploads artifacts lfs)
   for restore_item in ${object_storage_backed[@]}; do
     if [ -f $backups_path/${restore_item}.tar.gz ]; then
-      object-storage-restore $restore_item $backups_path/${restore_item}.tar.gz
+      ! is_skipped $restore_item && object-storage-restore $restore_item $backups_path/${restore_item}.tar.gz
     fi
   done
 
