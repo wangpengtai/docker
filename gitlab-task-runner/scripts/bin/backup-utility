@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+ACTION="backup"
 S3_CONFIG_DIR=${S3_CONFIG_DIR-/etc/gitlab}
 
 if [ ! -f $S3_CONFIG_DIR/accesskey ]; then
@@ -177,6 +178,7 @@ do
   case $key in
     -h|--help)
       usage
+      ACTION="none"
       break
       ;;
     -f|--file)
@@ -190,7 +192,7 @@ do
       shift
       ;;
     --restore)
-      RESTORE="true"
+      ACTION="restore"
       shift
       ;;
     *)
@@ -199,9 +201,8 @@ do
   esac
 done
 
-if [ "$RESTORE" = "true" ]; then
+if [ "$ACTION" = "restore" ]; then
   restore
-else
+elif [ "$ACTION" = "backup" ]; then
   backup
 fi
-
