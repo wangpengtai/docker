@@ -126,6 +126,8 @@ function backup(){
   write_backup_info $skipped
   pack_backup $backup_name
   s3cmd sync ${backup_tars_path}/${backup_name}.tar s3://$BACKUP_BUCKET_NAME > /dev/null
+
+  echo "[DONE] Backup can be found at s3://$BACKUP_BUCKET_NAME/${backup_name}.tar"
   cleanup
 }
 
