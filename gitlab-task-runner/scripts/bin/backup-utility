@@ -153,10 +153,10 @@ function restore(){
   file_name=$(basename $file)
   timestamp="${file_name%%_*}"
   export BACKUP=$timestamp
-  skipped_line=$(tar -xf $file ./backup_information.yml -O | grep skipped)
-  export SKIPPED=$(echo ${skipped_line#:skipped:})
-
   unpack_backup $file
+
+  skipped_line=$(cat $(dirname $file)/backup_information.yml | grep skipped)
+  export SKIPPED=$(echo ${skipped_line#:skipped:})
 
   ! is_skipped "db"           && gitlab-rake gitlab:db:drop_tables
   ! is_skipped "db"           && gitlab-rake gitlab:backup:db:restore
