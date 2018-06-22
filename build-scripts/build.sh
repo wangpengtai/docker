@@ -74,6 +74,10 @@ function trim_edition(){
   echo $1 | sed -e "s/-.e$//"
 }
 
+function trim_tag(){
+  echo $(trim_edition $1) | sed -e "s/^v//"
+}
+
 function push_if_master(){
   if is_master; then
     if [ -z "$1" ] || [ "$1" == "master" ]; then
