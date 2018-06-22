@@ -9,15 +9,12 @@ variables:
 
 before_script:
   - source build-scripts/build.sh
-  - export {CONTAINER_VERSION,BASE_VERSION}=$(get_version gitlab-ruby)
-  - export TARGET_VERSION=$(get_target_version)
-  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
-  - docker login -u _json_key -p "$GCR_AUTH_CONFIG" https://gcr.io
 
 stages:
   - base-container
   - common-container
   - target-container
+  - release
 
 .job-base: &job-base
   image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
@@ -25,6 +22,12 @@ stages:
   - docker:dind
   dependencies: []
   retry: 1
+  before_script:
+    - source build-scripts/build.sh
+    - export {CONTAINER_VERSION,BASE_VERSION}=$(get_version gitlab-ruby)
+    - export TARGET_VERSION=$(get_target_version)
+    - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+    - docker login -u _json_key -p "$GCR_AUTH_CONFIG" https://gcr.io
 
 gitlab-ruby:
   <<: *job-base
@@ -193,3 +196,21 @@ gitlab-redis-ha:
   - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$(date -u +%D)" | sha1sum))
   - build_if_needed
   - push_if_master
+
+release-chart:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/gitlab-build-images:ruby-2.4-golang-1.10-git-2.17
+  script:
+  - echo "https://gl-build-trigger:$CHART_BUILD_TOKEN@gitlab.com" > ~/.git-credentials
+  - git config --global credential.helper 'store'
+  - git clone https://gitlab.com/gitlab-org/release-tools.git -b helm-release-tools --depth 10 release-tools
+  - cd release-tools
+  - bundle install
+  - CI=true USE_GIT_HTTPS=true bundle exec rake helm:release_chart[$(trim_tag $GITLAB_EE_VERSION)]
+  only:
+    refs:
+      - pipelines
+      - master
+    variables:
+      - $EE_PIPELINE
+      - $GITLAB_EE_VERSION =~ /^v\d+\.\d+\.\d+(-rc\d+)?-ee$/
