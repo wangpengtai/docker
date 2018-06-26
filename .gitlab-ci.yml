@@ -212,5 +212,7 @@ release-chart:
       - pipelines
       - master
     variables:
-      - $EE_PIPELINE
       - $GITLAB_EE_VERSION =~ /^v\d+\.\d+\.\d+(-rc\d+)?-ee$/
+  except:
+    variables:
+      - $CE_PIPELINE
