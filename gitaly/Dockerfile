@@ -14,7 +14,7 @@ ARG GIT_VERSION=2.17.1
 
 # install runtime deps
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libicu57 libpcre2-dev libcurl4-gnutls-dev
+    && apt-get install -y --no-install-recommends libicu57 libpcre2-dev libcurl4-gnutls-dev net-tools
 
 RUN buildDeps=' \
     make \

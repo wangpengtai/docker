@@ -3,4 +3,4 @@
 set -e
 
 # Check that gitaly is running
-printf "GET / HTTP/1.1\n\n" > /dev/tcp/127.0.0.1/8075
+netstat -tulnp | grep -w 8075 | awk '$NF !~ /gitaly/ { exit 1 }'
