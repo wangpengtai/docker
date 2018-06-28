@@ -3,4 +3,4 @@
 set -e
 
 # Check that gitaly is running
-netstat -tulnp | grep -w 8075 | awk '$NF !~ /gitaly/ { exit 1 }'
+netstat -tulnp | grep -w 8075 | grep "[0-9]\+/gitaly"
