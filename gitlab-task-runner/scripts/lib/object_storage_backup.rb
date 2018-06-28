@@ -47,7 +47,13 @@ class ObjectStorageBackup
   end
 
   def upload_to_object_storage(source_path)
-    cmd = %W(s3cmd sync #{source_path} s3://#{@remote_bucket_name})
+    # s3cmd treats `-` as a special filename for using stdin, as a result
+    # we need a slightly different syntax to support syncing the `-` directory (used for system uploads)
+    if File.basename(source_path) == '-'
+      cmd = %W(s3cmd sync #{source_path}/ s3://#{@remote_bucket_name}/-/)
+    else
+      cmd = %W(s3cmd sync #{source_path} s3://#{@remote_bucket_name})
+    end
 
     output, status = run_cmd(cmd)
 
@@ -91,6 +97,3 @@ class ObjectStorageBackup
   end
 
 end
-
-
-
