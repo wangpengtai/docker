@@ -24,6 +24,7 @@ stages:
   retry: 1
   before_script:
     - source build-scripts/build.sh
+    - if [ -n "$GITALY_SERVER_VERSION" ]; then export GITALY_VERSION=$GITALY_SERVER_VERSION; fi
     - export {CONTAINER_VERSION,BASE_VERSION}=$(get_version gitlab-ruby)
     - export TARGET_VERSION=$(get_target_version)
     - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
