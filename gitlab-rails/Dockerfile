@@ -29,6 +29,7 @@ RUN buildDeps=' \
     libffi-dev \
     libre2-dev \
     musl-dev \
+    patch \
     pkg-config \
     libkrb5-3 \
     libpq-dev \
