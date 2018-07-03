@@ -38,7 +38,7 @@ gitlab-ruby:
   - push_if_master
 
 gitlab-go:
-  <<: &job-base
+  <<: *job-base
   stage: base-container
   script:
       - build_if_needed
