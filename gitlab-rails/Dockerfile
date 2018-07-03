@@ -1,5 +1,5 @@
 ARG TAG=latest
-ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby
+ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-go
 
 FROM ${FROM_IMAGE}:${TAG} as builder
 
@@ -109,7 +109,7 @@ RUN rm -rf \
     find /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} +
 
 # Final image
-FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${TAG}
+FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-go:${TAG}
 ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
 ARG GITLAB_USER=git
