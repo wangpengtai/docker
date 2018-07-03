@@ -48,7 +48,7 @@ function tag_and_push(){
   docker tag "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION" "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$1"
   docker push "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$1"
   # Push GCR registry
-  if [ -n "$GCR_AUTH_CONFIG" ]; then
+  if [ -n "$GCR_AUTH_CONFIG" ] && [[ $GITLAB_EE_VERSION =~ /^v\d+\.\d+\.\d+(-rc\d+)?-ee$/ ]]; then
     docker tag "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION" "$GCR_REGISTRY/$CI_JOB_NAME:$1"
     docker push "$GCR_REGISTRY/$CI_JOB_NAME:$1"
   fi
