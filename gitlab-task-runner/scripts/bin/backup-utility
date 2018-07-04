@@ -117,6 +117,7 @@ function backup(){
   mkdir -p $backup_tars_path
 
   gitlab-rake gitlab:backup:db:create
+  gitlab-rake gitlab:backup:repo:create
   object_storage_backed=(registry uploads artifacts lfs)
 
   for backup_item in ${object_storage_backed[@]}; do
