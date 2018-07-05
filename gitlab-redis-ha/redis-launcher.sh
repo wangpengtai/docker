@@ -88,7 +88,7 @@ function launchsentinel() {
       continue
     fi
 
-    timeout -t 3 redis-cli ${REDISAUTH} -h ${MASTER_IP} -p ${MASTER_LB_PORT} INFO
+    timeout 3 redis-cli ${REDISAUTH} -h ${MASTER_IP} -p ${MASTER_LB_PORT} INFO
     if [[ "$?" == "0" ]]; then
       break
     fi
@@ -122,7 +122,7 @@ function launchslave() {
   i=0
   while true; do
     master=${MASTER_LB_HOST}
-    timeout -t 3 redis-cli ${REDISAUTH} -h ${master} -p ${MASTER_LB_PORT} INFO
+    timeout 3 redis-cli ${REDISAUTH} -h ${master} -p ${MASTER_LB_PORT} INFO
     if [[ "$?" == "0" ]]; then
       break
     fi
