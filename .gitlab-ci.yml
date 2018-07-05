@@ -43,6 +43,8 @@ gitlab-go:
   script:
       - build_if_needed
       - push_if_master
+  dependencies:
+      - gitlab-ruby
 
 gitlab-rails-ee:
   <<: *job-base
@@ -181,7 +183,7 @@ gitlab-shell:
   - build_if_needed --build-arg "TAG=$BASE_VERSION" --build-arg "GITLAB_SHELL_VERSION=${GITLAB_SHELL_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_SHELL_VERSION$(date -uI)"
   - push_if_master $GITLAB_SHELL_VERSION
   dependencies:
-    - gitlab-ruby
+    - gitlab-go
 
 gitaly-base:
   <<: *job-base
