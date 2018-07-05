@@ -186,7 +186,7 @@ gitlab-shell:
   dependencies:
     - gitlab-go
 
-gitaly-base:
+git-base:
   <<: *job-base
   stage: intermediate-container
   script:

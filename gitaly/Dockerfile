@@ -1,7 +1,7 @@
 ARG TAG=latest
 ARG SHELL_CONTAINER=latest
 ARG FROM_SHELL_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-shell
-ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitaly-base
+ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/git-base
 
 FROM ${FROM_SHELL_IMAGE}:${SHELL_CONTAINER} as shell
 FROM ${FROM_IMAGE}:${TAG}
