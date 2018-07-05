@@ -13,6 +13,7 @@ before_script:
 stages:
   - base-container
   - common-container
+  - intermediate-container
   - target-container
   - release
 
@@ -39,7 +40,7 @@ gitlab-ruby:
 
 gitlab-go:
   <<: *job-base
-  stage: base-container
+  stage: common-container
   script:
       - build_if_needed
       - push_if_master
@@ -176,7 +177,7 @@ gitlab-sidekiq-ce:
 
 gitlab-shell:
   <<: *job-base
-  stage: common-container
+  stage: intermediate-container
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_SHELL_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$BASE_VERSION"
@@ -187,9 +188,9 @@ gitlab-shell:
 
 gitaly-base:
   <<: *job-base
-  stage: common-container
+  stage: intermediate-container
   script:
-      - build_if_needed --build-arg "TAG=$BASE_VERSION" 
+      - build_if_needed --build-arg "TAG=$BASE_VERSION"
       - push_if_master
 
 gitaly:
