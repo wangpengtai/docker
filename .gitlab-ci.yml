@@ -183,6 +183,13 @@ gitlab-shell:
   dependencies:
     - gitlab-ruby
 
+gitaly-base:
+  <<: *job-base
+  stage: common-container
+  script:
+      - build_if_needed
+      - push_if_master
+
 gitaly:
   <<: *job-base
   stage: target-container
@@ -194,7 +201,6 @@ gitaly:
   - build_if_needed --build-arg "GITALY_VERSION=${GITALY_VERSION}" --build-arg "TAG=$BASE_VERSION" --build-arg "SHELL_CONTAINER=$shell_container" --build-arg "CACHE_BUSTER=$GITALY_VERSION$(date -uI)"
   - push_if_master $GITALY_VERSION
   dependencies:
-    - gitlab-ruby
     - gitlab-shell
 
 gitlab-redis-ha:
