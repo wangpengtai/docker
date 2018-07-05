@@ -11,10 +11,11 @@ before_script:
   - source build-scripts/build.sh
 
 stages:
-  - base-container
-  - common-container
-  - intermediate-container
-  - target-container
+  - phase-one
+  - phase-two
+  - phase-three
+  - phase-four
+  - phase-five
   - release
 
 .job-base: &job-base
@@ -33,14 +34,30 @@ stages:
 
 gitlab-ruby:
   <<: *job-base
-  stage: base-container
+  stage: phase-one
   script:
+  - build_if_needed
+  - push_if_master
+
+kubectl:
+  <<: *job-base
+  stage: phase-one
+  script:
+  - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$(date -u +%D)" | sha1sum))
+  - build_if_needed
+  - push_if_master
+
+gitlab-redis-ha:
+  <<: *job-base
+  stage: phase-two
+  script:
+  - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$(date -u +%D)" | sha1sum))
   - build_if_needed
   - push_if_master
 
 gitlab-go:
   <<: *job-base
-  stage: common-container
+  stage: phase-two
   script:
       - build_if_needed
       - push_if_master
@@ -49,7 +66,7 @@ gitlab-go:
 
 gitlab-rails-ee:
   <<: *job-base
-  stage: common-container
+  stage: phase-four
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$BASE_VERSION"
@@ -61,7 +78,7 @@ gitlab-rails-ee:
 
 gitlab-rails-ce:
   <<: *job-base
-  stage: common-container
+  stage: phase-four
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$BASE_VERSION"
@@ -73,7 +90,7 @@ gitlab-rails-ce:
 
 gitlab-task-runner-ee:
   <<: *job-base
-  stage: target-container
+  stage: phase-five
   script:
   - rails_version=$(get_version gitlab-rails)
   - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
@@ -89,7 +106,7 @@ gitlab-task-runner-ee:
 
 gitlab-task-runner-ce:
   <<: *job-base
-  stage: target-container
+  stage: phase-five
   script:
   - rails_version=$(get_version gitlab-rails)
   - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
@@ -103,17 +120,9 @@ gitlab-task-runner-ce:
     variables:
       - $EE_PIPELINE
 
-kubectl:
-  <<: *job-base
-  stage: base-container
-  script:
-  - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$(date -u +%D)" | sha1sum))
-  - build_if_needed
-  - push_if_master
-
 gitlab-unicorn-ee:
   <<: *job-base
-  stage: target-container
+  stage: phase-five
   script:
   - rails_version=$(get_version gitlab-rails)
   - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
@@ -129,7 +138,7 @@ gitlab-unicorn-ee:
 
 gitlab-unicorn-ce:
   <<: *job-base
-  stage: target-container
+  stage: phase-five
   script:
   - rails_version=$(get_version gitlab-rails)
   - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
@@ -145,7 +154,7 @@ gitlab-unicorn-ce:
 
 gitlab-sidekiq-ee:
   <<: *job-base
-  stage: target-container
+  stage: phase-five
   script:
   - rails_version=$(get_version gitlab-rails)
   - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
@@ -161,7 +170,7 @@ gitlab-sidekiq-ee:
 
 gitlab-sidekiq-ce:
   <<: *job-base
-  stage: target-container
+  stage: phase-five
   script:
   - rails_version=$(get_version gitlab-rails)
   - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
@@ -177,7 +186,7 @@ gitlab-sidekiq-ce:
 
 gitlab-shell:
   <<: *job-base
-  stage: intermediate-container
+  stage: phase-three
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_SHELL_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$BASE_VERSION"
@@ -188,14 +197,14 @@ gitlab-shell:
 
 git-base:
   <<: *job-base
-  stage: intermediate-container
+  stage: phase-three
   script:
       - build_if_needed --build-arg "TAG=$BASE_VERSION"
       - push_if_master
 
 gitaly:
   <<: *job-base
-  stage: target-container
+  stage: phase-four
   script:
   - shell_version=$(get_version gitlab-shell)
   - export shell_container=($(echo -n "$BASE_VERSION$shell_version$GITLAB_SHELL_VERSION$(date -u +%D)" | sha1sum))
@@ -205,14 +214,6 @@ gitaly:
   - push_if_master $GITALY_VERSION
   dependencies:
     - gitlab-shell
-
-gitlab-redis-ha:
-  <<: *job-base
-  stage: target-container
-  script:
-  - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$(date -u +%D)" | sha1sum))
-  - build_if_needed
-  - push_if_master
 
 release-chart:
   stage: release
