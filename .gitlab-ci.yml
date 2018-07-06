@@ -3,6 +3,8 @@ variables:
   GITLAB_CE_VERSION: "master"
   GITLAB_SHELL_VERSION: "master"
   GITALY_VERSION: "master"
+  GIT_VERSION: "2.17.1"
+  GO_VERSION: "1.9.6"
   DOCKER_DRIVER: overlay2
   DOCKER_HOST: tcp://docker:2375
   GCR_REGISTRY: gcr.io/top-chain-204115
@@ -59,7 +61,8 @@ gitlab-go:
   <<: *job-base
   stage: phase-two
   script:
-      - build_if_needed
+      - export CONTAINER_VERSION="$GO_VERSION"
+      - build_if_needed --build-arg "GO_VERSION=$GO_VERSION"
       - push_if_master
   dependencies:
       - gitlab-ruby
@@ -69,7 +72,7 @@ gitlab-rails-ee:
   stage: phase-four
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
-  - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$BASE_VERSION"
+  - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$GIT_VERSION"
   - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_EE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_EE_VERSION$(date -uI)" --build-arg "TAG=$BASE_VERSION"
   - push_if_master $GITLAB_EE_VERSION
   except:
@@ -199,7 +202,8 @@ git-base:
   <<: *job-base
   stage: phase-three
   script:
-      - build_if_needed --build-arg "TAG=$BASE_VERSION"
+      - export CONTAINER_VERSION="$GIT_VERSION"
+      - build_if_needed --build-arg "TAG=$BASE_VERSION" --build-arg "GIT_VERSION=$GIT_VERSION"
       - push_if_master
 
 gitaly:
