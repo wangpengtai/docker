@@ -72,7 +72,7 @@ gitlab-rails-ee:
   stage: phase-four
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
-  - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$GIT_VERSION"
+  - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$GIT_VERSION"
   - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_EE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_EE_VERSION$(date -uI)" --build-arg "TAG=$BASE_VERSION"
   - push_if_master $GITLAB_EE_VERSION
   except:
