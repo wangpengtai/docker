@@ -62,7 +62,8 @@ gitlab-go:
   stage: phase-two
   script:
       - export CONTAINER_VERSION="$GO_VERSION"
-      - build_if_needed --build-arg "GO_VERSION=$GO_VERSION"
+      - ruby_version=$(get_version gitlab-ruby)
+      - build_if_needed --build-arg "GO_VERSION=$GO_VERSION" --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-ruby" --build-arg "TAG=$ruby_version"
       - push_if_master
   dependencies:
       - gitlab-ruby
