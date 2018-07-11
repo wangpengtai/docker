@@ -234,6 +234,14 @@ gitaly:
   dependencies:
     - gitlab-shell
 
+gitlab-workhorse:
+  <<: *job-base
+  stage: phase-four
+  script:
+      - export CONTAINER_VERSION="$WORKHORSE_VERSION"
+      - build_if_needed --build-arg "TAG=$GIT_VERSION"
+      - push_if_master
+
 release-chart:
   stage: release
   image: registry.gitlab.com/gitlab-org/gitlab-build-images:ruby-2.4-golang-1.10-git-2.17
