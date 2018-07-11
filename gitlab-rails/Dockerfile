@@ -113,6 +113,7 @@ RUN rm -rf \
         /srv/gitlab/node_modules \
         /srv/gitlab/tmp \
         /srv/gitlab/spec \
+        /srv/gitlab/qa \
         /srv/gitlab/vendor/bundle/ruby/*/cache && \
     find /srv/gitlab -name '*.gem' -type f -print -delete && \
     find /srv/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} +

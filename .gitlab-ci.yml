@@ -92,6 +92,24 @@ gitlab-rails-ee:
     variables:
       - $CE_PIPELINE
 
+gitlab-ee-qa:
+  <<: *job-base
+  stage: phase-four
+  before_script:
+  - curl -o gitlab.tar.gz https://gitlab.com/gitlab-org/gitlab-ee/repository/${GITLAB_EE_VERSION}/archive.tar.gz
+  - tar -xzf gitlab.tar.gz
+  - mv gitlab-ee-${GITLAB_EE_VERSION}-*/qa gitlab-ee-qa
+  - revision=$(find -maxdepth 1 -name gitlab-ee-${GITLAB_EE_VERSION}-* -print | awk -F '-' '{print $NF}' | cut -c -8)
+  - source build-scripts/build.sh
+  - export {CONTAINER_VERSION,BASE_VERSION,TARGET_VERSION}=$revision
+  - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+  script:
+  - build_if_needed
+  - push_if_master $GITLAB_EE_VERSION
+  except:
+    variables:
+      - $CE_PIPELINE
+
 gitlab-rails-ce:
   <<: *job-base
   stage: phase-four
