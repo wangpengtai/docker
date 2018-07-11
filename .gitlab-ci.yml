@@ -239,6 +239,7 @@ gitlab-workhorse:
   stage: phase-four
   script:
       - export CONTAINER_VERSION="$WORKHORSE_VERSION"
+      - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$GIT_VERSION"
       - build_if_needed --build-arg "TAG=$GIT_VERSION"
       - push_if_master
 
