@@ -6,6 +6,7 @@ variables:
   GIT_VERSION: "2.17.1"
   GO_VERSION: "1.9.6"
   PG_VERSION: "9.6.8"
+  WORKHORSE_VERSION: "5.0.0"
   DOCKER_DRIVER: overlay2
   DOCKER_HOST: tcp://docker:2375
 
