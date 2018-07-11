@@ -193,7 +193,7 @@ gitlab-shell:
   stage: phase-three
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_SHELL_VERSION$(date -u +%D)" | sha1sum))
-  - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$BASE_VERSION"
+  - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$GO_VERSION"
   - build_if_needed --build-arg "TAG=$GO_VERSION" --build-arg "GITLAB_SHELL_VERSION=${GITLAB_SHELL_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_SHELL_VERSION$(date -uI)"
   - push_if_master $GITLAB_SHELL_VERSION
   dependencies:
