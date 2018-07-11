@@ -7,16 +7,6 @@ ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
 ARG GITLAB_USER=git
 
-ARG GO_VERSION=1.9.6
-RUN mkdir -p ${BUILD_DIR} \
-  && cd ${BUILD_DIR} \
-  && curl -so golang.tar.gz "https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz" \
-  && tar -xf golang.tar.gz \
-  && mv ${BUILD_DIR}/go /usr/local/go \
-  && rm golang.tar.gz \
-  && rm -rf /var/lib/apt/lists/* \
-  && ln -sf /usr/local/go/bin/go /usr/local/go/bin/gofmt /usr/local/go/bin/godoc /usr/local/bin/
-
 RUN buildDeps=' \
   cmake \
   g++ \

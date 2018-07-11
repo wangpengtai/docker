@@ -1,12 +1,11 @@
 ARG TAG=latest
-ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby
+ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-go
 
 FROM ${FROM_IMAGE}:${TAG}
 
 ARG BUILD_DIR=/tmp/build
 ARG GITLAB_SHELL_VERSION=master
 ARG GITLAB_USER=git
-ARG GO_VERSION=1.9.6
 
 # install runtime deps
 RUN apt-get update \
@@ -20,14 +19,6 @@ RUN buildDeps=' \
     && apt-get install -y --no-install-recommends $buildDeps \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p ${BUILD_DIR}
-
-RUN cd ${BUILD_DIR} \
-  && curl -so golang.tar.xz "https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz" \
-  && tar -xf golang.tar.xz \
-  && mv ${BUILD_DIR}/go /usr/local/go \
-  && rm golang.tar.xz \
-  && rm -rf /var/lib/apt/lists/* \
-  && ln -sf /usr/local/go/bin/go /usr/local/go/bin/gofmt /usr/local/go/bin/godoc /usr/local/bin/
 
 # create gitlab user
 # openssh daemon does not allow locked user to login, change ! to *

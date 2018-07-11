@@ -1,7 +1,7 @@
 ARG TAG=latest
 ARG SHELL_CONTAINER=latest
 ARG FROM_SHELL_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-shell
-ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby
+ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/git-base
 
 FROM ${FROM_SHELL_IMAGE}:${SHELL_CONTAINER} as shell
 FROM ${FROM_IMAGE}:${TAG}
@@ -9,51 +9,10 @@ FROM ${FROM_IMAGE}:${TAG}
 ARG GITLAB_USER=git
 ARG GITALY_VERSION=v0.96.1
 ARG BUILD_DIR=/tmp/build
-ARG GO_VERSION=1.9.6
-ARG GIT_VERSION=2.17.1
 
 # install runtime deps
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libicu57 libpcre2-dev libcurl4-gnutls-dev net-tools
-
-RUN buildDeps=' \
-    make \
-    cmake \
-    gcc \
-    g++ \
-    libicu-dev \
-    pkg-config \
-    sudo' \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends $buildDeps \
-    && rm -rf /var/lib/apt/lists/* \
-    && mkdir -p ${BUILD_DIR}
-
-# install go
-RUN cd ${BUILD_DIR} \
-  && curl -so golang.tar.xz "https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz" \
-  && tar -xf golang.tar.xz \
-  && mv ${BUILD_DIR}/go /usr/local/go \
-  && rm golang.tar.xz \
-  && rm -rf /var/lib/apt/lists/* \
-  && ln -sf /usr/local/go/bin/go /usr/local/go/bin/gofmt /usr/local/go/bin/godoc /usr/local/bin/
-
-RUN cd ${BUILD_DIR} \
-    && curl -so git.tar.gz "https://mirrors.edge.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz" \
-    && tar -xf git.tar.gz \
-    && cd ${BUILD_DIR}/git-${GIT_VERSION} \
-    && echo "USE_LIBPCRE2=YesPlease \n\
-NO_PERL=YesPlease \n\
-NO_EXPAT=YesPlease \n\
-NO_TCLTK=YesPlease \n\
-NO_GETTEXT=YesPlease\n\
-NO_PYTHON=YesPlease \n\
-NO_INSTALL_HARDLINKS=YesPlease \n\
-NO_R_TO_GCC_LINKER=YesPlease" > config.mak \
-    && make all prefix=/usr/local \
-    && make install prefix=/usr/local \
-    && cd .. \
-    && rm -rf git.tar.gz git-${GIT_VERSION}
+    && apt-get install -y --no-install-recommends libicu57 net-tools
 
 # create gitlab user
 # openssh daemon does not allow locked user to login, change ! to *
@@ -91,17 +50,6 @@ RUN cp /srv/gitlab-shell/config.yml.example /etc/gitaly/shell-config.yml && ln -
 RUN mkdir -p /var/log/gitaly && \
     touch /var/log/gitaly/gitaly.log && \
     touch /var/log/gitaly/gitlab-shell.log && chown -R ${GITLAB_USER} /var/log/gitaly
-
-RUN buildDeps=' \
-    make \
-    cmake \
-    gcc \
-    g++ \
-    libicu-dev \
-    sudo' \
-    && SUDO_FORCE_REMOVE=yes apt-get purge -y --auto-remove $buildDeps \
-    && rm -rf ${BUILD_DIR}
-
 
 # Add scripts
 COPY scripts/  /scripts/
