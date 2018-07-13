@@ -222,14 +222,14 @@ release-chart:
   stage: release
   image: registry.gitlab.com/gitlab-org/gitlab-build-images:ruby-2.4-golang-1.10-git-2.17
   script:
-  - git clone https://gitlab.com/gitlab-org/release-tools.git -b helm-release-tools --depth 10 release-tools
+  - git clone https://gitlab.com/gitlab-org/release-tools.git --depth 10 release-tools
   - cd release-tools
   - source scripts/setup_ssh.sh
   - echo "$HELM_RELEASE_BOT_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
   - git config --global user.email "dj+helm-rel-bot@gitlab.com"
   - git config --global user.name "GitLab Helm Chart Release Bot"
   - bundle install --jobs=$(nproc) --retry=3
-  - CI=true bundle exec rake helm:tag_chart[,$(trim_tag $GITLAB_EE_VERSION)]
+  - bundle exec rake helm:tag_chart[,$(trim_tag $GITLAB_EE_VERSION)]
   only:
     refs:
       - pipelines
