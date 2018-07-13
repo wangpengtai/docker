@@ -36,11 +36,11 @@ if [ "$STATUS" = "0" ]; then
   /scripts/disable-auth-keys-write && STATUS=$? || STATUS=$?
 fi
 
-# Enable `ci_enable_live_trace` feature flag, placing job traces in object storage
+# Enable feature flags for object storage
 if [ "$STATUS" = "0" ]; then
-  echo "Enabling 'ci_enable_live_trace' feature flag"
+  echo "Enabling 'ci_enable_live_trace', 'import_export_object_storage' feature flags"
   /home/git/gitlab/bin/rails runner -e production \
-    "Feature.enable('ci_enable_live_trace')" && STATUS=$? || STATUS=$?
+    "Feature.enable('ci_enable_live_trace'); Feature.enable('import_export_object_storage');" && STATUS=$? || STATUS=$?
 fi
 
 # Update the status
