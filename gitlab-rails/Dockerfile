@@ -62,12 +62,13 @@ RUN cd /home/${GITLAB_USER} && \
     sudo -u ${GITLAB_USER} -H curl -o gitlab.tar.bz2 https://gitlab.com/gitlab-org/${GITLAB_EDITION}/repository/${GITLAB_VERSION}/archive.tar.bz2 && \
     sudo -u ${GITLAB_USER} -H tar -xjf gitlab.tar.bz2 && \
     REVISION=$(find -maxdepth 1 -name ${GITLAB_EDITION}-${GITLAB_VERSION}-* -print | awk -F '-' '{print $NF}' | cut -c -8) && \
-    mv ${GITLAB_EDITION}-${GITLAB_VERSION}-* gitlab && \
-    echo -n ${REVISION} > gitlab/REVISION && \
+    mv ${GITLAB_EDITION}-${GITLAB_VERSION}-* /srv/gitlab && \
+    chown ${GITLAB_USER}:${GITLAB_USER} /srv/gitlab && \
+    echo -n ${REVISION} > /srv/gitlab/REVISION && \
     rm gitlab.tar.bz2
 
 # Configure GitLab
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /srv/gitlab && \
     sudo -u ${GITLAB_USER} -H mkdir ${CONFIG} && \
     sudo -u ${GITLAB_USER} -H mkdir ${DATADIR}/.upgrade-status && \
     sudo -u ${GITLAB_USER} -H echo 'gitlab-cloud-native-image' > INSTALLATION_TYPE && \
@@ -84,29 +85,29 @@ RUN cd /home/${GITLAB_USER}/gitlab && \
     sed --in-place "s:/home/git/repositories:${DATADIR}/repo:" ${CONFIG}/gitlab.yml
 
 # Install gems
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /srv/gitlab && \
     sudo -u git -H bundle install --deployment --without development test mysql aws kerberos --jobs 4 --retry 5
 
 # Install node dependencies
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /srv/gitlab && \
     sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV yarn install --production --pure-lockfile
 
 # compile GetText PO files
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /srv/gitlab && \
     sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gettext:compile
 
 # compile assets
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /srv/gitlab && \
     sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gitlab:assets:compile
 
 # Clean up
 RUN rm -rf \
-        /home/${GITLAB_USER}/gitlab/node_modules \
-        /home/${GITLAB_USER}/gitlab/tmp \
-        /home/${GITLAB_USER}/gitlab/spec \
-        /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/cache && \
-    find /home/${GITLAB_USER}/gitlab -name '*.gem' -type f -print -delete && \
-    find /home/${GITLAB_USER}/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} +
+        /srv/gitlab/node_modules \
+        /srv/gitlab/tmp \
+        /srv/gitlab/spec \
+        /srv/gitlab/vendor/bundle/ruby/*/cache && \
+    find /srv/gitlab -name '*.gem' -type f -print -delete && \
+    find /srv/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} +
 
 # Final image
 FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-go:${TAG}
@@ -136,12 +137,12 @@ COPY --from=builder /usr/bin/pg_* /usr/bin/
 COPY --from=builder /usr/bin/psql /usr/bin/
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libpq.so* /usr/lib/x86_64-linux-gnu/
 
-COPY --chown=git --from=builder /home/git/gitlab /home/git/gitlab
+COPY --chown=git --from=builder /srv/gitlab /srv/gitlab
 COPY --chown=git --from=builder /var/opt/gitlab /var/opt/gitlab
 
-RUN mv /home/${GITLAB_USER}/gitlab/log /var/log/gitlab && \
-    ln -s /var/log/gitlab /home/${GITLAB_USER}/gitlab/log && \
-    cd /home/${GITLAB_USER}/gitlab && \
+RUN mv /srv/gitlab/log /var/log/gitlab && \
+    ln -s /var/log/gitlab /srv/gitlab/log && \
+    cd /srv/gitlab && \
     chmod o-rwx config/database.yml && \
     chmod 0600 config/secrets.yml && \
     chmod -R u+rwX builds/ && \

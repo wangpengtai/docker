@@ -7,7 +7,7 @@ touch /var/log/gitlab/workhorse.log
 /scripts/start-workhorse &
 
 echo "Starting unicorn"
-/home/git/gitlab/bin/bundle exec unicorn -E production -c /home/git/gitlab/config/unicorn.rb /home/git/gitlab/config.ru &
+/srv/gitlab/bin/bundle exec unicorn -E production -c /srv/gitlab/config/unicorn.rb /srv/gitlab/config.ru &
 
 tail -f /var/log/gitlab/*
 
