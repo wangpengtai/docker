@@ -16,4 +16,4 @@ end
 \0
 EOM
 
-/home/git/gitlab/bin/rails runner -e production "$DISABLE_AUTHORIZED_KEYS"
+/srv/gitlab/bin/rails runner -e production "$DISABLE_AUTHORIZED_KEYS"

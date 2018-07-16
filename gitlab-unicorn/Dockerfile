@@ -16,7 +16,7 @@ RUN buildDeps=' \
   && apt-get install -y --no-install-recommends $buildDeps \
   && mkdir -p ${BUILD_DIR} \
   && cd ${BUILD_DIR} \
-  && WORKHORSE_VERSION=$(cat /home/git/gitlab/GITLAB_WORKHORSE_VERSION) \
+  && WORKHORSE_VERSION=$(cat /srv/gitlab/GITLAB_WORKHORSE_VERSION) \
   && curl -o workhorse.tar.bz2 https://gitlab.com/gitlab-org/gitlab-workhorse/repository/v${WORKHORSE_VERSION}/archive.tar.bz2 \
   && tar -xjf workhorse.tar.bz2 \
   && rm workhorse.tar.bz2 \
@@ -32,7 +32,7 @@ USER $GITLAB_USER:$GITLAB_USER
 COPY scripts/ /scripts
 COPY unicorn.rb ${CONFIG}/unicorn.rb
 
-RUN cd /home/${GITLAB_USER}/gitlab && \
+RUN cd /srv/gitlab && \
     ln -s ${CONFIG}/unicorn.rb config/unicorn.rb
 
 ENV GITALY_FEATURE_DEFAULT_ON=1
