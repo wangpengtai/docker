@@ -1,5 +1,8 @@
 ARG TAG=latest
 ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-go
+ARG PG_IMAGE=registry.gitlab.com/gitlab-org/build/cng/postgresql:9.6.8
+
+FROM ${PG_IMAGE} as pg_image
 
 FROM ${FROM_IMAGE}:${TAG} as builder
 
@@ -18,7 +21,13 @@ ARG YARN_VERSION=0.20.3
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=866729
 RUN mkdir -p /usr/share/man/man7 \
     && apt-get update \
-    && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata postgresql-client-9.6=9.6.7-0+deb9u1
+    && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata
+
+# Include postgres dev tools
+COPY --from=pg_image /usr/local/psql/bin/ /usr/bin/
+COPY --from=pg_image /usr/local/psql/lib/ /usr/lib/
+COPY --from=pg_image /usr/local/psql/include/ /usr/include/
+COPY --from=pg_image /usr/local/psql/share/ /usr/share/
 
 RUN buildDeps=' \
     make \
@@ -32,7 +41,6 @@ RUN buildDeps=' \
     patch \
     pkg-config \
     libkrb5-3 \
-    libpq-dev \
     sudo' \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $buildDeps \
@@ -118,7 +126,12 @@ ARG GITLAB_USER=git
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=866729
 RUN mkdir -p /usr/share/man/man7 \
     && apt-get update \
-    && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata postgresql-client-9.6=9.6.7-0+deb9u1
+    && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata
+
+# Include postgres client tools
+COPY --from=pg_image /usr/local/psql/bin/pg_* /usr/bin/
+COPY --from=pg_image /usr/local/psql/bin/psql /usr/bin/
+COPY --from=pg_image /usr/local/psql/lib/libpq.so* /usr/lib/
 
 RUN buildDeps=' \
     libicu-dev \
@@ -132,10 +145,6 @@ RUN buildDeps=' \
     && rm -rf /var/lib/apt/lists/*
 
 RUN adduser --disabled-password --gecos 'GitLab' ${GITLAB_USER}
-
-COPY --from=builder /usr/bin/pg_* /usr/bin/
-COPY --from=builder /usr/bin/psql /usr/bin/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libpq.so* /usr/lib/x86_64-linux-gnu/
 
 COPY --chown=git --from=builder /srv/gitlab /srv/gitlab
 COPY --chown=git --from=builder /var/opt/gitlab /var/opt/gitlab
