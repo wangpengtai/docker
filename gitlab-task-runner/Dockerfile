@@ -4,7 +4,6 @@ FROM ${FROM_IMAGE}:${TAG}
 
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
-  postgresql \
   ca-certificates \
   openssl \
   tar \

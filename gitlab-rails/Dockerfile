@@ -18,7 +18,7 @@ ARG YARN_VERSION=0.20.3
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=866729
 RUN mkdir -p /usr/share/man/man7 \
     && apt-get update \
-    && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata postgresql-client-9.6=9.6.7-0+deb9u1
+    && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata postgresql-client-9.6=9.6.8-0+deb9u1
 
 RUN buildDeps=' \
     make \
@@ -117,7 +117,7 @@ ARG GITLAB_USER=git
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=866729
 RUN mkdir -p /usr/share/man/man7 \
     && apt-get update \
-    && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata postgresql-client-9.6=9.6.7-0+deb9u1
+    && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata postgresql-client-9.6=9.6.8-0+deb9u1
 
 RUN buildDeps=' \
     libicu-dev \
