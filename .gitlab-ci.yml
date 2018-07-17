@@ -5,6 +5,7 @@ variables:
   GITALY_VERSION: "master"
   GIT_VERSION: "2.17.1"
   GO_VERSION: "1.9.6"
+  PG_VERSION: "9.6.8"
   DOCKER_DRIVER: overlay2
   DOCKER_HOST: tcp://docker:2375
 
@@ -37,6 +38,17 @@ gitlab-ruby:
   stage: phase-one
   script:
   - build_if_needed
+  - push_if_master
+
+postgresql:
+  <<: *job-base
+  stage: phase-one
+  script:
+  - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$PG_VERSION" | sha1sum))
+  - build_if_needed --build-arg "PG_VERSION=$PG_VERSION"
+  - if [ -n "$BUILDING_IMAGE" ]; then
+  -  tag_and_push $PG_VERSION
+  - fi
   - push_if_master
 
 kubectl:
@@ -72,7 +84,9 @@ gitlab-rails-ee:
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$GO_VERSION"
-  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_EE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_EE_VERSION$(date -uI)" --build-arg "TAG=$GO_VERSION"
+  - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
+  - docker pull $pg_image > /dev/null || true
+  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_EE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_EE_VERSION$(date -uI)" --build-arg "TAG=$GO_VERSION" --build-arg "PG_IMAGE=$pg_image"
   - push_if_master $GITLAB_EE_VERSION
   except:
     variables:
@@ -84,7 +98,9 @@ gitlab-rails-ce:
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$GO_VERSION"
-  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce" --build-arg "GITLAB_VERSION=${GITLAB_CE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_CE_VERSION$(date -uI)" --build-arg "TAG=$GO_VERSION"
+  - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
+  - docker pull $pg_image > /dev/null || true
+  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce" --build-arg "GITLAB_VERSION=${GITLAB_CE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_CE_VERSION$(date -uI)" --build-arg "TAG=$GO_VERSION" --build-arg "PG_IMAGE=$pg_image"
   - push_if_master $GITLAB_CE_VERSION
   except:
     variables:

@@ -22,6 +22,7 @@ function needs_build(){
 
 function build_if_needed(){
   if needs_build; then
+    export BUILDING_IMAGE="true"
     if [ -n "$BASE_IMAGE" ]; then
       docker pull $BASE_IMAGE
     fi

@@ -7,7 +7,7 @@ touch /var/log/gitlab/workhorse.log
 exec gitlab-workhorse \
   ${GITLAB_WORKHORSE_EXTRA_ARGS} \
   -listenAddr 0.0.0.0:8181 \
-  -documentRoot "/home/git/gitlab/public" \
-  -secretPath "/home/git/gitlab/.gitlab_workhorse_secret" \
+  -documentRoot "/srv/gitlab/public" \
+  -secretPath "/srv/gitlab/.gitlab_workhorse_secret" \
   -config "/var/opt/gitlab/config/gitlab/workhorse-config.toml" \
 >> /var/log/gitlab/workhorse.log 2>&1
