@@ -4,7 +4,6 @@ FROM ${FROM_IMAGE}:${TAG} as builder
 
 ENV WORKHORSE_VERSION=5.0.0
 ARG BUILD_DIR=/tmp/build
-ARG GITLAB_USER=git
 
 RUN buildDeps=' \
   make' \
@@ -22,12 +21,12 @@ RUN buildDeps=' \
   && apt-get purge -y --auto-remove $buildDeps \
   && rm -rf /var/lib/apt/lists/*
 
-RUN install -d -o ${GITLAB_USER} /var/log/gitlab/
-
 FROM debian:stretch-slim
 ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
 ARG GITLAB_USER=git
+
+RUN install -d -o ${GITLAB_USER} /var/log/gitlab/
 
 COPY --from=builder /usr/local/bin/gitlab-workhorse /usr/local/bin/
 
