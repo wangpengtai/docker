@@ -22,7 +22,7 @@ RUN buildDeps=' \
   && apt-get purge -y --auto-remove $buildDeps \
   && rm -rf /var/lib/apt/lists/*
 
-RUN install -d -u ${GITLAB_USER} /var/log/gitlab/
+RUN install -d -o ${GITLAB_USER} /var/log/gitlab/
 
 FROM debian:stretch-slim
 ARG DATADIR=/var/opt/gitlab
