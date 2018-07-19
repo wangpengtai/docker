@@ -2,7 +2,6 @@
 
 set -e
 
-mkdir -p /var/log/gitlab
 touch /var/log/gitlab/workhorse.log
 
 exec gitlab-workhorse \
