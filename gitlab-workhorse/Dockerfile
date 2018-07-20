@@ -21,7 +21,7 @@ RUN buildDeps=' \
   && apt-get purge -y --auto-remove $buildDeps \
   && rm -rf /var/lib/apt/lists/*
 
-FROM debian:stretch-slim
+FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby
 ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
 ARG GITLAB_USER=git
