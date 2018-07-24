@@ -248,8 +248,8 @@ release-chart:
   - bundle exec rake helm:tag_chart[,$(trim_tag $GITLAB_EE_VERSION)]
   only:
     refs:
-      - pipelines
-      - master
+      - pipelines@gitlab-org/build/CNG
+      - master@gitlab-org/build/CNG
     variables:
       - $GITLAB_EE_VERSION =~ /^v\d+\.\d+\.\d+(-rc\d+)?-ee$/
   except:
