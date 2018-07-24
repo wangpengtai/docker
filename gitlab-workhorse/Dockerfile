@@ -26,9 +26,6 @@ ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
 ARG GITLAB_USER=git
 
-# create gitlab user
-RUN adduser --disabled-password --gecos 'GitLab' ${GITLAB_USER}
-
 RUN install -d -o ${GITLAB_USER} /var/log/gitlab/
 
 RUN install -d -o ${GITLAB_USER} ${DATADIR}
