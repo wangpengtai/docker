@@ -21,7 +21,7 @@ RUN buildDeps=' \
   && apt-get purge -y --auto-remove $buildDeps \
   && rm -rf /var/lib/apt/lists/*
 
-FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby
+FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-rails-ee
 ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
 ARG GITLAB_USER=git
