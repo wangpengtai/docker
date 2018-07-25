@@ -46,4 +46,6 @@ COPY --from=builder /usr/local/bin/gitlab-workhorse /usr/local/bin/
 
 COPY --from=rails /srv/gitlab/app/assets/ /srv/gitlab/app/assets/
 
+COPY scripts/ /scripts/
+
 CMD /scripts/start-workhorse
