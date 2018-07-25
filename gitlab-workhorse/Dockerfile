@@ -45,10 +45,10 @@ COPY --from=builder /usr/local/bin/gitlab-workhorse /usr/local/bin/
 
 COPY --from=rails /srv/gitlab/app/assets/ /srv/gitlab/app/assets/
 
-COPY --from=rails scripts/ /srv/bin/
+COPY --from=rails scripts/ /scripts/
 
 ENV CONFIG_TEMPLATE_DIRECTORY=/etc
 
-ENTRYPOINT ["/srv/bin/entrypoint.sh"]
+ENTRYPOINT ["/scripts/entrypoint.sh"]
 
-CMD /srv/bin/start-workhorse
+CMD /scripts/start-workhorse
