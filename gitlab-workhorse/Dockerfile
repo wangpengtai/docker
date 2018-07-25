@@ -1,5 +1,8 @@
 ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/git-base
 ARG TAG=2.17.1
+ARG GITLAB_EDITION=gitlab-rails-ee
+ARG GITLAB_VERSION=latest
+
 FROM ${FROM_IMAGE}:${TAG} as builder
 
 ARG WORKHORSE_VERSION=v5.0.0
@@ -21,7 +24,7 @@ RUN buildDeps=' \
   && apt-get purge -y --auto-remove $buildDeps \
   && rm -rf /var/lib/apt/lists/*
 
-FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-rails-ee as rails
+FROM registry.gitlab.com/gitlab-org/build/cng/${GITLAB_EDITION}:${GITLAB_VERSION} as rails
 
 ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
