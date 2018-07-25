@@ -26,17 +26,20 @@ RUN buildDeps=' \
 
 FROM registry.gitlab.com/gitlab-org/build/cng/${GITLAB_EDITION}:${GITLAB_VERSION} as rails
 
+FROM debian:stretch-slim
+
 ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
 ARG GITLAB_USER=git
+
+# create gitlab user
+RUN adduser --disabled-password --gecos 'GitLab' ${GITLAB_USER}
 
 RUN install -d -o ${GITLAB_USER} /var/log/gitlab/
 
 RUN install -d -o ${GITLAB_USER} ${DATADIR}
 
 RUN install -d -o ${GITLAB_USER} ${CONFIG}
-
-FROM debian:stretch-slim
 
 COPY --from=builder /usr/local/bin/gitlab-workhorse /usr/local/bin/
 
