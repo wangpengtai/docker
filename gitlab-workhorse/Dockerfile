@@ -44,7 +44,7 @@ RUN install -d -o ${GITLAB_USER} ${CONFIG}
 
 COPY --from=builder /usr/local/bin/gitlab-workhorse /usr/local/bin/
 
-COPY --from=rails /srv/gitlab/public/ /srv/gitlab/public/
+COPY --from=rails --chown=${GITLAB_USER} /srv/gitlab/public/ /srv/gitlab/public/
 
 COPY scripts/ /scripts/
 
