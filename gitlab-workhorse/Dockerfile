@@ -49,6 +49,6 @@ COPY --from=rails scripts/ /srv/bin/
 
 ENV CONFIG_TEMPLATE_DIRECTORY=/etc
 
-ENTRYPOINT ["/scripts/entrypoint.sh"]
+ENTRYPOINT ["/srv/bin/entrypoint.sh"]
 
 CMD /srv/bin/start-workhorse
