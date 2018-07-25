@@ -2,7 +2,7 @@ ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/git-base
 ARG TAG=2.17.1
 FROM ${FROM_IMAGE}:${TAG} as builder
 
-ENV WORKHORSE_VERSION=5.0.0
+ARG WORKHORSE_VERSION=v5.0.0
 ARG BUILD_DIR=/tmp/build
 
 RUN buildDeps=' \
@@ -11,7 +11,7 @@ RUN buildDeps=' \
   && apt-get install -y --no-install-recommends $buildDeps \
   && mkdir -p ${BUILD_DIR} \
   && cd ${BUILD_DIR} \
-  && curl -o workhorse.tar.bz2 https://gitlab.com/gitlab-org/gitlab-workhorse/repository/v${WORKHORSE_VERSION}/archive.tar.bz2 \
+  && curl -o workhorse.tar.bz2 https://gitlab.com/gitlab-org/gitlab-workhorse/repository/${WORKHORSE_VERSION}/archive.tar.bz2 \
   && tar -xjf workhorse.tar.bz2 \
   && rm workhorse.tar.bz2 \
   && cd gitlab-workhorse-* \
@@ -21,7 +21,8 @@ RUN buildDeps=' \
   && apt-get purge -y --auto-remove $buildDeps \
   && rm -rf /var/lib/apt/lists/*
 
-FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-rails-ee
+FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-rails-ee as rails
+
 ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
 ARG GITLAB_USER=git
@@ -32,7 +33,11 @@ RUN install -d -o ${GITLAB_USER} ${DATADIR}
 
 RUN install -d -o ${GITLAB_USER} ${CONFIG}
 
+FROM debian:stretch-slim
+
 COPY --from=builder /usr/local/bin/gitlab-workhorse /usr/local/bin/
+
+COPY --from=rails /srv/gitlab/app/assets/ /srv/gitlab/app/assets/
 
 COPY scripts/ /srv/bin/
 
