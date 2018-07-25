@@ -2,6 +2,7 @@ ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/git-base
 ARG TAG=2.17.1
 ARG GITLAB_EDITION=gitlab-rails-ee
 ARG GITLAB_VERSION=latest
+ARG RUBY_VERSION=latest
 
 FROM ${FROM_IMAGE}:${TAG} as builder
 
@@ -26,7 +27,7 @@ RUN buildDeps=' \
 
 FROM registry.gitlab.com/gitlab-org/build/cng/${GITLAB_EDITION}:${GITLAB_VERSION} as rails
 
-FROM debian:stretch-slim
+FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${RUBY_VERSION}
 
 ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
@@ -44,11 +45,5 @@ RUN install -d -o ${GITLAB_USER} ${CONFIG}
 COPY --from=builder /usr/local/bin/gitlab-workhorse /usr/local/bin/
 
 COPY --from=rails /srv/gitlab/app/assets/ /srv/gitlab/app/assets/
-
-COPY --from=rails scripts/ /scripts/
-
-ENV CONFIG_TEMPLATE_DIRECTORY=/etc
-
-ENTRYPOINT ["/scripts/entrypoint.sh"]
 
 CMD /scripts/start-workhorse
