@@ -1,7 +1,7 @@
 ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/git-base
 ARG TAG=2.17.1
 ARG GITLAB_EDITION=gitlab-rails-ee
-ARG GITLAB_VERSION=latest
+ARG RAILS_VERSION=latest
 ARG RUBY_VERSION=latest
 
 FROM ${FROM_IMAGE}:${TAG} as builder
