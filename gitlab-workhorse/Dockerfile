@@ -25,7 +25,7 @@ RUN buildDeps=' \
   && apt-get purge -y --auto-remove $buildDeps \
   && rm -rf /var/lib/apt/lists/*
 
-FROM registry.gitlab.com/gitlab-org/build/cng/${GITLAB_EDITION}:${GITLAB_VERSION} as rails
+FROM registry.gitlab.com/gitlab-org/build/cng/${GITLAB_EDITION}:${RAILS_VERSION} as rails
 
 FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${RUBY_VERSION}
 
