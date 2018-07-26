@@ -44,10 +44,13 @@ RUN install -d -o ${GITLAB_USER} ${CONFIG}
 
 COPY --from=builder /usr/local/bin/gitlab-workhorse /usr/local/bin/
 
-COPY --from=rails /srv/gitlab/public/ /srv/gitlab/public/
+COPY --from=rails --chown=git /srv/gitlab/public/ /srv/gitlab/public/
 
-RUN chown -R ${GITLAB_USER} /srv/gitlab/public
+USER $GITLAB_USER:$GITLAB_USER
 
 COPY scripts/ /scripts/
 
 CMD /scripts/start-workhorse
+
+HEALTHCHECK --interval=30s --timeout=30s --retries=5 \
+CMD /scripts/healthcheck
