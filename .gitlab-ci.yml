@@ -33,6 +33,13 @@ stages:
     - export TARGET_VERSION=$(get_target_version)
     - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
 
+gitlab-operator:
+  <<: *job-base
+  stage: phase-one
+  script:
+  - build_if_needed
+  - push_if_master
+
 gitlab-ruby:
   <<: *job-base
   stage: phase-one
