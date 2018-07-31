@@ -1,5 +1,6 @@
+ARG CI_REGISTRY_IMAGE="registry.gitlab.com/gitlab-org/build/cng"
 ARG TAG=latest
-ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-go
+ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go"
 
 FROM ${FROM_IMAGE}:${TAG}
 

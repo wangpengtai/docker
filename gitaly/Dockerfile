@@ -1,7 +1,8 @@
+ARG CI_REGISTRY_IMAGE="registry.gitlab.com/gitlab-org/build/cng"
 ARG TAG=latest
 ARG SHELL_CONTAINER=latest
-ARG FROM_SHELL_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-shell
-ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/git-base
+ARG FROM_SHELL_IMAGE="$CI_REGISTRY_IMAGE/gitlab-shell"
+ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/git-base"
 
 FROM ${FROM_SHELL_IMAGE}:${SHELL_CONTAINER} as shell
 FROM ${FROM_IMAGE}:${TAG}
