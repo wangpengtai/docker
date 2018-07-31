@@ -1,6 +1,7 @@
+ARG CI_REGISTRY_IMAGE="registry.gitlab.com/gitlab-org/build/cng"
 ARG TAG=latest
-ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/gitlab-go
-ARG PG_IMAGE=registry.gitlab.com/gitlab-org/build/cng/postgresql:9.6.8
+ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go"
+ARG PG_IMAGE="$CI_REGISTRY_IMAGE/postgresql:9.6.8"
 
 FROM ${PG_IMAGE} as pg_image
 
@@ -118,7 +119,7 @@ RUN rm -rf \
     find /srv/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} +
 
 # Final image
-FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-go:${TAG}
+FROM "$CI_REGISTRY_IMAGE/gitlab-go:${TAG}"
 ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
 ARG GITLAB_USER=git
