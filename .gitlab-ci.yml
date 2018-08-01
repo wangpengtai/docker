@@ -235,7 +235,7 @@ gitaly:
   dependencies:
     - gitlab-shell
 
-gitlab-workhorse:
+gitlab-workhorse-ee:
   <<: *job-base
   stage: phase-five
   script:
@@ -244,7 +244,19 @@ gitlab-workhorse:
       - ruby_version=$(get_version gitlab-ruby)
       - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
       - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$GIT_VERSION"
-      - build_if_needed --build-arg "TAG=$GIT_VERSION" --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION" --build-arg "RAILS_VERSION=${rails_container}" --build-arg "$RUBY_VERSION=$ruby_version"
+      - build_if_needed --build-arg "TAG=$GIT_VERSION" --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION" --build-arg "RAILS_VERSION=${rails_container}" --build-arg "$RUBY_VERSION=$ruby_version" --build-arg "GITLAB_EDITION=gitlab-rails-ee"
+      - push_if_master
+
+gitlab-workhorse-ce:
+  <<: *job-base
+  stage: phase-five
+  script:
+      - rails_version=$(get_version gitlab-rails)
+      - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$GITLAB_WORKHORSE_VERSION$rails_version$(date -u +$D)" | sha1sum))
+      - ruby_version=$(get_version gitlab-ruby)
+      - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
+      - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$GIT_VERSION"
+      - build_if_needed --build-arg "TAG=$GIT_VERSION" --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION" --build-arg "RAILS_VERSION=${rails_container}" --build-arg "$RUBY_VERSION=$ruby_version" --build-arg "GITLAB_EDITION=gitlab-rails-ce"
       - push_if_master
 
 release-chart:
