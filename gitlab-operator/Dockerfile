@@ -8,4 +8,5 @@ RUN apt-get update && apt-get install -y bzip2 && \
     export GOPATH=$(pwd)/gitlab-operator && \
     cd gitlab-operator/src/gitlab.com/gitlab-org/distribution/gitlab-operator && \
     dep ensure -v && go build -o gitlab-operator *.go && \
+    chmod +x gitlab-operator && \
     cp gitlab-operator /usr/local/bin/gitlab-operator
