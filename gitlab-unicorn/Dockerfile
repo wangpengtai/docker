@@ -13,7 +13,7 @@ COPY scripts/ /scripts
 COPY unicorn.rb ${CONFIG}/unicorn.rb
 
 RUN cd /srv/gitlab && \
-    ln -s ${CONFIG}/unicorn.rb config/unicorn.rb \
+    ln -s ${CONFIG}/unicorn.rb config/unicorn.rb && \
     mkdir -p public/uploads && chown ${GITLAB_USER}:${GITLAB_USER} public/uploads && \
     chmod 0700 public/uploads
 
