@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+
+apt-get update -q
+DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends make \
+        build-essential \
+        libicu-dev
+
+rm -rf /var/lib/apt/lists/*
+
+gem install mail_room:${MAILROOM_VERSION} \
+        charlock_holmes:0.7.6 \
+        redis:4.0.1 \
+        redis-namespace:1.6.0
+
+DEBIAN_FRONTEND=noninteractive apt-get purge -yq make build-essential libicu-dev
