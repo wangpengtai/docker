@@ -6,6 +6,7 @@ variables:
   GIT_VERSION: "2.17.1"
   GO_VERSION: "1.9.6"
   PG_VERSION: "9.6.8"
+  MAILROOM_VERSION: "0.9.1"
   DOCKER_DRIVER: overlay2
   DOCKER_HOST: tcp://docker:2375
 
@@ -201,6 +202,17 @@ gitlab-sidekiq-ce:
   except:
     variables:
       - $EE_PIPELINE
+
+gitlab-mailroom:
+  <<: *job-base
+  stage: phase-two
+  script:
+      - export CONTAINER_VERSION="$MAILROOM_VERSION"
+      - ruby_version=$(get_version gitlab-ruby)
+      - build_if_needed --build-arg "MAILROOM_VERSION=$MAILROOM_VERSION" --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-ruby" --build-arg "TAG=$ruby_version"
+      - push_if_master
+  dependencies:
+      - gitlab-ruby
 
 gitlab-shell:
   <<: *job-base
