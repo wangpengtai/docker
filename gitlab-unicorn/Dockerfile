@@ -1,5 +1,5 @@
 ARG TAG=latest
-ARG CI_REGISTRY_IMAGE="registry.gitlab.com/gitlab-org/build/cng"
+ARG CI_REGISTRY_IMAGE="registry.gitlab.com/charts/components/images"
 ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee"
 FROM ${FROM_IMAGE}:${TAG}
 

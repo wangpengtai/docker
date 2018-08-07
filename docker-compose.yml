@@ -8,7 +8,7 @@ services:
     - ./dev/omnibus-config/gitlab.rb:/etc/gitlab/gitlab.rb
     - db-upgrade:/tmp/db-upgrade
   migrations:
-    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-rails-${GITLAB_EDITION}:latest
+    image: registry.gitlab.com/charts/components/images/gitlab-rails-${GITLAB_EDITION}:latest
     environment:
       - "CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab/config/templates"
       - "CONFIG_DIRECTORY=/var/opt/gitlab/config/gitlab"
@@ -20,7 +20,7 @@ services:
       - ./dev/shell-secret:/var/opt/gitlab/config/secrets
       - db-upgrade:/var/opt/gitlab/.upgrade-status
   unicorn:
-    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-unicorn-${GITLAB_EDITION}:latest
+    image: registry.gitlab.com/charts/components/images/gitlab-unicorn-${GITLAB_EDITION}:latest
     environment:
       - "GITLAB_HOST=localhost"
       - "GITLAB_PORT=${NGINX_HOST_PORT}"
@@ -38,7 +38,7 @@ services:
       - ./dev/unicorn-config:/var/opt/gitlab/config/templates
       - ./dev/shell-secret:/var/opt/gitlab/config/secrets
   sidekiq:
-    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-${GITLAB_EDITION}:latest
+    image: registry.gitlab.com/charts/components/images/gitlab-sidekiq-${GITLAB_EDITION}:latest
     command: ["/scripts/wait-for-deps", "/scripts/process-wrapper"]
     depends_on:
       - omnibus
@@ -49,7 +49,7 @@ services:
     volumes:
       - ./dev/sidekiq-config:/var/opt/gitlab/config/gitlab
   shell:
-    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:latest
+    image: registry.gitlab.com/charts/components/images/gitlab-shell:latest
     environment:
       - "CONFIG_TEMPLATE_DIRECTORY=/srv/gitlab-config"
       - "CONFIG_DIRECTORY=/srv/gitlab-shell"
@@ -59,7 +59,7 @@ services:
       - ./dev/shell-config:/srv/gitlab-config
       - ./dev/shell-secret:/srv/gitlab-secrets
   gitaly:
-    image: registry.gitlab.com/gitlab-org/build/cng/gitaly:latest
+    image: registry.gitlab.com/charts/components/images/gitaly:latest
     ports:
       - "${GITALY_HOST_PORT}:8075"
     volumes:

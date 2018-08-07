@@ -1,4 +1,4 @@
-ARG CI_REGISTRY_IMAGE="registry.gitlab.com/gitlab-org/build/cng"
+ARG CI_REGISTRY_IMAGE="registry.gitlab.com/charts/components/images"
 ARG TAG=latest
 ARG SHELL_CONTAINER=latest
 ARG FROM_SHELL_IMAGE="$CI_REGISTRY_IMAGE/gitlab-shell"
