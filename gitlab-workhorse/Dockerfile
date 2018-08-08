@@ -36,8 +36,8 @@ ARG GITLAB_USER=git
 # create gitlab user
 RUN adduser --disabled-password --gecos 'GitLab' ${GITLAB_USER} && \
   install -d -o ${GITLAB_USER} /var/log/gitlab/ && \
-  install -d -o ${GITLAB_USER} ${DATADIR}&& \
-  install -d -o ${GITLAB_USER} ${CONFIG}&& \
+  install -d -o ${GITLAB_USER} ${DATADIR} && \
+  install -d -o ${GITLAB_USER} ${CONFIG}
 
 COPY --from=builder /usr/local/bin/gitlab-workhorse /usr/local/bin/
 
