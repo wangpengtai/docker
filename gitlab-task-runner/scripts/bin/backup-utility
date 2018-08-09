@@ -2,14 +2,6 @@
 set -e
 
 ACTION="backup"
-S3_CONFIG_DIR=${S3_CONFIG_DIR-/etc/gitlab}
-
-if [ ! -f $S3_CONFIG_DIR/accesskey ]; then
-  echo "Can not find s3 config file at $S3_CONFIG_DIR/accesskey or $S3_CONFIG_DIR/secretkey"
-fi
-
-export S3_ACCESS_KEY=$(cat $S3_CONFIG_DIR/accesskey)
-export S3_SECRET_KEY=$(cat $S3_CONFIG_DIR/secretkey)
 export BACKUP_BUCKET_NAME=${BACKUP_BUCKET_NAME-gitlab-backups}
 
 rails_dir=/srv/gitlab
