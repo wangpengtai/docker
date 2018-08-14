@@ -7,6 +7,8 @@ variables:
   GO_VERSION: "1.9.6"
   PG_VERSION: "9.6.8"
   MAILROOM_VERSION: "0.9.1"
+  ALPINE_VERSION: "3.8"
+  CFSSL_VERSION: "1.2"
   DOCKER_DRIVER: overlay2
   DOCKER_HOST: tcp://docker:2375
 
@@ -56,8 +58,9 @@ cfssl-self-sign:
   <<: *job-base
   stage: phase-one
   script:
-  - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$(date -u +%D)" | sha1sum))
-  - build_if_needed
+  - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$CFSSL_VERSION" | sha1sum))
+  - build_if_needed --build-arg "CFSSL_VERSION=$CFSSL_VERSION" --build-arg "ALPINE_VERSION=$ALPINE_VERSION"
+  - push_if_master "$CFSSL_VERSION"
   - push_if_master
 
 kubectl:

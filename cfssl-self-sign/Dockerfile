@@ -4,8 +4,8 @@
 # - Generate self-signed CA
 # - Generate a wild-card SSL certificate, based on that CA.
 # - Expose all of the above through /output
-
-FROM alpine:3.8
+ARG ALPINE_VERSION=3.8
+FROM alpine:$ALPINE_VERSION
 
 ARG CFSSL_VERSION="1.2"
 ARG CFSSL_PLATFORM="linux-amd64"
