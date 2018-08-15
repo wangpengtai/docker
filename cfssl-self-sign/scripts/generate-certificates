@@ -1,0 +1,91 @@
+#!/bin/sh
+# generate-certificates
+# Auto-generate self-signed certificates for kubernetes
+# - Generate self-signed CA
+# - Generate a wild-card SSL certificate, based on that CA.
+# - Expose all of the above through /output
+
+# Prepare variables
+ALGORITHM=${ALGORITHM:-ecdsa}
+KEY_SIZE=${KEY_SIZE:-256}
+EXPIRY=${EXPIRE:-8760h}
+
+CA_SUBJECT=${CA_SUBJECT:-GitLab}
+CA_ORG=${CA_ORG:-GitLab}
+CA_ORG_UNIT=${CA_ORG_UNIT:-Cloud Native}
+
+CERT_SUBJECT=${CERT_SUBJECT:-GitLab}
+CERT_DOMAIN=${CERT_DOMAIN:-example.com}
+
+cd /output
+
+# Output the version
+echo "cfssl version:"
+cfssl version
+
+echo "ca-config.json:"
+tee ca-config.json  <<CA_CONFIG
+{
+  "signing": {
+    "default": {
+      "expiry": "${EXPIRY}"
+    },
+    "profiles": {
+      "www": {
+        "usages": [
+          "signing",
+          "cert sign",
+          "key encipherment",
+          "server auth"
+        ],
+        "expiry": "${EXPIRY}"
+      }
+    }
+  }
+}
+CA_CONFIG
+
+echo "ca-csr.json:"
+tee ca-csr.json <<CA_CSR
+{
+  "CN": "${CA_SUBJECT}",
+  "key": {
+    "algo": "${ALGORITHM}",
+    "size": ${KEY_SIZE}
+  },
+  "names": [
+    {
+      "O": "${CA_ORG}",
+      "OU": "${CA_ORG_UNIT}"
+    }
+  ]
+}
+CA_CSR
+
+echo "wildecard-csr.json:"
+tee wildcard-csr.json <<WILDCARD_CSR
+{
+  "CN": "${CERT_SUBJECT}",
+  "hosts": [
+    "${CERT_DOMAIN}",
+    "*.${CERT_DOMAIN}"
+  ],
+  "key": {
+    "algo": "${ALGORITHM}",
+    "size": ${KEY_SIZE}
+  }
+}
+WILDCARD_CSR
+
+# Generate CA Cert
+echo "Generating CA"
+cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+
+# Generate Wildcard Cert
+echo "Generating Wildcard certificate"
+cfssl gencert \
+  -ca=ca.pem -ca-key=ca-key.pem \
+  --config=ca-config.json \
+  --profile=www \
+  wildcard-csr.json | cfssljson -bare wildcard
+
