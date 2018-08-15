@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# purge any existing state
+rm -r /etc/ssl/certs/*
+
+# Update the CA certificates store in /etc/ssl/certs
+# - generated hashes
+# - symlinks to various external locations
+# - compiles ca-certificates.crt
+update-ca-certificates
+
+# De-reference all symlinks that point outside of /etc/ssl/certs
+for f in /etc/ssl/certs/*.pem /etc/ssl/certs/*.crt ; do
+  # read the symlinks origin
+  origin=$(readlink -f $f) ;
+  originPath=${origin%/*} ;
+  # if outside of /etc/ssl/certs, cp to /etc/ssl/certs in place of symlink
+  if [ "$originPath" != "/etc/ssl/certs" ]; then
+    rm $f ;
+    cp $origin $f
+  fi
+done
