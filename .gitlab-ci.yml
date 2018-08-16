@@ -2,6 +2,7 @@ variables:
   GITLAB_EE_VERSION: "master"
   GITLAB_CE_VERSION: "master"
   GITLAB_SHELL_VERSION: "master"
+  GITLAB_WORKHORSE_VERSION: "v5.0.0"
   GITALY_VERSION: "master"
   GIT_VERSION: "2.17.1"
   GO_VERSION: "1.9.6"
@@ -267,6 +268,36 @@ gitaly:
   - push_if_master $GITALY_VERSION
   dependencies:
     - gitlab-shell
+
+gitlab-workhorse-ee:
+  <<: *job-base
+  stage: phase-five
+  script:
+      - rails_version=$(get_version gitlab-rails)
+      - ruby_version=$(get_version gitlab-ruby)
+      - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
+      - export CONTAINER_VERSION=($(echo -n "$GITLAB_WORKHORSE_VERSION$rails_container$(date -u +%D)" | sha1sum))
+      - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$GIT_VERSION"
+      - build_if_needed --build-arg "TAG=$GIT_VERSION" --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION" --build-arg "RAILS_VERSION=${rails_container}" --build-arg "$RUBY_VERSION=$ruby_version" --build-arg "GITLAB_EDITION=gitlab-rails-ee"
+      - push_if_master $GITLAB_EE_VERSION
+  except:
+    variables:
+      - $CE_PIPELINE
+
+gitlab-workhorse-ce:
+  <<: *job-base
+  stage: phase-five
+  script:
+      - rails_version=$(get_version gitlab-rails)
+      - ruby_version=$(get_version gitlab-ruby)
+      - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
+      - export CONTAINER_VERSION=($(echo -n "$GITLAB_WORKHORSE_VERSION$rails_container$(date -u +%D)" | sha1sum))
+      - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$GIT_VERSION"
+      - build_if_needed --build-arg "TAG=$GIT_VERSION" --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION" --build-arg "RAILS_VERSION=${rails_container}" --build-arg "$RUBY_VERSION=$ruby_version" --build-arg "GITLAB_EDITION=gitlab-rails-ce"
+      - push_if_master $GITLAB_CE_VERSION
+  except:
+    variables:
+      - $EE_PIPELINE
 
 release-chart:
   stage: release

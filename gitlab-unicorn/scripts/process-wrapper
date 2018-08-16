@@ -2,10 +2,6 @@
 
 set -e
 
-echo "Starting workhorse"
-touch /var/log/gitlab/workhorse.log
-/scripts/start-workhorse &
-
 echo "Starting unicorn"
 /srv/gitlab/bin/bundle exec unicorn -E production -c /srv/gitlab/config/unicorn.rb /srv/gitlab/config.ru &
 

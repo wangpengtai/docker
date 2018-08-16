@@ -4,10 +4,14 @@ set -e
 
 touch /var/log/gitlab/workhorse.log
 
-exec gitlab-workhorse \
+gitlab-workhorse \
   ${GITLAB_WORKHORSE_EXTRA_ARGS} \
   -listenAddr 0.0.0.0:8181 \
   -documentRoot "/srv/gitlab/public" \
-  -secretPath "/srv/gitlab/.gitlab_workhorse_secret" \
+  -secretPath "/etc/gitlab/gitlab-workhorse/secret" \
   -config "/var/opt/gitlab/config/gitlab/workhorse-config.toml" \
->> /var/log/gitlab/workhorse.log 2>&1
+>> /var/log/gitlab/workhorse.log 2>&1 &
+
+tail -f /var/log/gitlab/workhorse.log
+
+wait
