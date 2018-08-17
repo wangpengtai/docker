@@ -33,10 +33,26 @@ services:
       - omnibus
     ports:
       - "${UNICORN_HOST_PORT}:8080"
-      - "${WORKHORSE_HOST_PORT}:8181"
     volumes:
       - ./dev/unicorn-config:/var/opt/gitlab/config/templates
       - ./dev/shell-secret:/var/opt/gitlab/config/secrets
+      - ./dev/workhorse-config/.gitlab_workhorse_secret:/srv/gitlab/.gitlab_workhorse_secret
+      - uploads:/srv/gitlab/public/uploads
+  workhorse:
+    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse:latest
+    environment:
+      - "CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab/config/templates"
+      - "CONFIG_DIRECTORY=/var/opt/gitlab/config/gitlab"
+      - "GITLAB_WORKHORSE_EXTRA_ARGS=-authBackend http://unicorn:8080"
+    command: ["/scripts/start-workhorse"]
+    depends_on:
+      - unicorn
+    ports:
+      - "${WORKHORSE_HOST_PORT}:8181"
+    volumes:
+      - ./dev/workhorse-config:/var/opt/gitlab/config/templates
+      - ./dev/workhorse-config/.gitlab_workhorse_secret:/srv/gitlab/.gitlab_workhorse_secret
+      - uploads:/srv/gitlab/public/uploads
   sidekiq:
     image: registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-${GITLAB_EDITION}:latest
     command: ["/scripts/wait-for-deps", "/scripts/process-wrapper"]
@@ -71,3 +87,9 @@ volumes:
       type: tmpfs
       device: tmpfs
       o: "size=10M"
+  uploads:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: "size=100M"

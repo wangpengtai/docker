@@ -14,7 +14,7 @@ gitlab_rails['internal_api_url'] = 'http://unicorn:8080'
 gitlab_shell['secret_token'] = '6fad933c6267760415116fc4f35d2c7fc969f4ce0c162b49c3dd7be5517283e63000340ba7282dd97c2b3518b6d3c97a7cdd995dcb6f00dff11cf0aa316a459f'
 
 gitlab_workhorse['enable'] = false
-gitlab_workhorse['listen_addr'] = 'unicorn:8181'
+gitlab_workhorse['listen_addr'] = 'workhorse:8181'
 gitlab_workhorse['listen_network'] = 'tcp'
 
 # PostgreSQL configuration
