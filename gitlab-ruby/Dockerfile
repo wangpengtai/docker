@@ -60,7 +60,8 @@ RUN buildDeps=' \
   && rm -rf ${BUILD_DIR} \
   && gem update --system "$RUBYGEMS_VERSION" \
   && gem install bundler --version "$BUNDLER_VERSION" --force --no-ri --no-rdoc \
-  && gem install rb-readline \
+  && curl -s https://codeload.github.com/ConnorAtherton/rb-readline/tar.gz/v0.5.5 | tar -xz \
+  && ruby rb-readline-0.5.5/setup.rb && rm -rf rb-readline-0.5.5 \
   && rm -rf /root/.gem/
 
 # Add scripts
