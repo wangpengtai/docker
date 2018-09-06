@@ -12,6 +12,7 @@ services:
     environment:
       - "CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab/config/templates"
       - "CONFIG_DIRECTORY=/var/opt/gitlab/config/gitlab"
+      - "BYPASS_SCHEMA_VERSION=true"
     command: ["/scripts/wait-for-deps", "/scripts/db-migrate"]
     depends_on:
       - omnibus
@@ -39,7 +40,7 @@ services:
       - ./dev/workhorse-config/.gitlab_workhorse_secret:/srv/gitlab/.gitlab_workhorse_secret
       - uploads:/srv/gitlab/public/uploads
   workhorse:
-    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse:latest
+    image: registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-${GITLAB_EDITION}:latest
     environment:
       - "CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab/config/templates"
       - "CONFIG_DIRECTORY=/var/opt/gitlab/config/gitlab"
