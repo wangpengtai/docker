@@ -40,7 +40,6 @@ RUN buildDeps=' \
   libgdbm-dev \
   libglib2.0-dev \
   libncurses-dev \
-  libedit-dev \
   libxml2-dev \
   libxslt-dev \
   make \
@@ -53,7 +52,7 @@ RUN buildDeps=' \
   && tar -xf ruby.tar.xz \
   && rm ruby.tar.xz \
   && cd ruby-${RUBY_MINOR_VERSION} \
-  && ./configure --prefix=/usr --with-libedit --with-out-ext=dbm --enable-shared --disable-install-rdoc --disable-install-doc  --without-gmp --without-gdbm --without-tk --disable-dtrace \
+  && ./configure --prefix=/usr --with-out-ext=dbm,readline --enable-shared --disable-install-rdoc --disable-install-doc  --without-gmp --without-gdbm --without-tk --disable-dtrace \
   && make -j "$(nproc)" \
   && make -j "$(nproc)" install \
   && cd \
@@ -61,6 +60,8 @@ RUN buildDeps=' \
   && rm -rf ${BUILD_DIR} \
   && gem update --system "$RUBYGEMS_VERSION" \
   && gem install bundler --version "$BUNDLER_VERSION" --force --no-ri --no-rdoc \
+  && curl -s https://codeload.github.com/ConnorAtherton/rb-readline/tar.gz/v0.5.5 | tar -xz \
+  && ruby rb-readline-0.5.5/setup.rb && rm -rf rb-readline-0.5.5 \
   && rm -rf /root/.gem/
 
 # Add scripts
