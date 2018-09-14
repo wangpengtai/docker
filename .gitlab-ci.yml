@@ -108,6 +108,9 @@ gitlab-rails-ee:
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$GO_VERSION"
+  - build_dir=$(get_trimmed_job_name)
+  - 'export ARTIFACT_URL="https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-ee/jobs/artifacts/${GITLAB_EE_VERSION}/download?job=gitlab:assets:compile"'
+  - 'curl -L --header "JOB-TOKEN: $CI_JOB_TOKEN" "$ARTIFACT_URL" -o ${build_dir}/assets-gitlab-ee.zip'
   - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
   - docker pull $pg_image > /dev/null || true
   - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_EE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_EE_VERSION$(date -uI)" --build-arg "TAG=$GO_VERSION" --build-arg "PG_IMAGE=$pg_image"
@@ -122,6 +125,8 @@ gitlab-rails-ce:
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$GO_VERSION"
+  - build_dir=$(get_trimmed_job_name)
+  - 'curl -L --header "JOB-TOKEN: $CI_JOB_TOKEN" "https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-ce/jobs/artifacts/${GITLAB_CE_VERSION}/download?job=gitlab:assets:compile" -o ${build_dir}/assets-gitlab-ce.zip'
   - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
   - docker pull $pg_image > /dev/null || true
   - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce" --build-arg "GITLAB_VERSION=${GITLAB_CE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_CE_VERSION$(date -uI)" --build-arg "TAG=$GO_VERSION" --build-arg "PG_IMAGE=$pg_image"
@@ -289,12 +294,12 @@ gitlab-workhorse-ce:
   stage: phase-five
   script:
       - rails_version=$(get_version gitlab-rails)
+      - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$GITLAB_WORKHORSE_VERSION$rails_version$(date -u +$D)" | sha1sum))
       - ruby_version=$(get_version gitlab-ruby)
       - rails_container=($(echo -n "$BASE_VERSION$rails_version$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
-      - export CONTAINER_VERSION=($(echo -n "$GITLAB_WORKHORSE_VERSION$rails_container$(date -u +%D)" | sha1sum))
       - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$GIT_VERSION"
       - build_if_needed --build-arg "TAG=$GIT_VERSION" --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION" --build-arg "RAILS_VERSION=${rails_container}" --build-arg "$RUBY_VERSION=$ruby_version" --build-arg "GITLAB_EDITION=gitlab-rails-ce"
-      - push_if_master $GITLAB_CE_VERSION
+      - push_if_master
   except:
     variables:
       - $EE_PIPELINE
