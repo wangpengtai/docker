@@ -8,6 +8,7 @@ RUN apt-get update \
   ca-certificates \
   openssl \
   tar \
+  vim \
   python python-pip \
   && pip install setuptools \
   && pip install --upgrade s3cmd==2.0.1 \
