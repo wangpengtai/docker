@@ -23,6 +23,7 @@ RUN apt-get update \
   coreutils \
   curl \
   gnupg2 \
+  vim \
   && rm -rf /var/lib/apt/lists/* \
   && mkdir -p ${BUILD_DIR}
 
