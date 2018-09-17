@@ -1,4 +1,5 @@
-ARG FROM_IMAGE=registry.gitlab.com/gitlab-org/build/cng/git-base
+ARG CI_REGISTRY_IMAGE="registry.gitlab.com/gitlab-org/build/cng"
+ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/git-base"
 ARG TAG=2.17.1
 ARG GITLAB_EDITION=gitlab-rails-ee
 ARG RAILS_VERSION=latest
@@ -25,9 +26,9 @@ RUN buildDeps=' \
   && apt-get purge -y --auto-remove $buildDeps \
   && rm -rf /var/lib/apt/lists/*
 
-FROM registry.gitlab.com/gitlab-org/build/cng/${GITLAB_EDITION}:${RAILS_VERSION} as rails
+FROM ${CI_REGISTRY_IMAGE}/${GITLAB_EDITION}:${RAILS_VERSION} as rails
 
-FROM registry.gitlab.com/gitlab-org/build/cng/gitlab-ruby:${RUBY_VERSION}
+FROM ${CI_REGISTRY_IMAGE}/gitlab-ruby:${RUBY_VERSION}
 
 ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
