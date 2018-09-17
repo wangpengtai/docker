@@ -8,7 +8,6 @@ FROM ${FROM_IMAGE}:${TAG} as builder
 
 ARG WORKHORSE_VERSION=v5.0.0
 ARG BUILD_DIR=/tmp/build
-ARG GITLAB_USER=git
 
 RUN buildDeps=' \
   make' \
@@ -47,10 +46,6 @@ COPY --from=rails --chown=git /srv/gitlab/public/ /srv/gitlab/public/
 COPY --from=rails --chown=git /srv/gitlab/doc/ /srv/gitlab/doc/
 
 USER $GITLAB_USER:$GITLAB_USER
-
-COPY --from=rails scripts/ /scripts/
-
-ENV CONFIG_TEMPLATE_DIRECTORY=/etc
 
 COPY scripts/ /scripts/
 
