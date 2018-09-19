@@ -108,8 +108,6 @@ gitlab-rails-ee:
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$GO_VERSION"
-  - build_dir=$(get_trimmed_job_name)
-  - fetch_assets 'ee' "${GITLAB_EE_VERSION}" "${build_dir}" || (echo "Error downloading assets" ; exit 1)
   - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
   - docker pull $pg_image > /dev/null || true
   - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_EE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_EE_VERSION$(date -uI)" --build-arg "TAG=$GO_VERSION" --build-arg "PG_IMAGE=$pg_image"
@@ -124,8 +122,6 @@ gitlab-rails-ce:
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$GO_VERSION"
-  - build_dir=$(get_trimmed_job_name)
-  - fetch_assets 'ce' "${GITLAB_CE_VERSION}" "${build_dir}" || (echo "Error downloading assets" ; exit 1)
   - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
   - docker pull $pg_image > /dev/null || true
   - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce" --build-arg "GITLAB_VERSION=${GITLAB_CE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_CE_VERSION$(date -uI)" --build-arg "TAG=$GO_VERSION" --build-arg "PG_IMAGE=$pg_image"
