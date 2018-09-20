@@ -15,8 +15,8 @@ ARG GITLAB_USER=git
 ARG GITLAB_VERSION=v10.7.0-ee
 ARG GITLAB_EDITION=gitlab-ee
 ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SKIP_STORAGE_VALIDATION=true"
-ARG NODE_VERSION=8.9.4
-ARG YARN_VERSION=0.20.3
+ARG NODE_VERSION=8.12.0
+ARG YARN_VERSION=1.9.3
 
 # install runtime deps
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=866729
