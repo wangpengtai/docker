@@ -1,9 +1,0 @@
-#!/usr/bin/env ruby
-
-require 'object_storage_backup'
-
-abort("restore_item and tar path needs to be passed as arguments to the script") unless ARGV.length == 2
-
-bucket_name = ENV["#{ARGV[0].upcase}_BUCKET_NAME"] || "gitlab-#{ARGV[0]}"
-tmp_bucket  = ENV['TMP_BUCKET_NAME'] || 'tmp'
-ObjectStorageBackup.new(ARGV[0], ARGV[1], bucket_name, tmp_bucket).restore

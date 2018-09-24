@@ -156,13 +156,6 @@ function restore(){
   ! is_skipped "repositories" && gitlab-rake gitlab:backup:repo:restore
   ! is_skipped "builds"       && gitlab-rake gitlab:backup:builds:restore
 
-  object_storage_backed=(registry uploads artifacts lfs)
-  for restore_item in ${object_storage_backed[@]}; do
-    if [ -f $backups_path/${restore_item}.tar.gz ]; then
-      ! is_skipped $restore_item && object-storage-restore $restore_item $backups_path/${restore_item}.tar.gz
-    fi
-  done
-
   gitlab-rake cache:clear
 }
 
