@@ -18,20 +18,24 @@ FROM debian:stretch-slim
 ADD https://storage.googleapis.com/kubernetes-release/release/v1.10.4/bin/linux/amd64/kubectl /usr/local/bin/kubectl
 RUN chmod +x /usr/local/bin/kubectl
 
-RUN  apt-get update \
-  && apt-get install -y --no-install-recommends \
-  ca-certificates \
-  sed \
-  curl \
-  && rm -rf /var/lib/apt/lists/*
-
 ENV REDIS_VERSION 3.2.12
-RUN curl -fsSL "http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz" | tar -xzC /tmp \
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+     ca-certificates \
+     sed \
+     curl \
+     make \
+     gcc \
+  && curl -fsSL "http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz" | tar -xzC /tmp \
   && cd /tmp/redis-3.2.12 \
+  && make distclean \
   && make \
   && make install \
   && cd / \
-  && rm -rf /tmp/redis-3.2.12
+  && apt-get -y purge gcc make
+  && rm -rf /tmp/redis-3.2.12 \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY redis-master.conf /etc/redis/master.conf
 COPY redis-slave.conf /etc/redis/slave.conf
