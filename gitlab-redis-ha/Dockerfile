@@ -33,7 +33,7 @@ RUN apt-get update \
   && make \
   && make install \
   && cd / \
-  && apt-get -y purge gcc make
+  && apt-get -y purge gcc make \
   && rm -rf /tmp/redis-3.2.12 \
   && rm -rf /var/lib/apt/lists/*
 
