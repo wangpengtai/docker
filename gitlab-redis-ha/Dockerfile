@@ -23,10 +23,15 @@ RUN  apt-get update \
   ca-certificates \
   sed \
   curl \
-  redis-tools=3:3.2.6-3+deb9u2 \
-  redis-server=3:3.2.6-3+deb9u2 \
-  redis-sentinel=3:3.2.6-3+deb9u2 \
   && rm -rf /var/lib/apt/lists/*
+
+ENV REDIS_VERSION 3.2.12
+RUN curl -fsSL "http://download.redis.io/releases/redis-#{REDIS_VERSION}.tar.gz" | tar -xzC /tmp \
+  && cd /tmp/redis-3.2.12 \
+  && make \
+  && make install \
+  && cd / \
+  && rm -rf /tmp/redis-3.2.12
 
 
 COPY redis-master.conf /etc/redis/master.conf
