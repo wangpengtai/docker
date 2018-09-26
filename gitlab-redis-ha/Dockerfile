@@ -27,13 +27,14 @@ RUN apt-get update \
      curl \
      make \
      gcc \
+     libc6-dev \
   && curl -fsSL "http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz" | tar -xzC /tmp \
   && cd /tmp/redis-3.2.12 \
   && make distclean \
   && make \
   && make install \
   && cd / \
-  && apt-get -y purge gcc make \
+  && apt-get -y purge gcc make libc6-dev \
   && rm -rf /tmp/redis-3.2.12 \
   && rm -rf /var/lib/apt/lists/*
 
