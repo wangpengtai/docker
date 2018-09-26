@@ -23,9 +23,9 @@ RUN  apt-get update \
   ca-certificates \
   sed \
   curl \
-  redis-tools=3:3.2.6-3+deb9u1 \
-  redis-server=3:3.2.6-3+deb9u1 \
-  redis-sentinel=3:3.2.6-3+deb9u1 \
+  redis-tools=3:3.2.6-3+deb9u2 \
+  redis-server=3:3.2.6-3+deb9u2 \
+  redis-sentinel=3:3.2.6-3+deb9u2 \
   && rm -rf /var/lib/apt/lists/*
 
 
