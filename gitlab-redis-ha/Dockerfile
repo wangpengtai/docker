@@ -29,13 +29,13 @@ RUN apt-get update \
      gcc \
      libc6-dev \
   && curl -fsSL "http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz" | tar -xzC /tmp \
-  && cd /tmp/redis-3.2.12 \
+  && cd /tmp/redis-${REDIS_VERSION} \
   && make distclean \
   && make \
   && make install \
   && cd / \
   && apt-get -y purge gcc make libc6-dev \
-  && rm -rf /tmp/redis-3.2.12 \
+  && rm -rf /tmp/redis-${REDIS_VERSION} \
   && rm -rf /var/lib/apt/lists/*
 
 COPY redis-master.conf /etc/redis/master.conf
