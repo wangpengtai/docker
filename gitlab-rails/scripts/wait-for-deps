@@ -18,6 +18,10 @@ function checkSchemaVersion() {
       return 1
     fi
 
+    # Output the current schema version
+    echo "Database Schema"
+    echo $DB_SCHEMA_VERSION
+    echo "Codebase version: $SCHEMA_VERSION"
     # Some uses (migrations) only care if the DB is up
     if [ -n "${BYPASS_SCHEMA_VERSION}" ]; then
       return 0
