@@ -2,6 +2,7 @@
 set -e
 
 ACTION="backup"
+OMNIBUS=false
 export BACKUP_BUCKET_NAME=${BACKUP_BUCKET_NAME-gitlab-backups}
 
 rails_dir=/srv/gitlab
@@ -18,6 +19,7 @@ function usage()
      -h, --help                             show this help message and exit
      --restore [-t TIMESTAMP | -f URL]      when specified utility restores from an existing backup specified
                                             as a url or a timestamp of an existing backup in object storage
+     --omnibus                              if the backup tarball is from an omnibus-gitlab package based installation
 HEREDOC
 }
 
@@ -156,12 +158,16 @@ function restore(){
   ! is_skipped "repositories" && gitlab-rake gitlab:backup:repo:restore
   ! is_skipped "builds"       && gitlab-rake gitlab:backup:builds:restore
 
-  object_storage_backed=(registry uploads artifacts lfs)
-  for restore_item in ${object_storage_backed[@]}; do
-    if [ -f $backups_path/${restore_item}.tar.gz ]; then
-      ! is_skipped $restore_item && object-storage-restore $restore_item $backups_path/${restore_item}.tar.gz
-    fi
-  done
+  if [ "$OMNIBUS" = true ]; then
+    echo "Found tarball from omnibus-gitlab package based installation. Files present in object storage will be skipped."
+  else
+    object_storage_backed=(registry uploads artifacts lfs)
+    for restore_item in ${object_storage_backed[@]}; do
+      if [ -f $backups_path/${restore_item}.tar.gz ]; then
+        ! is_skipped $restore_item && object-storage-restore $restore_item $backups_path/${restore_item}.tar.gz
+      fi
+    done
+  fi
 
   gitlab-rake cache:clear
 }
@@ -188,6 +194,10 @@ do
       ;;
     --restore)
       ACTION="restore"
+      shift
+      ;;
+    --omnibus)
+      OMNIBUS=true
       shift
       ;;
     *)
