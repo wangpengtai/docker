@@ -149,10 +149,10 @@ function restore(){
   export BACKUP=$timestamp
   unpack_backup $file
 
-  skipped_line=$(cat $(dirname $file)/backup_information.yml | grep skipped)
+  skipped_line=$(grep skipped $(dirname $file)/backup_information.yml)
   export SKIPPED=$(echo ${skipped_line#:skipped:})
 
-  installation_type_line=$(cat $(dirname $file)/backup_information.yml | grep installation_type)
+  installation_type_line=$(grep installation_type $(dirname $file)/backup_information.yml)
   export INSTALLATION_TYPE=$(echo ${installation_type_line#:installation_type: })
   # If installation type is not found, set it to unknown
   export INSTALLATION_TYPE=${INSTALLATION_TYPE:-unknown}
