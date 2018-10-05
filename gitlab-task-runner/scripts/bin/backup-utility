@@ -87,6 +87,7 @@ function write_backup_info(){
 :backup_created_at: $(date "+%Y-%m-%d %H:%M:%S %z")
 :gitlab_version: $(get_version)
 :tar_version: $(tar --version | head -n 1)
+:installation_type: gitlab-helm-chart
 :skipped: $1
 EOF
 }
@@ -151,17 +152,26 @@ function restore(){
   skipped_line=$(cat $(dirname $file)/backup_information.yml | grep skipped)
   export SKIPPED=$(echo ${skipped_line#:skipped:})
 
+  installation_type_line=$(cat $(dirname $file)/backup_information.yml | grep installation_type)
+  export INSTALLATION_TYPE=$(echo ${installation_type_line#:installation_type: })
+  # If installation type is not found, set it to unknown
+  export INSTALLATION_TYPE=${INSTALLATION_TYPE:-unknown}
+
   ! is_skipped "db"           && gitlab-rake gitlab:db:drop_tables
   ! is_skipped "db"           && gitlab-rake gitlab:backup:db:restore
   ! is_skipped "repositories" && gitlab-rake gitlab:backup:repo:restore
   ! is_skipped "builds"       && gitlab-rake gitlab:backup:builds:restore
 
-  object_storage_backed=(registry uploads artifacts lfs)
-  for restore_item in ${object_storage_backed[@]}; do
-    if [ -f $backups_path/${restore_item}.tar.gz ]; then
-      ! is_skipped $restore_item && object-storage-restore $restore_item $backups_path/${restore_item}.tar.gz
-    fi
-  done
+  if [ "$INSTALLATION_TYPE" = "gitlab-helm-chart" ]; then
+    object_storage_backed=(registry uploads artifacts lfs)
+    for restore_item in ${object_storage_backed[@]}; do
+      if [ -f $backups_path/${restore_item}.tar.gz ]; then
+        ! is_skipped $restore_item && object-storage-restore $restore_item $backups_path/${restore_item}.tar.gz
+      fi
+    done
+  else
+    echo "Backup tarball not from a Helm chart based installation. Not processing files in object storage."
+  fi
 
   gitlab-rake cache:clear
 }
