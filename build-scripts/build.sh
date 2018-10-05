@@ -83,3 +83,29 @@ function push_if_master(){
     fi
   fi
 }
+
+function is_zipfile(){
+  local candidate="${1}"
+  python -m zipfile -t "${candidate}" > /dev/null 2>&1
+}
+
+function fetch_assets(){
+  local edition="${1}"
+  local version="${2}"
+  local destination="${3}/assets-gitlab-${edition}.zip"
+  local artifact_url="https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-${edition}/jobs/artifacts/${version}/download?job=gitlab:assets:compile"
+  # Try and download assets for 30 minutes before giving up
+  local timeout=1800
+  local interval=30
+  while ! is_zipfile ${destination}
+  do
+      if [ ${timeout} -le 0 ]
+      then
+          echo 'Timed out waiting for assets to appear, please check the upstream job'
+          return 1
+      fi
+      curl -sL "${artifact_url}" -o "${destination}"
+      timeout=$((timeout-interval))
+      sleep ${interval}
+  done
+}

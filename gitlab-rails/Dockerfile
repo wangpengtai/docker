@@ -12,11 +12,12 @@ ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
 ARG CPU_COUNT=4
 ARG GITLAB_USER=git
-ARG GITLAB_VERSION=v10.7.0-ee
+ARG GITLAB_VERSION=v11.1.2-ee
 ARG GITLAB_EDITION=gitlab-ee
 ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SKIP_STORAGE_VALIDATION=true"
 ARG NODE_VERSION=8.12.0
 ARG YARN_VERSION=1.9.3
+ARG ASSETS_ARCHIVE="assets-${GITLAB_EDITION}.zip"
 
 # install runtime deps
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=866729
@@ -42,6 +43,7 @@ RUN buildDeps=' \
     patch \
     pkg-config \
     libkrb5-3 \
+    unzip \
     sudo' \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $buildDeps \
@@ -97,20 +99,18 @@ RUN cd /srv/gitlab && \
 RUN cd /srv/gitlab && \
     sudo -u git -H bundle install --deployment --without development test mysql aws kerberos --jobs 4 --retry 5
 
-# Install node dependencies
-RUN cd /srv/gitlab && \
-    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV yarn install --production --pure-lockfile
+# Uncompress assets
+COPY --chown=git ${ASSETS_ARCHIVE} ${BUILD_DIR}
+
+RUN cd /srv/gitlab && unzip -q ${BUILD_DIR}/${ASSETS_ARCHIVE} 'public/*'
 
 # compile GetText PO files
 RUN cd /srv/gitlab && \
     sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gettext:compile
 
-# compile assets
-RUN cd /srv/gitlab && \
-    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gitlab:assets:compile
-
 # Clean up
 RUN rm -rf \
+        ${BUILD_DIR} \
         /srv/gitlab/node_modules \
         /srv/gitlab/tmp \
         /srv/gitlab/spec \
