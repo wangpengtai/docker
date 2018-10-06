@@ -152,10 +152,8 @@ function restore(){
   skipped_line=$(grep skipped $(dirname $file)/backup_information.yml)
   export SKIPPED=$(echo ${skipped_line#:skipped:})
 
-  installation_type_line=$(grep installation_type $(dirname $file)/backup_information.yml)
+  installation_type_line=$(grep installation_type $(dirname $file)/backup_information.yml || echo ":installation_type: unknown")
   export INSTALLATION_TYPE=$(echo ${installation_type_line#:installation_type: })
-  # If installation type is not found, set it to unknown
-  export INSTALLATION_TYPE=${INSTALLATION_TYPE:-unknown}
 
   ! is_skipped "db"           && gitlab-rake gitlab:db:drop_tables
   ! is_skipped "db"           && gitlab-rake gitlab:backup:db:restore
