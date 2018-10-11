@@ -46,6 +46,11 @@ COPY --from=rails --chown=git /srv/gitlab/public/ /srv/gitlab/public/
 
 COPY --from=rails --chown=git /srv/gitlab/doc/ /srv/gitlab/doc/
 
+# Copy Sidekiq assets
+COPY --from=rails --chown=git \
+  /srv/gitlab/vendor/bundle/ruby/2.4.0/gems/sidekiq-5.2.1/web/assets \
+  /srv/gitlab/vendor/bundle/ruby/2.4.0/gems/sidekiq-5.2.1/web/assets
+
 USER $GITLAB_USER:$GITLAB_USER
 
 COPY scripts/ /scripts/
