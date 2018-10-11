@@ -3,7 +3,7 @@ variables:
   GITLAB_CE_VERSION: "master"
   GITLAB_SHELL_VERSION: "master"
   GITLAB_WORKHORSE_VERSION: "v5.0.0"
-  GITALY_VERSION: "master"
+  GITALY_VERSION: "makefile-bootstrap"
   GIT_VERSION: "2.17.1"
   GO_VERSION: "1.9.6"
   PG_VERSION: "9.6.8"
