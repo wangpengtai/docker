@@ -44,7 +44,7 @@ RUN cd ${BUILD_DIR} && \
     rm -rf ${BUILD_DIR} /srv/gitaly-ruby/spec  /srv/gitaly-ruby/features
 
 # Include Shell
-COPY --from=shell /srv/gitlab-shell /srv/gitlab-shell
+COPY --from=shell --chown=git /srv/gitlab-shell /srv/gitlab-shell
 
 RUN cp /srv/gitlab-shell/config.yml.example /etc/gitaly/shell-config.yml && ln -s /etc/gitaly/shell-config.yml /srv/gitlab-shell/config.yml
 
