@@ -28,6 +28,16 @@ RUN buildDeps=' \
 
 FROM ${CI_REGISTRY_IMAGE}/${GITLAB_EDITION}:${RAILS_VERSION} as rails
 
+# charts/gitlab#689
+# Strip down /srv/gitlab/vendor/bundle/ruby/* to
+#   /srv/gitlab/vendor/bundle/ruby/?.?.?/gems/sidekiq-?.?.?/web/assets
+RUN \
+  KEEP=$(find /srv/gitlab/vendor/bundle/ruby -type d -name assets | grep 'sidekiq-.*\/web\/assets') \
+  && mv $KEEP /tmp/sidekiq_assets \
+  && rm -rf /srv/gitlab/vendor/bundle/ruby/ \
+  && mkdir -p $KEEP \
+  && mv /tmp/sidekiq_assets/* $KEEP/
+
 FROM ${CI_REGISTRY_IMAGE}/gitlab-ruby:${RUBY_VERSION}
 
 ARG DATADIR=/var/opt/gitlab
@@ -45,6 +55,8 @@ COPY --from=builder /usr/local/bin/gitlab-* /usr/local/bin/
 COPY --from=rails --chown=git /srv/gitlab/public/ /srv/gitlab/public/
 
 COPY --from=rails --chown=git /srv/gitlab/doc/ /srv/gitlab/doc/
+
+COPY --from=rails --chown=git /srv/gitlab/vendor/bundle/ruby /srv/gitlab/vendor/bundle/ruby
 
 USER $GITLAB_USER:$GITLAB_USER
 
