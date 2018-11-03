@@ -6,6 +6,7 @@ variables:
   GITALY_VERSION: "master"
   GIT_VERSION: "2.17.1"
   GO_VERSION: "1.9.6"
+  KUBECTL_VERSION: "v1.9.3"
   PG_VERSION: "9.6.8"
   MAILROOM_VERSION: "0.9.1"
   ALPINE_VERSION: "3.8"
@@ -68,8 +69,11 @@ kubectl:
   <<: *job-base
   stage: phase-one
   script:
-  - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$(date -u +%D)" | sha1sum))
-  - build_if_needed
+  - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION${KUBECTL_VERSION}" | sha1sum))
+  - build_if_needed --build-arg "KUBECTL_VERSION=${KUBECTL_VERSION}"
+  - if [ -n "$BUILDING_IMAGE" ]; then
+  -  tag_and_push $KUBECTL_VERSION
+  - fi
   - push_if_master
 
 alpine-certificates:
