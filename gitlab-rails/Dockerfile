@@ -2,7 +2,12 @@ ARG CI_REGISTRY_IMAGE="registry.gitlab.com/gitlab-org/build/cng"
 ARG TAG=latest
 ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go"
 ARG PG_IMAGE="$CI_REGISTRY_IMAGE/postgresql:9.6.8"
+ARG GITLAB_VERSION=v10.7.0-ee
+ARG GITLAB_EDITION=gitlab-ee
+ARG ASSETS_IMAGE="registry.gitlab.com/gitlab-org/gitlab-ee/gitlab-assets-ee:${GITLAB_VERSION}"
 
+
+FROM ${ASSETS_IMAGE} as assets
 FROM ${PG_IMAGE} as pg_image
 
 FROM ${FROM_IMAGE}:${TAG} as builder
@@ -12,11 +17,10 @@ ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=$DATADIR/config/gitlab
 ARG CPU_COUNT=4
 ARG GITLAB_USER=git
-ARG GITLAB_VERSION=v10.7.0-ee
-ARG GITLAB_EDITION=gitlab-ee
 ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SKIP_STORAGE_VALIDATION=true"
 ARG NODE_VERSION=8.12.0
 ARG YARN_VERSION=1.9.3
+
 
 # install runtime deps
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=866729
@@ -65,6 +69,10 @@ RUN mkdir ${DATADIR} && \
     mkdir data repo config && \
     chown -R ${GITLAB_USER}:${GITLAB_USER} ${DATADIR}
 
+# https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
+ARG GITLAB_VERSION
+ARG GITLAB_EDITION
+
 # Download GitLab
 ARG CACHE_BUSTER=false
 RUN cd /home/${GITLAB_USER} && \
@@ -105,10 +113,6 @@ RUN cd /srv/gitlab && \
 RUN cd /srv/gitlab && \
     sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gettext:compile
 
-# compile assets
-RUN cd /srv/gitlab && \
-    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gitlab:assets:compile
-
 # Clean up
 RUN rm -rf \
         /srv/gitlab/node_modules \
@@ -117,6 +121,9 @@ RUN rm -rf \
         /srv/gitlab/vendor/bundle/ruby/*/cache && \
     find /srv/gitlab -name '*.gem' -type f -print -delete && \
     find /srv/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} +
+
+# install assets from assets container (see ARG ASSETS_IMAGE at top)
+COPY --chown=git --from=assets assets /srv/gitlab/public/assets/
 
 # Final image
 FROM "$CI_REGISTRY_IMAGE/gitlab-go:${TAG}"

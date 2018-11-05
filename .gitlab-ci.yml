@@ -13,6 +13,8 @@ variables:
   CFSSL_VERSION: "1.2"
   DOCKER_DRIVER: overlay2
   DOCKER_HOST: tcp://docker:2375
+  ASSETS_IMAGE_PREFIX: "gitlab-assets"
+  ASSETS_IMAGE_REGISTRY_PREFIX: "registry.gitlab.com/gitlab-org"
 
 before_script:
   - source build-scripts/build.sh
@@ -112,9 +114,10 @@ gitlab-rails-ee:
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$GO_VERSION"
+  - export EE_ASSETS_TAG=$(slugify "${GITLAB_EE_VERSION}")
   - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
   - docker pull $pg_image > /dev/null || true
-  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_EE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_EE_VERSION$(date -uI)" --build-arg "TAG=$GO_VERSION" --build-arg "PG_IMAGE=$pg_image"
+  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_EE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_EE_VERSION$(date -uI)" --build-arg "TAG=$GO_VERSION" --build-arg "PG_IMAGE=$pg_image" --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE_REGISTRY_PREFIX}/gitlab-ee/${ASSETS_IMAGE_PREFIX}-ee:${EE_ASSETS_TAG}"
   - push_if_master $GITLAB_EE_VERSION
   except:
     variables:
@@ -126,9 +129,10 @@ gitlab-rails-ce:
   script:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$GO_VERSION"
+  - export CE_ASSETS_TAG=$(slugify "${GITLAB_CE_VERSION}")
   - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
   - docker pull $pg_image > /dev/null || true
-  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce" --build-arg "GITLAB_VERSION=${GITLAB_CE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_CE_VERSION$(date -uI)" --build-arg "TAG=$GO_VERSION" --build-arg "PG_IMAGE=$pg_image"
+  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce" --build-arg "GITLAB_VERSION=${GITLAB_CE_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_CE_VERSION$(date -uI)" --build-arg "TAG=$GO_VERSION" --build-arg "PG_IMAGE=$pg_image" --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE_REGISTRY_PREFIX}/gitlab-ce/${ASSETS_IMAGE_PREFIX}-ce:${CE_ASSETS_TAG}"
   - push_if_master $GITLAB_CE_VERSION
   except:
     variables:
