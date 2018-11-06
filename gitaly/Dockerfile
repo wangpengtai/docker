@@ -20,6 +20,9 @@ RUN apt-get update \
 RUN adduser --disabled-password --gecos 'GitLab' ${GITLAB_USER} && \
       sed -i "s/${GITLAB_USER}:!/${GITLAB_USER}:*/" /etc/shadow
 
+# create default repository directory
+RUN sudo -u ${GITLAB_USER} -H mkdir -p /home/${GITLAB_USER}/repositories
+
 # adjust git settings
 RUN sudo -u ${GITLAB_USER} -H git config --global gc.auto 0 && \
     sudo -u ${GITLAB_USER} -H git config --global core.autocrlf input && \
