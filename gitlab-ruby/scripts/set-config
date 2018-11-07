@@ -27,6 +27,10 @@ if config_directory != template_directory
 
   Dir.glob(File.join(template_directory, '*.{yml,yaml,toml,rb,json}')).each do |file|
     puts "Copying #{File.basename(file)} into #{config_directory}"
-    FileUtils.cp(file, config_directory)
+    begin
+      FileUtils.cp(file, config_directory)
+    rescue ArgumentError
+      puts "Error copying file #{File.basename(file)}. Skipping."
+    end
   end
 end
