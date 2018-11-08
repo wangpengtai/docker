@@ -29,4 +29,5 @@ if config_directory != template_directory
     puts "Copying #{File.basename(file)} into #{config_directory}"
     FileUtils.cp(file, config_directory)
   end
+  puts "Test"
 end
