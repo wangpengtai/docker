@@ -9,6 +9,7 @@ GITLAB_REVISION=$(cat /srv/gitlab/REVISION)
 CONNECTION_DIGEST=$(md5sum /srv/gitlab/config/database.yml | awk '{ print $1 }' )
 MIGRATE_STATUS_FILE="${UPGRADE_STATUS_DIR}/db-migrate-${CONNECTION_DIGEST}-${GITLAB_REVISION}"
 ROOT_PASSWORD_FILE="${ROOT_PASSWORD_FILE:-/srv/gitlab/config/initial_root_password}"
+LICENSE_FILE="${LICENSE_FILE:-/srv/gitlab/config/GITLAB_EE_LICENSE}"
 
 # Exit if the database has already been updated
 if [ -f "${MIGRATE_STATUS_FILE}" ] && ( grep -qFx 0 "${MIGRATE_STATUS_FILE}" ); then
@@ -43,6 +44,13 @@ if [ "$STATUS" = "0" ]; then
   echo "Enabling 'ci_enable_live_trace', 'import_export_object_storage' feature flags"
   /srv/gitlab/bin/rails runner -e production \
     "Feature.enable('ci_enable_live_trace'); Feature.enable('import_export_object_storage');" && STATUS=$? || STATUS=$?
+fi
+
+# Upload a license if the file is found
+if [ -f "${LICENSE_FILE}" ]; then
+  echo "Found license file. Attempting to apply the license."
+  /srv/gitlab/bin/rails runner -e production \
+    "content = File.read('${LICENSE_FILE}').strip; License.new(data: content).save if License.where(data: content).empty?" && STATUS=$? || STATUS=$?
 fi
 
 # Update the status
