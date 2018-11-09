@@ -93,6 +93,7 @@ RUN cd /srv/gitlab && \
     sudo -u ${GITLAB_USER} -H cp config/resque.yml.example ${CONFIG}/resque.yml && \
     sudo -u ${GITLAB_USER} -H cp config/secrets.yml.example ${CONFIG}/secrets.yml && \
     sudo -u ${GITLAB_USER} -H cp config/database.yml.postgresql ${CONFIG}/database.yml && \
+    sudo -u ${GITLAB_USER} -H cp config/pseudonymizer.yml ${CONFIG}/pseudonymizer.yml && \
     sudo -u ${GITLAB_USER} -H cp config/initializers/rack_attack.rb.example ${CONFIG}/rack_attack.rb && \
     sudo -u ${GITLAB_USER} -H ln -s ${CONFIG}/* config && \
     sudo -u ${GITLAB_USER} -H mv config/rack_attack.rb config/initializers && \
