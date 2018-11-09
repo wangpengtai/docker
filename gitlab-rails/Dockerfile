@@ -93,8 +93,9 @@ RUN cd /srv/gitlab && \
     sudo -u ${GITLAB_USER} -H cp config/resque.yml.example ${CONFIG}/resque.yml && \
     sudo -u ${GITLAB_USER} -H cp config/secrets.yml.example ${CONFIG}/secrets.yml && \
     sudo -u ${GITLAB_USER} -H cp config/database.yml.postgresql ${CONFIG}/database.yml && \
-    # Copying pseudonymizer.yml if present - only in EE
-    sudo -u ${GITLAB_USER} -H cp config/pseudonymizer.yml ${CONFIG}/pseudonymizer.yml || true && \
+    # Moving pseudonymizer.yml instead of copying - Else symlink will fail.
+    # pseudonymizer.yml does not exist in CE, hence the || true fallback
+    sudo -u ${GITLAB_USER} -H mv config/pseudonymizer.yml ${CONFIG}/pseudonymizer.yml || true && \
     sudo -u ${GITLAB_USER} -H cp config/initializers/rack_attack.rb.example ${CONFIG}/rack_attack.rb && \
     sudo -u ${GITLAB_USER} -H ln -s ${CONFIG}/* config && \
     sudo -u ${GITLAB_USER} -H mv config/rack_attack.rb config/initializers && \
