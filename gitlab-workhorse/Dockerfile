@@ -31,7 +31,7 @@ FROM ${CI_REGISTRY_IMAGE}/${GITLAB_EDITION}:${RAILS_VERSION} as rails
 FROM ${CI_REGISTRY_IMAGE}/gitlab-ruby:${RUBY_VERSION}
 
 ARG DATADIR=/var/opt/gitlab
-ARG CONFIG=$DATADIR/config/gitlab
+ARG CONFIG=/srv/gitlab/config
 ARG GITLAB_USER=git
 
 # create gitlab user
