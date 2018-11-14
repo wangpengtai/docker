@@ -11,7 +11,7 @@ services:
     image: registry.gitlab.com/gitlab-org/build/cng/gitlab-rails-${GITLAB_EDITION}:latest
     environment:
       - "CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab/config/templates"
-      - "CONFIG_DIRECTORY=/var/opt/gitlab/config/gitlab"
+      - "CONFIG_DIRECTORY=/srv/gitlab/config"
       - "BYPASS_SCHEMA_VERSION=true"
     command: ["/scripts/wait-for-deps", "/scripts/db-migrate"]
     depends_on:
@@ -28,7 +28,7 @@ services:
       - "GITLAB_SSH_PORT=${SSH_HOST_PORT}"
       - "GITALY_FEATURE_DEFAULT_ON=1"
       - "CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab/config/templates"
-      - "CONFIG_DIRECTORY=/var/opt/gitlab/config/gitlab"
+      - "CONFIG_DIRECTORY=/srv/gitlab/config"
     command: ["/scripts/wait-for-deps", "/scripts/process-wrapper"]
     depends_on:
       - omnibus
@@ -43,7 +43,7 @@ services:
     image: registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-${GITLAB_EDITION}:latest
     environment:
       - "CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab/config/templates"
-      - "CONFIG_DIRECTORY=/var/opt/gitlab/config/gitlab"
+      - "CONFIG_DIRECTORY=/srv/gitlab/config"
       - "GITLAB_WORKHORSE_EXTRA_ARGS=-authBackend http://unicorn:8080"
     command: ["/scripts/start-workhorse"]
     depends_on:

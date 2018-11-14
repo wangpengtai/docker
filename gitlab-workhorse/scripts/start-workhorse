@@ -9,7 +9,7 @@ gitlab-workhorse \
   -listenAddr 0.0.0.0:8181 \
   -documentRoot "/srv/gitlab/public" \
   -secretPath "/etc/gitlab/gitlab-workhorse/secret" \
-  -config "/var/opt/gitlab/config/gitlab/workhorse-config.toml" \
+  -config "/srv/gitlab/config/workhorse-config.toml" \
 >> /var/log/gitlab/workhorse.log 2>&1 &
 
 tail -f /var/log/gitlab/workhorse.log

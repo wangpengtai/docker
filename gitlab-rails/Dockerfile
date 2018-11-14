@@ -14,7 +14,6 @@ FROM ${FROM_IMAGE}:${TAG} as builder
 
 ARG BUILD_DIR=/tmp/build
 ARG DATADIR=/var/opt/gitlab
-ARG CONFIG=$DATADIR/config/gitlab
 ARG CPU_COUNT=4
 ARG GITLAB_USER=git
 ARG COMPILE_ASSETS_ENV="RAILS_ENV=production NODE_ENV=production USE_DB=false SKIP_STORAGE_VALIDATION=true"
@@ -86,20 +85,18 @@ RUN cd /home/${GITLAB_USER} && \
 
 # Configure GitLab
 RUN cd /srv/gitlab && \
-    sudo -u ${GITLAB_USER} -H mkdir ${CONFIG} && \
     sudo -u ${GITLAB_USER} -H mkdir ${DATADIR}/.upgrade-status && \
     sudo -u ${GITLAB_USER} -H echo 'gitlab-cloud-native-image' > INSTALLATION_TYPE && \
-    sudo -u ${GITLAB_USER} -H cp config/gitlab.yml.example ${CONFIG}/gitlab.yml && \
-    sudo -u ${GITLAB_USER} -H cp config/resque.yml.example ${CONFIG}/resque.yml && \
-    sudo -u ${GITLAB_USER} -H cp config/secrets.yml.example ${CONFIG}/secrets.yml && \
-    sudo -u ${GITLAB_USER} -H cp config/database.yml.postgresql ${CONFIG}/database.yml && \
-    sudo -u ${GITLAB_USER} -H cp config/initializers/rack_attack.rb.example ${CONFIG}/rack_attack.rb && \
-    sudo -u ${GITLAB_USER} -H ln -s ${CONFIG}/* config && \
-    sudo -u ${GITLAB_USER} -H mv config/rack_attack.rb config/initializers && \
-    sed --in-place "/host: localhost/d" ${CONFIG}/gitlab.yml && \
-    sed --in-place "/port: 80/d" ${CONFIG}/gitlab.yml && \
-    sed --in-place "s/# user:.*/user: ${GITLAB_USER}/" ${CONFIG}/gitlab.yml && \
-    sed --in-place "s:/home/git/repositories:${DATADIR}/repo:" ${CONFIG}/gitlab.yml
+    sudo -u ${GITLAB_USER} -H cp config/gitlab.yml.example config/gitlab.yml && \
+    sudo -u ${GITLAB_USER} -H cp config/resque.yml.example config/resque.yml && \
+    sudo -u ${GITLAB_USER} -H cp config/secrets.yml.example config/secrets.yml && \
+    sudo -u ${GITLAB_USER} -H cp config/database.yml.postgresql config/database.yml && \
+    sudo -u ${GITLAB_USER} -H cp config/initializers/rack_attack.rb.example config/rack_attack.rb && \
+    sudo -u ${GITLAB_USER} -H ln -s /srv/gitlab/config/rack_attack.rb /srv/gitlab/config/initializers/rack_attack.rb && \
+    sed --in-place "/host: localhost/d" config/gitlab.yml && \
+    sed --in-place "/port: 80/d" config/gitlab.yml && \
+    sed --in-place "s/# user:.*/user: ${GITLAB_USER}/" config/gitlab.yml && \
+    sed --in-place "s:/home/git/repositories:${DATADIR}/repo:" config/gitlab.yml
 
 # Install gems
 RUN cd /srv/gitlab && \
@@ -128,7 +125,7 @@ COPY --chown=git --from=assets assets /srv/gitlab/public/assets/
 # Final image
 FROM "$CI_REGISTRY_IMAGE/gitlab-go:${TAG}"
 ARG DATADIR=/var/opt/gitlab
-ARG CONFIG=$DATADIR/config/gitlab
+ARG CONFIG=/srv/gitlab/config
 ARG GITLAB_USER=git
 
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=866729
