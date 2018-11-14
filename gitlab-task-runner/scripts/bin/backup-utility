@@ -9,7 +9,7 @@ backups_path=$rails_dir/tmp/backups
 backup_tars_path=$rails_dir/tmp/backup_tars
 object_storage_backends=( registry uploads artifacts lfs )
 
-skipping_backup_for=${SKIP_BACKUP_FOR-()}
+skipping_backup_for=()
 
 function usage()
 {
@@ -210,6 +210,7 @@ do
       ;;
     --skip)
       skipping_backup_for+=( "$2" )
+      shift
       shift
       ;;
     *)
