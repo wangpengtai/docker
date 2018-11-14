@@ -7,17 +7,23 @@ export BACKUP_BUCKET_NAME=${BACKUP_BUCKET_NAME-gitlab-backups}
 rails_dir=/srv/gitlab
 backups_path=$rails_dir/tmp/backups
 backup_tars_path=$rails_dir/tmp/backup_tars
+object_storage_backends=( registry uploads artifacts lfs )
+
+skipping_backup_for=${SKIP_BACKUP_FOR-()}
 
 function usage()
 {
   cat << HEREDOC
 
-   Usage: backup-utility [--restore] [-f URL]
+   Usage: backup-utility [--restore] [-f URL] [--skip COMPONENT]
 
    optional arguments:
      -h, --help                             show this help message and exit
      --restore [-t TIMESTAMP | -f URL]      when specified utility restores from an existing backup specified
                                             as a url or a timestamp of an existing backup in object storage
+     --skip COMPONENT                       when specified utility will skip the backup of this object store.
+                                            May be defined multiple times. Valid values for OBJECT are
+                                            database, repositories, and any of the object storages.
 HEREDOC
 }
 
@@ -109,12 +115,17 @@ function backup(){
   backup_name=$(get_backup_name)
   mkdir -p $backup_tars_path
 
-  gitlab-rake gitlab:backup:db:create
-  gitlab-rake gitlab:backup:repo:create
-  object_storage_backed=(registry uploads artifacts lfs)
+  if ! [[ $skipping_backup_for =~ "database" ]]; then
+    gitlab-rake gitlab:backup:db:create
+  fi
+  if ! [[ $skipping_backup_for =~ "repositories" ]]; then
+    gitlab-rake gitlab:backup:repo:create
+  fi
 
-  for backup_item in ${object_storage_backed[@]}; do
-    object-storage-backup $backup_item $backups_path/${backup_item}.tar.gz
+  for backup_item in ${object_storage_backends[@]}; do
+    if ! [[ $skipping_backup_for =~ $backup_item ]]; then
+      object-storage-backup $backup_item $backups_path/${backup_item}.tar.gz
+    fi
   done
 
   skipped=$(get_skipped $backup_name)
@@ -161,8 +172,7 @@ function restore(){
   ! is_skipped "builds"       && gitlab-rake gitlab:backup:builds:restore
 
   if [ "$INSTALLATION_TYPE" = "gitlab-helm-chart" ]; then
-    object_storage_backed=(registry uploads artifacts lfs)
-    for restore_item in ${object_storage_backed[@]}; do
+    for restore_item in ${object_storage_backends[@]}; do
       if [ -f $backups_path/${restore_item}.tar.gz ]; then
         ! is_skipped $restore_item && object-storage-restore $restore_item $backups_path/${restore_item}.tar.gz
       fi
@@ -196,6 +206,10 @@ do
       ;;
     --restore)
       ACTION="restore"
+      shift
+      ;;
+    --skip)
+      skipping_backup_for+=( "$2" )
       shift
       ;;
     *)
