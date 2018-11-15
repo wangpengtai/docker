@@ -79,6 +79,7 @@ function get_backup_name(){
 
 function cleanup(){
   rm -rf $backups_path/*
+  rm -rf $backup_tars_path/*
 }
 
 function write_backup_info(){
