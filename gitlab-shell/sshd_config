@@ -130,3 +130,6 @@ AuthorizedKeysCommandUser git
 PasswordAuthentication no
 
 AllowUsers git
+
+# Enable the use of Git protcol v2
+AcceptEnv GIT_PROTOCOL
