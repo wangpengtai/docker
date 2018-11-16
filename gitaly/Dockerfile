@@ -10,6 +10,7 @@ FROM ${FROM_IMAGE}:${TAG}
 ARG GITLAB_USER=git
 ARG GITALY_VERSION=v0.96.1
 ARG BUILD_DIR=/tmp/build
+ARG BUNDLE_OPTIONS="--jobs 4 --without development test"
 
 # install runtime deps
 RUN apt-get update \
@@ -35,9 +36,9 @@ RUN cd ${BUILD_DIR} && \
     tar -xjf gitaly.tar.bz2 --strip-components=1 && \
     rm gitaly.tar.bz2 && \
     cd ruby && \
-    bundle install && \
+    bundle install ${BUNDLE_OPTIONS} && \
     bundle exec gem uninstall --force google-protobuf grpc && \
-    BUNDLE_FORCE_RUBY_PLATFORM=true bundle install && \
+    BUNDLE_FORCE_RUBY_PLATFORM=true bundle install ${BUNDLE_OPTIONS} && \
     cd .. && \
     mkdir -p /srv/gitaly-ruby && chown ${GITLAB_USER}:${GITLAB_USER} /srv/gitaly-ruby && \
     cp -r ${BUILD_DIR}/ruby/* /srv/gitaly-ruby/ && \
