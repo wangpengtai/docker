@@ -6,8 +6,9 @@ ARG GITLAB_VERSION=v10.7.0-ee
 ARG GITLAB_EDITION=gitlab-ee
 ARG ASSETS_IMAGE="registry.gitlab.com/gitlab-org/gitlab-ee/gitlab-assets-ee:${GITLAB_VERSION}"
 
-
+<% if !compile_assets %>
 FROM ${ASSETS_IMAGE} as assets
+<% end %>
 FROM ${PG_IMAGE} as pg_image
 
 FROM ${FROM_IMAGE}:${TAG} as builder
@@ -110,6 +111,12 @@ RUN cd /srv/gitlab && \
 RUN cd /srv/gitlab && \
     sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gettext:compile
 
+<% if compile_assets %>
+# compile assets
+RUN cd /srv/gitlab && \
+    sudo -u ${GITLAB_USER} -H $COMPILE_ASSETS_ENV bundle exec rake gitlab:assets:compile
+<% end %>
+
 # Clean up
 RUN rm -rf \
         /srv/gitlab/node_modules \
@@ -119,8 +126,10 @@ RUN rm -rf \
     find /srv/gitlab -name '*.gem' -type f -print -delete && \
     find /srv/gitlab/vendor/bundle/ruby/*/gems -name 'doc' -type d -print -exec rm -r {} +
 
+<% if !compile_assets %>
 # install assets from assets container (see ARG ASSETS_IMAGE at top)
 COPY --chown=git --from=assets assets /srv/gitlab/public/assets/
+<% end %>
 
 # Final image
 FROM "$CI_REGISTRY_IMAGE/gitlab-go:${TAG}"

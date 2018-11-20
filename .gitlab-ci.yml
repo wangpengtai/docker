@@ -15,6 +15,7 @@ variables:
   DOCKER_HOST: tcp://docker:2375
   ASSETS_IMAGE_PREFIX: "gitlab-assets"
   ASSETS_IMAGE_REGISTRY_PREFIX: "registry.gitlab.com/gitlab-org"
+  COMPILE_ASSETS: "false"
 
 before_script:
   - source build-scripts/build.sh
