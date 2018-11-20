@@ -40,8 +40,8 @@ RUN cd ${BUILD_DIR} && \
     bundle exec gem uninstall --force google-protobuf grpc && \
     BUNDLE_FORCE_RUBY_PLATFORM=true bundle install ${BUNDLE_OPTIONS} && \
     cd .. && \
-    mkdir -p /srv/gitaly-ruby && chown ${GITLAB_USER}:${GITLAB_USER} /srv/gitaly-ruby && \
-    cp -r ${BUILD_DIR}/ruby/* /srv/gitaly-ruby/ && \
+    cp -r ${BUILD_DIR}/ruby /srv/gitaly-ruby && \
+    chown ${GITLAB_USER}:${GITLAB_USER} /srv/gitaly-ruby && \
     touch .ruby-bundle && \
     make install && \
     mkdir -p /etc/gitaly && \
