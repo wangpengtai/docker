@@ -283,6 +283,9 @@ git-base:
     - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
     - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$go_version$GIT_VERSION" | sha1sum))
     - build_if_needed --build-arg "TAG=$go_version" --build-arg "GIT_VERSION=$GIT_VERSION"
+    - if [ -n "$BUILDING_IMAGE" ]; then
+    -  tag_and_push $GIT_VERSION
+    - fi
     - push_if_master
 
 gitaly:
