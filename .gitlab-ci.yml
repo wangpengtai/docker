@@ -4,7 +4,7 @@ variables:
   GITLAB_SHELL_VERSION: "master"
   GITLAB_WORKHORSE_VERSION: "master"
   GITALY_VERSION: "master"
-  GIT_VERSION: "2.17.1"
+  GIT_VERSION: "2.18.1"
   GO_VERSION: "1.9.6"
   KUBECTL_VERSION: "v1.9.3"
   PG_VERSION: "9.6.8"
@@ -283,6 +283,9 @@ git-base:
     - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
     - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$go_version$GIT_VERSION" | sha1sum))
     - build_if_needed --build-arg "TAG=$go_version" --build-arg "GIT_VERSION=$GIT_VERSION"
+    - if [ -n "$BUILDING_IMAGE" ]; then
+    -  tag_and_push $GIT_VERSION
+    - fi
     - push_if_master
 
 gitaly:
