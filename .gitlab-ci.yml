@@ -136,7 +136,7 @@ gitlab-task-runner-ee:
   - rails_container=($(echo -n "$go_version$rails_version$GITLAB_EE_VERSION$(date -u +%D)" | sha1sum))
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee:$rails_container"
-  - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ee" --build-arg "TAG=$rails_container"
+  - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ee" --build-arg "TAG=$rails_container" --build-arg "S3CMD_VERSION=$S3CMD_VERSION"
   - push_if_master $GITLAB_EE_VERSION
   dependencies:
     - gitlab-rails-ee
@@ -154,7 +154,7 @@ gitlab-task-runner-ce:
   - rails_container=($(echo -n "$go_version$rails_version$GITLAB_CE_VERSION$(date -u +%D)" | sha1sum))
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ce:$rails_container"
-  - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce" --build-arg "TAG=$rails_container"
+  - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce" --build-arg "TAG=$rails_container" --build-arg "S3CMD_VERSION=$S3CMD_VERSION"
   - push_if_master $GITLAB_CE_VERSION
   dependencies:
     - gitlab-rails-ce
