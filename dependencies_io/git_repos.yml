@@ -1,6 +1,6 @@
 repos:
-  - url: https://github.com/s3tools/s3cmd.git
-    installed: 2.0.1
-    replace_in_files:
-      ci_files/variables.yml: 'S3CMD_VERSION: "{version_clean}"'
-      gitlab-task-runner/Dockerfile: ARG S3CMD_VERSION="{version_clean}"
+- url: https://github.com/s3tools/s3cmd.git
+  installed: v2.0.2
+  replace_in_files:
+    ci_files/variables.yml: 'S3CMD_VERSION: "{version_clean}"'
+    gitlab-task-runner/Dockerfile: ARG S3CMD_VERSION="{version_clean}"
