@@ -1,9 +1,10 @@
 ARG CI_REGISTRY_IMAGE="registry.gitlab.com/gitlab-org/build/cng"
 ARG TAG=latest
 ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee"
-ARG S3CMD_VERSION="2.0.2"
 
 FROM ${FROM_IMAGE}:${TAG}
+
+ARG S3CMD_VERSION="2.0.2"
 
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
