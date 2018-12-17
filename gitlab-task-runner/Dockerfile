@@ -1,6 +1,8 @@
 ARG CI_REGISTRY_IMAGE="registry.gitlab.com/gitlab-org/build/cng"
 ARG TAG=latest
 ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee"
+ARG S3CMD_VERSION="2.0.1"
+
 FROM ${FROM_IMAGE}:${TAG}
 
 RUN apt-get update \
@@ -10,7 +12,7 @@ RUN apt-get update \
   tar \
   python python-pip \
   && pip install setuptools \
-  && pip install --upgrade s3cmd==2.0.1 \
+  && pip install --upgrade s3cmd==${S3CMD_VERSION} \
   && rm -rf /var/lib/apt/lists/*
 
 ARG GITLAB_USER=git
