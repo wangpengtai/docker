@@ -87,14 +87,3 @@ function push_if_master(){
     fi
   fi
 }
-
-# Based off of Gitlab::Utils.slugify from gitlab-ce
-function slugify(){
-    echo "${1}" | awk '
-        {
-            gsub(/[^a-z0-9]/, "-")
-            gsub(/(\A-+|-+\z)/, "")
-            print substr($0, 1, 63);
-        }
-    '
-}
