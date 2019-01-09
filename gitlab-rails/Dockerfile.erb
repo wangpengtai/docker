@@ -167,7 +167,7 @@ COPY --chown=git --from=builder /var/opt/gitlab /var/opt/gitlab
 RUN mv /srv/gitlab/log /var/log/gitlab && \
     ln -s /var/log/gitlab /srv/gitlab/log && \
     chown ${GITLAB_USER}:0 /srv/gitlab && \
-    chmod -R g=u /srv/gitlab
+    chmod -R g=u /srv/gitlab && \
     cd /srv/gitlab && \
     chmod o-rwx config/database.yml && \
     chmod 0660 config/secrets.yml && \
