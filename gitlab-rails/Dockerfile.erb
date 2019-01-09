@@ -80,7 +80,8 @@ RUN cd /home/${GITLAB_USER} && \
     sudo -u ${GITLAB_USER} -H tar -xjf gitlab.tar.bz2 && \
     REVISION=$(find -maxdepth 1 -name ${GITLAB_EDITION}-${GITLAB_VERSION}-* -print | awk -F '-' '{print $NF}' | cut -c -8) && \
     mv ${GITLAB_EDITION}-${GITLAB_VERSION}-* /srv/gitlab && \
-    chown ${GITLAB_USER}:${GITLAB_USER} /srv/gitlab && \
+    chown ${GITLAB_USER}:0 /srv/gitlab && \
+    chmod -R g=u /srv/gitlab && \
     echo -n ${REVISION} > /srv/gitlab/REVISION && \
     rm gitlab.tar.bz2
 
@@ -165,21 +166,23 @@ COPY --chown=git --from=builder /var/opt/gitlab /var/opt/gitlab
 
 RUN mv /srv/gitlab/log /var/log/gitlab && \
     ln -s /var/log/gitlab /srv/gitlab/log && \
+    chown ${GITLAB_USER}:0 /srv/gitlab && \
+    chmod -R g=u /srv/gitlab
     cd /srv/gitlab && \
     chmod o-rwx config/database.yml && \
-    chmod 0600 config/secrets.yml && \
-    chmod -R u+rwX builds/ && \
-    chmod -R u+rwX shared/artifacts/ && \
+    chmod 0660 config/secrets.yml && \
+    chmod -R ug+rwX builds/ && \
+    chmod -R ug+rwX shared/artifacts/ && \
     chmod -R ug+rwX shared/pages/ && \
     chmod -R ug+rwX,o-rwx ${DATADIR}/repo && \
     chmod -R ug-s ${DATADIR}/repo && \
     find ${DATADIR}/repo -type d -print0 | sudo xargs -0 chmod g+s && \
-    mkdir -p public/uploads && chown ${GITLAB_USER}:${GITLAB_USER} public/uploads && \
-    chmod 0700 public/uploads
+    mkdir -p public/uploads && chown ${GITLAB_USER}:0 public/uploads && \
+    chmod 0770 public/uploads
 
 COPY scripts/ /scripts
 
-RUN chown -R ${GITLAB_USER} /scripts
+RUN chown -R ${GITLAB_USER}:0 /scripts
 
 ENV RAILS_ENV=production \
     EXECJS_RUNTIME=Disabled \

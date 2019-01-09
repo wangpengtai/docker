@@ -8,14 +8,12 @@ ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=/srv/gitlab/config
 ARG GITLAB_USER=git
 
-USER $GITLAB_USER:$GITLAB_USER
-
 COPY scripts/ /scripts
 COPY unicorn.rb ${CONFIG}/unicorn.rb
 
 RUN cd /srv/gitlab && \
-    mkdir -p public/uploads && chown ${GITLAB_USER}:${GITLAB_USER} public/uploads && \
-    chmod 0700 public/uploads
+    mkdir -p public/uploads && chown ${GITLAB_USER}:0 public/uploads && \
+    chmod 0770 public/uploads
 
 ENV GITALY_FEATURE_DEFAULT_ON=1
 
