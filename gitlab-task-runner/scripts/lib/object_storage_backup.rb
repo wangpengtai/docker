@@ -20,12 +20,12 @@ class ObjectStorageBackup
   def backup
     puts "Dumping #{@name} ...".blue
 
-    cmd = %W(s3cmd sync s3://#{@remote_bucket_name} /tmp/#{@name})
+    cmd = %W(s3cmd sync s3://#{@remote_bucket_name} /srv/gitlab/tmp/#{@name})
     output, status = run_cmd(cmd)
     failure_abort(output) unless status.zero?
 
-    return unless File.exist? "/tmp/#{@name}" # Bucket may be empty
-    cmd = %W(tar -czf #{@local_tar_path} -C /tmp/#{@name} . )
+    return unless File.exist? "/srv/gitlab/tmp/#{@name}" # Bucket may be empty
+    cmd = %W(tar -czf #{@local_tar_path} -C /srv/gitlab/tmp/#{@name} . )
     output, status = run_cmd(cmd)
     failure_abort(output) unless status.zero?
 
@@ -75,7 +75,7 @@ class ObjectStorageBackup
   end
 
   def restore_from_backup
-    extracted_tar_path = File.join(File.dirname(@local_tar_path), "/tmp/#{@name}")
+    extracted_tar_path = File.join(File.dirname(@local_tar_path), "/srv/gitlab/tmp/#{@name}")
     FileUtils.mkdir_p(extracted_tar_path, mode: 0700)
 
     failure_abort("#{@local_tar_path} not found") unless File.exist?(@local_tar_path)
