@@ -70,6 +70,10 @@ function get_trimmed_job_name(){
   trim_edition $CI_JOB_NAME
 }
 
+function is_tag(){
+  [ "${GITLAB_TAG}" != "" ]
+}
+
 function trim_edition(){
   echo $1 | sed -e "s/-.e$//"
 }
@@ -83,7 +87,11 @@ function push_if_master(){
     if [ -z "$1" ] || [ "$1" == "master" ]; then
       push_latest
     else
-      tag_and_push $(trim_edition $1)
+      local edition="$1"
+      if is_tag; then
+        edition=$(trim_edition $edition)
+      fi
+      tag_and_push $edition
     fi
   fi
 }
