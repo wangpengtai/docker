@@ -177,9 +177,6 @@ RUN mv /srv/gitlab/log /var/log/gitlab && \
     mkdir -p public/uploads && chown ${GITLAB_USER}:${GITLAB_USER} public/uploads && \
     chmod 0700 public/uploads
 
-RUN apt-get update && apt-get install -y make gcc && curl -fsSL https://www.python.org/ftp/python/3.4.8/Python-3.4.8.tgz \
-  | tar -xz && ls && cd Python-3.4.8 && ./configure && make && \
-  make install
 COPY scripts/ /scripts
 
 RUN chown -R ${GITLAB_USER} /scripts
