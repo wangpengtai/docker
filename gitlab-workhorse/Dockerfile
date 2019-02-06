@@ -10,6 +10,9 @@ FROM ${FROM_IMAGE}:${TAG} as builder
 ARG WORKHORSE_VERSION=v5.0.0
 ARG BUILD_DIR=/tmp/build
 
+ARG PYTHON_VERSION="3.4.9"
+ARG DOCUTILS_VERSION="0.11"
+
 RUN buildDeps=' \
   make' \
   && apt-get update \
