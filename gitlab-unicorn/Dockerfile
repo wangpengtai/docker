@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y make gcc && \
   rm -rf ${BUILD_DIR}
 
 RUN sed -i 's/python2/python3/' /srv/gitlab/vendor/bundle/ruby/2.4.0/gems/github-markup-1.7.0/lib/github/markups.rb
+RUN sed -i 's/python2/python3/' /srv/gitlab/vendor/bundle/ruby/2.4.0/gems/gitlab-markup-1.6.5/lib/github/markups.rb
 # END python install
 
 USER $GITLAB_USER:$GITLAB_USER
