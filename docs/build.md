@@ -3,14 +3,13 @@
 Building these images is done through GitLab CI. By default triggering a CI build will use the latest upstream gitlab master,
 and build both gitlab-ce and gitlab-ee versions.
 
-For tagging specific versions of GitLab, the CI pipeline is triggered from the gitla-ce and gitlab-ee repos when tagged, and those repos pass
-along the tag information to inform this project what GitLab versions to build.
+For tagging specific versions of GitLab as part of our regular automated release process, the CI pipeline is triggered from the gitla-ce and gitlab-ee repos when tagged, and those repos pass
+along the ref information to inform this project what GitLab versions to build.
 
 ## Manually triggering the pipeline for a reference
 
 If manual run of the pipeline needs to be done in order to build/rebuild a particular ref of GitLab,
-the build needs to be triggered with the following variables:
-
+the build needs to be triggered in this repo's GitLab project with the following variables:
 
 - `GITLAB_VERSION` - The GitLab ref name used to download the source code. For tags it should be the tag name.
 - `GITLAB_ASSETS_TAG` - This is used for fetching the js/css assets, and must be the slug version of the *GITLAB_VERSION*
@@ -25,7 +24,6 @@ the build needs to be triggered with the following variables:
 The following variable should be present for a CE build:
 
 - `CE_PIPELINE` - set to `true`
-- `GITLAB_CE_VERSION` - (deprecated) no longer needed
 
 ![ce-cng-release.png](ce-cng-release.png)
 
@@ -34,6 +32,5 @@ The following variable should be present for a CE build:
 The following variable should be present for a EE build:
 
 - `EE_PIPELINE` - set to `true`
-- `GITLAB_EE_VERSION` - (deprecated) no longer needed
 
 ![ee-cng-release.png](ee-cng-release.png)
