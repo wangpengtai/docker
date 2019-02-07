@@ -73,6 +73,13 @@ alpine-certificates:
   - push_if_master ${CA_PKG_VERSION}
   - push_if_master
 
+gitlab-python:
+  <<: *job-base
+  stage: phase-one
+  script:
+    - build_if_needed --build-arg "PYTHON+VERSION=${PYTHON_VERSION}"
+    - push_if_master
+
 gitlab-redis-ha:
   <<: *job-base
   stage: phase-two
