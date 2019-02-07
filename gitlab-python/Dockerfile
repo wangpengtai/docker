@@ -21,6 +21,7 @@ RUN buildDeps=' \
   cd ${BUILD_DIR}/Python-${PYTHON_VERSION} && \
   ./configure --enable-shared --with-readline=editline --with-dbmliborder= && make && \
   make install && \
+  ldconfig && \
   /usr/local/bin/pip3 install --compile docutils==${DOCUTILS_VERSION} && \
   rm -rf /usr/local/lib/python/3.4/lib-dynload/dbm.* && \
   rm -rf /usr/local/lib/python/3.4/lib-dynload/_sqlite3.* && \
