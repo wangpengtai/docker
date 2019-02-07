@@ -79,6 +79,9 @@ gitlab-python:
   script:
     - export CONATINER_VERSION=($(echo -n "$TARGET_VERSION$PYTHON_VERSION" | sha1sum))
     - build_if_needed --build-arg "PYTHON_VERSION=${PYTHON_VERSION}"
+    - if [ -n "$BUILDING_IMAGE" ]; then
+    -   tag_and_push $PYTHON_VERSION
+    - fi
     - push_if_master
 
 gitlab-redis-ha:
