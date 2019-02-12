@@ -12,6 +12,7 @@ ARG CONFIG=/srv/gitlab/config
 
 COPY --from=python /usr/local/bin /usr/local/bin/
 COPY --from=python /usr/local/lib /usr/local/lib/
+ENV PYTHONPATH=/usr/local/lib/python3.4/site-packages
 RUN ldconfig
 
 RUN cd /srv/gitlab && sed -i 's/python2/python3/' "$(bundle show gitlab-markup)/lib/github/markups.rb"
