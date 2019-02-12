@@ -18,3 +18,4 @@ variables:
   ASSETS_IMAGE_REGISTRY_PREFIX: "registry.gitlab.com/gitlab-org"
   COMPILE_ASSETS: "false"
   S3CMD_VERSION: "2.0.1"
+  PYTHON_VERSION: "3.4.9"

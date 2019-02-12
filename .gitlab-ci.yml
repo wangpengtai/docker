@@ -73,6 +73,17 @@ alpine-certificates:
   - push_if_master ${CA_PKG_VERSION}
   - push_if_master
 
+gitlab-python:
+  <<: *job-base
+  stage: phase-one
+  script:
+    - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$PYTHON_VERSION" | sha1sum))
+    - build_if_needed --build-arg "PYTHON_VERSION=${PYTHON_VERSION}"
+    - if [ -n "$BUILDING_IMAGE" ]; then
+    -   tag_and_push $PYTHON_VERSION
+    - fi
+    - push_if_master
+
 gitlab-redis-ha:
   <<: *job-base
   stage: phase-two

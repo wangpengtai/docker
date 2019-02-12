@@ -1,11 +1,23 @@
-ARG TAG=latest
 ARG CI_REGISTRY_IMAGE="registry.gitlab.com/gitlab-org/build/cng"
+ARG PYTHON_VERSION="3.4.9"
+ARG TAG=latest
 ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee"
+
+FROM ${CI_REGISTRY_IMAGE}/gitlab-python:${PYTHON_VERSION} as python
+
 FROM ${FROM_IMAGE}:${TAG}
 
-ARG BUILD_DIR=/tmp/build
 ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=/srv/gitlab/config
+
+COPY --from=python /usr/local/bin /usr/local/bin/
+COPY --from=python /usr/local/lib /usr/local/lib/
+ENV PYTHONPATH=/usr/local/lib/python3.4/site-packages
+RUN ldconfig
+
+RUN cd /srv/gitlab && sed -i 's/python2/python3/' "$(bundle show gitlab-markup)/lib/github/markups.rb"
+# END python install
+
 ARG GITLAB_USER=git
 
 USER $GITLAB_USER:$GITLAB_USER
