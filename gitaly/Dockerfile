@@ -12,9 +12,10 @@ ARG GITALY_VERSION=v0.96.1
 ARG BUILD_DIR=/tmp/build
 ARG BUNDLE_OPTIONS="--jobs 4 --without development test"
 
-# install runtime deps
+# install runtime deps. openssh-client is required so that SSH client binaries
+# are present for repository mirroring.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libicu57 net-tools
+    && apt-get install -y --no-install-recommends libicu57 net-tools openssh-client
 
 # create gitlab user
 # openssh daemon does not allow locked user to login, change ! to *
