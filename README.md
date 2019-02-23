@@ -42,3 +42,7 @@ Support for configuration is intended to be as follows:
 > For Kubernetes specifically we are mostly relying on the mounting the config
 files from ConfigMap objects. With the occasional ENV variable to control the
 custom container code.
+
+### Links
+
+1. [Building Images](docs/build.md)
