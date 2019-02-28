@@ -8,19 +8,25 @@ class String
 end
 
 class ObjectStorageBackup
-  attr_accessor :name, :local_tar_path, :remote_bucket_name, :tmp_bucket_name
+  attr_accessor :name, :local_tar_path, :remote_bucket_name, :tmp_bucket_name, :backend_type
 
-  def initialize(name, local_tar_path, remote_bucket_name, tmp_bucket_name = 'tmp')
+  def initialize(name, local_tar_path, remote_bucket_name, tmp_bucket_name = 'tmp', backend_type = 's3')
     @name = name
     @local_tar_path = local_tar_path
     @remote_bucket_name = remote_bucket_name
     @tmp_bucket_name = tmp_bucket_name
+    @backend_type = backend_type
   end
 
   def backup
     puts "Dumping #{@name} ...".blue
 
-    cmd = %W(s3cmd sync s3://#{@remote_bucket_name} /srv/gitlab/tmp/#{@name})
+    if @backend_type == "s3"
+      cmd = %W(s3cmd sync s3://#{@remote_bucket_name} /srv/gitlab/tmp/#{@name})
+    elsif @backend_type == "gcs"
+      cmd = %W(gsutil rsync gs://#{@remote_bucket_name} /srv/gitlab/tmp/#{@name})
+    end
+
     output, status = run_cmd(cmd)
     failure_abort(output) unless status.zero?
 
@@ -47,12 +53,16 @@ class ObjectStorageBackup
   end
 
   def upload_to_object_storage(source_path)
-    # s3cmd treats `-` as a special filename for using stdin, as a result
-    # we need a slightly different syntax to support syncing the `-` directory (used for system uploads)
-    if File.basename(source_path) == '-'
-      cmd = %W(s3cmd sync #{source_path}/ s3://#{@remote_bucket_name}/-/)
-    else
-      cmd = %W(s3cmd sync #{source_path} s3://#{@remote_bucket_name})
+    if @backend_type == "s3"
+      # s3cmd treats `-` as a special filename for using stdin, as a result
+      # we need a slightly different syntax to support syncing the `-` directory (used for system uploads)
+      if File.basename(source_path) == '-'
+        cmd = %W(s3cmd sync #{source_path}/ s3://#{@remote_bucket_name}/-/)
+      else
+        cmd = %W(s3cmd sync #{source_path} s3://#{@remote_bucket_name})
+      end
+    elsif @backend_type == "gcs"
+      cmd = %W(gsutil rsync #{source_path}/ gs://#{@remote_bucket_name})
     end
 
     output, status = run_cmd(cmd)
@@ -62,14 +72,24 @@ class ObjectStorageBackup
 
   def backup_existing
     backup_file_name = "#{@name}.#{Time.now.to_i}"
-    cmd = %W(s3cmd sync s3://#{@remote_bucket_name} s3://#{@tmp_bucket_name}/#{backup_file_name}/)
+
+    if @backend_type == "s3"
+      cmd = %W(s3cmd sync s3://#{@remote_bucket_name} s3://#{@tmp_bucket_name}/#{backup_file_name}/)
+    elsif @backend_type == "gcs"
+      cmd = %W(gsutil rsync gs://#{@remote_bucket_name} gs://#{@tmp_bucket_name}/#{backup_file_name}/)
+    end
+
     output, status = run_cmd(cmd)
 
     failure_abort(output) unless status.zero?
   end
 
   def cleanup
-    cmd = %W(s3cmd del --force --recursive s3://#{@remote_bucket_name})
+    if @backend_type == "s3"
+      cmd = %W(s3cmd del --force --recursive s3://#{@remote_bucket_name})
+    elsif @backend_type == "gcs"
+      cmd = %W(gsutil rm -f -r gs://#{@remote_bucket_name})
+    end
     output, status = run_cmd(cmd)
     failure_abort(output) unless status.zero?
   end
