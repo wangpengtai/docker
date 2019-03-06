@@ -82,8 +82,8 @@ function trim_tag(){
   echo $(trim_edition $1) | sed -e "s/^v//"
 }
 
-function push_if_master(){
-  if is_master; then
+function push_if_master_or_tag(){
+  if is_master || is_tag; then
     if [ -z "$1" ] || [ "$1" == "master" ]; then
       push_latest
     else
