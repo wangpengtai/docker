@@ -71,7 +71,7 @@ function get_trimmed_job_name(){
 }
 
 function is_tag(){
-  [ "${GITLAB_TAG}" != "" ]
+  [ -n "${CI_COMMIT_TAG}" ] || [ -n "${GITLAB_TAG}" ]
 }
 
 function trim_edition(){
