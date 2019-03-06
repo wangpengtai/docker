@@ -29,7 +29,7 @@ gitlab-ruby:
   stage: phase-one
   script:
   - build_if_needed
-  - push_if_master
+  - push_if_master_or_tag
 
 postgresql:
   <<: *job-base
@@ -40,7 +40,7 @@ postgresql:
   - if [ -n "$BUILDING_IMAGE" ]; then
   -  tag_and_push $PG_VERSION
   - fi
-  - push_if_master
+  - push_if_master_or_tag
 
 cfssl-self-sign:
   <<: *job-base
@@ -48,8 +48,8 @@ cfssl-self-sign:
   script:
   - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$CFSSL_VERSION" | sha1sum))
   - build_if_needed --build-arg "CFSSL_VERSION=$CFSSL_VERSION" --build-arg "ALPINE_VERSION=$ALPINE_VERSION"
-  - push_if_master "$CFSSL_VERSION"
-  - push_if_master
+  - push_if_master_or_tag "$CFSSL_VERSION"
+  - push_if_master_or_tag
 
 kubectl:
   <<: *job-base
@@ -60,7 +60,7 @@ kubectl:
   - if [ -n "$BUILDING_IMAGE" ]; then
   -  tag_and_push $KUBECTL_VERSION
   - fi
-  - push_if_master
+  - push_if_master_or_tag
 
 alpine-certificates:
   <<: *job-base
@@ -70,8 +70,8 @@ alpine-certificates:
   - export CA_PKG_VERSION=$(curl -qs http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main/x86_64/APKINDEX.tar.gz | tar xzf - -O APKINDEX | grep -A1 '^P:ca-certificates$' | tail -n1 | cut -d ':' -f2)
   - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$CA_PKG_VERSION" | sha1sum))
   - build_if_needed --build-arg "ALPINE_VERSION=${ALPINE_VERSION}" --build-arg "CA_PKG_VERSION=${CA_PKG_VERSION}"
-  - push_if_master ${CA_PKG_VERSION}
-  - push_if_master
+  - push_if_master_or_tag ${CA_PKG_VERSION}
+  - push_if_master_or_tag
 
 gitlab-python:
   <<: *job-base
@@ -82,7 +82,7 @@ gitlab-python:
     - if [ -n "$BUILDING_IMAGE" ]; then
     -   tag_and_push $PYTHON_VERSION
     - fi
-    - push_if_master
+    - push_if_master_or_tag
 
 gitlab-redis-ha:
   <<: *job-base
@@ -90,7 +90,7 @@ gitlab-redis-ha:
   script:
   - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$(date -u +%D)" | sha1sum))
   - build_if_needed
-  - push_if_master
+  - push_if_master_or_tag
 
 gitlab-go:
   <<: *job-base
@@ -99,7 +99,7 @@ gitlab-go:
       - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$TARGET_VERSION$GO_VERSION" | sha1sum))
       - ruby_version=$(get_version gitlab-ruby)
       - build_if_needed --build-arg "GO_VERSION=$GO_VERSION" --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-ruby" --build-arg "TAG=$ruby_version"
-      - push_if_master
+      - push_if_master_or_tag
   dependencies:
       - gitlab-ruby
 
@@ -114,7 +114,7 @@ gitlab-rails-ee:
   - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
   - docker pull $pg_image > /dev/null || true
   - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)" --build-arg "TAG=$go_version" --build-arg "PG_IMAGE=$pg_image" --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE_REGISTRY_PREFIX}/gitlab-ee/${ASSETS_IMAGE_PREFIX}-ee:${GITLAB_ASSETS_TAG}"
-  - push_if_master $GITLAB_REF_SLUG
+  - push_if_master_or_tag $GITLAB_REF_SLUG
   except:
     variables:
       - $CE_PIPELINE
@@ -130,7 +130,7 @@ gitlab-rails-ce:
   - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
   - docker pull $pg_image > /dev/null || true
   - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)" --build-arg "TAG=$go_version" --build-arg "PG_IMAGE=$pg_image" --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE_REGISTRY_PREFIX}/gitlab-ce/${ASSETS_IMAGE_PREFIX}-ce:${GITLAB_ASSETS_TAG}"
-  - push_if_master $GITLAB_REF_SLUG
+  - push_if_master_or_tag $GITLAB_REF_SLUG
   except:
     variables:
       - $EE_PIPELINE
@@ -146,7 +146,7 @@ gitlab-task-runner-ee:
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee:$rails_container"
   - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ee" --build-arg "TAG=$rails_container" --build-arg "S3CMD_VERSION=$S3CMD_VERSION"
-  - push_if_master $GITLAB_REF_SLUG
+  - push_if_master_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ee
   except:
@@ -164,7 +164,7 @@ gitlab-task-runner-ce:
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ce:$rails_container"
   - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce" --build-arg "TAG=$rails_container" --build-arg "S3CMD_VERSION=$S3CMD_VERSION"
-  - push_if_master $GITLAB_REF_SLUG
+  - push_if_master_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ce
   except:
@@ -182,7 +182,7 @@ gitlab-unicorn-ee:
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee:$rails_container"
   - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ee" --build-arg "TAG=$rails_container"
-  - push_if_master $GITLAB_REF_SLUG
+  - push_if_master_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ee
   except:
@@ -200,7 +200,7 @@ gitlab-unicorn-ce:
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ce:$rails_container"
   - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce" --build-arg "TAG=$rails_container"
-  - push_if_master $GITLAB_REF_SLUG
+  - push_if_master_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ce
   except:
@@ -218,7 +218,7 @@ gitlab-sidekiq-ee:
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee:$rails_container"
   - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ee" --build-arg "TAG=$rails_container"
-  - push_if_master $GITLAB_REF_SLUG
+  - push_if_master_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ee
   except:
@@ -236,7 +236,7 @@ gitlab-sidekiq-ce:
   - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ce:$rails_container"
   - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce" --build-arg "TAG=$rails_container"
-  - push_if_master $GITLAB_REF_SLUG
+  - push_if_master_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ce
   except:
@@ -250,7 +250,7 @@ gitlab-mailroom:
       - ruby_version=$(get_version gitlab-ruby)
       - export CONTAINER_VERSION=($(echo -n "$ruby_version$MAILROOM_VERSION" | sha1sum))
       - build_if_needed --build-arg "MAILROOM_VERSION=$MAILROOM_VERSION" --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-ruby" --build-arg "TAG=$ruby_version"
-      - push_if_master
+      - push_if_master_or_tag
   dependencies:
       - gitlab-ruby
 
@@ -263,7 +263,7 @@ gitlab-shell:
   - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$go_version$TARGET_VERSION$GITLAB_SHELL_VERSION$(date -u +%D)" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$go_version"
   - build_if_needed --build-arg "TAG=$go_version" --build-arg "GITLAB_SHELL_VERSION=${GITLAB_SHELL_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_SHELL_VERSION$(date -uI)"
-  - push_if_master $GITLAB_SHELL_VERSION
+  - push_if_master_or_tag $GITLAB_SHELL_VERSION
   dependencies:
     - gitlab-go
 
@@ -278,7 +278,7 @@ git-base:
     - if [ -n "$BUILDING_IMAGE" ]; then
     -  tag_and_push $GIT_VERSION
     - fi
-    - push_if_master
+    - push_if_master_or_tag
 
 gitaly:
   <<: *job-base
@@ -292,7 +292,7 @@ gitaly:
   - export CONTAINER_VERSION=($(echo -n "$shell_container$GITALY_VERSION$git_version$TARGET_VERSION" | sha1sum))
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-shell:$shell_container"
   - build_if_needed --build-arg "GITALY_VERSION=${GITALY_VERSION}" --build-arg "TAG=$GIT_VERSION" --build-arg "SHELL_CONTAINER=$shell_container" --build-arg "CACHE_BUSTER=$GITALY_VERSION$(date -uI)"
-  - push_if_master $GITALY_VERSION
+  - push_if_master_or_tag $GITALY_VERSION
   dependencies:
     - gitlab-shell
 
@@ -309,7 +309,7 @@ gitlab-workhorse-ee:
       - export CONTAINER_VERSION=($(echo -n "$GITLAB_WORKHORSE_VERSION$rails_container$TARGET_VERSION" | sha1sum))
       - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$git_version"
       - build_if_needed --build-arg "TAG=$git_version" --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION" --build-arg "RAILS_VERSION=${rails_container}" --build-arg "$RUBY_VERSION=$ruby_version" --build-arg "GITLAB_EDITION=gitlab-rails-ee"
-      - push_if_master $GITLAB_REF_SLUG
+      - push_if_master_or_tag $GITLAB_REF_SLUG
   except:
     variables:
       - $CE_PIPELINE
@@ -327,7 +327,7 @@ gitlab-workhorse-ce:
       - export CONTAINER_VERSION=($(echo -n "$GITLAB_WORKHORSE_VERSION$rails_container$TARGET_VERSION" | sha1sum))
       - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$git_version"
       - build_if_needed --build-arg "TAG=$git_version" --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION" --build-arg "RAILS_VERSION=${rails_container}" --build-arg "$RUBY_VERSION=$ruby_version" --build-arg "GITLAB_EDITION=gitlab-rails-ce"
-      - push_if_master $GITLAB_REF_SLUG
+      - push_if_master_or_tag $GITLAB_REF_SLUG
   except:
     variables:
       - $EE_PIPELINE
