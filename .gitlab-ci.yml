@@ -18,12 +18,16 @@ stages:
   dependencies: []
   retry: 1
   before_script:
+    - mkdir -p artifacts
     - source build-scripts/build.sh
     - if [ -n "$GITALY_SERVER_VERSION" ]; then export GITALY_VERSION=$GITALY_SERVER_VERSION; fi
     - if [ -z "$GITLAB_REF_SLUG" ]; then export GITLAB_REF_SLUG=$CI_COMMIT_TAG; fi
     - export {CONTAINER_VERSION,BASE_VERSION}=$(get_version gitlab-ruby)
     - export TARGET_VERSION=$(get_target_version)
     - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+  artifacts:
+    paths:
+      - artifacts/
 
 gitlab-ruby:
   <<: *job-base
@@ -49,8 +53,8 @@ cfssl-self-sign:
   script:
   - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$CFSSL_VERSION" | sha1sum))
   - build_if_needed --build-arg "CFSSL_VERSION=$CFSSL_VERSION" --build-arg "ALPINE_VERSION=$ALPINE_VERSION"
-  - push_if_master_or_tag "$CFSSL_VERSION"
   - push_if_master_or_tag
+  - push_if_master_or_tag "$CFSSL_VERSION"
 
 kubectl:
   <<: *job-base
@@ -71,8 +75,8 @@ alpine-certificates:
   - export CA_PKG_VERSION=$(curl -qs http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main/x86_64/APKINDEX.tar.gz | tar xzf - -O APKINDEX | grep -A1 '^P:ca-certificates$' | tail -n1 | cut -d ':' -f2)
   - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$CA_PKG_VERSION" | sha1sum))
   - build_if_needed --build-arg "ALPINE_VERSION=${ALPINE_VERSION}" --build-arg "CA_PKG_VERSION=${CA_PKG_VERSION}"
-  - push_if_master_or_tag ${CA_PKG_VERSION}
   - push_if_master_or_tag
+  - push_if_master_or_tag ${CA_PKG_VERSION}
 
 gitlab-python:
   <<: *job-base
@@ -332,6 +336,18 @@ gitlab-workhorse-ce:
   except:
     variables:
       - $EE_PIPELINE
+
+component-details:
+  image: "alpine:latest"
+  stage: release
+  before_script: []
+  script:
+    - echo "This job collects artifacts from all component builds."
+  artifacts:
+    paths:
+      - artifacts/
+  only:
+    - tags
 
 release-chart:
   stage: release

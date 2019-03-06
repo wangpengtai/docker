@@ -46,7 +46,9 @@ function build_if_needed(){
 
     # Create a tag based on Branch/Tag name for easy reference
     tag_and_push $CI_COMMIT_REF_SLUG
+    cd ..
   fi
+  echo "$CONTAINER_VERSION" > "artifacts/$CI_JOB_NAME.txt"
 }
 
 function tag_and_push(){
@@ -92,6 +94,7 @@ function push_if_master_or_tag(){
         edition=$(trim_edition $edition)
       fi
       tag_and_push $edition
+      echo "$edition" > "artifacts/$CI_JOB_NAME.txt"
     fi
   fi
 }
