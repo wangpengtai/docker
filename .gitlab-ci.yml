@@ -308,7 +308,7 @@ gitlab-workhorse-ee:
       - rails_container=($(echo -n "$go_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
       - export CONTAINER_VERSION=($(echo -n "$GITLAB_WORKHORSE_VERSION$rails_container$TARGET_VERSION" | sha1sum))
       - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$git_version"
-      - build_if_needed --build-arg "TAG=$git_version" --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION" --build-arg "RAILS_VERSION=${rails_container}" --build-arg "$RUBY_VERSION=$ruby_version" --build-arg "GITLAB_EDITION=gitlab-rails-ee"
+      - build_if_needed --build-arg "TAG=$git_version" --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION" --build-arg "RAILS_VERSION=${rails_container}" --build-arg "RUBY_VERSION=$ruby_version" --build-arg "GITLAB_EDITION=gitlab-rails-ee"
       - push_if_master $GITLAB_REF_SLUG
   except:
     variables:
@@ -326,7 +326,7 @@ gitlab-workhorse-ce:
       - rails_container=($(echo -n "$go_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
       - export CONTAINER_VERSION=($(echo -n "$GITLAB_WORKHORSE_VERSION$rails_container$TARGET_VERSION" | sha1sum))
       - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$git_version"
-      - build_if_needed --build-arg "TAG=$git_version" --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION" --build-arg "RAILS_VERSION=${rails_container}" --build-arg "$RUBY_VERSION=$ruby_version" --build-arg "GITLAB_EDITION=gitlab-rails-ce"
+      - build_if_needed --build-arg "TAG=$git_version" --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION" --build-arg "RAILS_VERSION=${rails_container}" --build-arg "RUBY_VERSION=$ruby_version" --build-arg "GITLAB_EDITION=gitlab-rails-ce"
       - push_if_master $GITLAB_REF_SLUG
   except:
     variables:
