@@ -34,7 +34,7 @@ function build_if_needed(){
       docker pull $CACHE_IMAGE || true
     fi
 
-    cd $(get_trimmed_job_name)
+    pushd $(get_trimmed_job_name)
 
     if [ -x renderDockerfile ]; then
       ./renderDockerfile
@@ -46,7 +46,9 @@ function build_if_needed(){
 
     # Create a tag based on Branch/Tag name for easy reference
     tag_and_push $CI_COMMIT_REF_SLUG
+    popd
   fi
+  echo "$CI_JOB_NAME:$CONTAINER_VERSION" > "artifacts/$CI_JOB_NAME.txt"
 }
 
 function tag_and_push(){
@@ -71,7 +73,7 @@ function get_trimmed_job_name(){
 }
 
 function is_tag(){
-  [ "${GITLAB_TAG}" != "" ]
+  [ -n "${CI_COMMIT_TAG}" ] || [ -n "${GITLAB_TAG}" ]
 }
 
 function trim_edition(){
@@ -82,8 +84,8 @@ function trim_tag(){
   echo $(trim_edition $1) | sed -e "s/^v//"
 }
 
-function push_if_master(){
-  if is_master; then
+function push_if_master_or_tag(){
+  if is_master || is_tag; then
     if [ -z "$1" ] || [ "$1" == "master" ]; then
       push_latest
     else
@@ -92,6 +94,7 @@ function push_if_master(){
         edition=$(trim_edition $edition)
       fi
       tag_and_push $edition
+      echo "$CI_JOB_NAME:$edition" > "artifacts/$CI_JOB_NAME.txt"
     fi
   fi
 }
