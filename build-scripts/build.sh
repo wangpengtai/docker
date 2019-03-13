@@ -85,6 +85,16 @@ function trim_tag(){
 }
 
 function push_if_master_or_tag(){
+
+  # For tag pipelines, nothing needs to be done on gitlab.com project. Images
+  # will be built, and copied to .com registry as part of the release. However,
+  # this check is done here intentionally, and not at build time (which
+  # involves pushing CONTAINER_VERSION, CI_COMMIT_REF_SLUG tags also) because
+  # we may not be syncing build images, but only the user facing images.
+  if [ "$CI_REGISTRY" == "registry.gitlab.com" ] && [ -n "$CI_COMMIT_TAG" ]; then
+          exit 0
+  fi
+
   if is_master || is_tag; then
     if [ -z "$1" ] || [ "$1" == "master" ]; then
       push_latest
