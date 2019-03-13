@@ -4,7 +4,7 @@ variables:
   GITLAB_ASSETS_TAG: "master"
   GITLAB_SHELL_VERSION: "master"
   GITLAB_WORKHORSE_VERSION: "master"
-  GITALY_VERSION: "master"
+  GITALY_VERSION: "re-apply-hooks-change"
   GIT_VERSION: "2.18.1"
   GO_VERSION: "1.9.6"
   KUBECTL_VERSION: "v1.9.3"
