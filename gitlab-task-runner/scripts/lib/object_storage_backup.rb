@@ -19,7 +19,12 @@ class ObjectStorageBackup
   end
 
   def backup
-    puts "Dumping #{@name} ...".blue
+    if File.exist? "/srv/gitlab/tmp/#{@name}" # Bucket may be empty
+      puts "Dumping #{@name} ...".blue
+    else
+      puts "No files found for #{@name} ...".blue
+      return
+    end
 
     if @backend == "s3"
       cmd = %W(s3cmd sync s3://#{@remote_bucket_name} /srv/gitlab/tmp/#{@name})
@@ -30,7 +35,6 @@ class ObjectStorageBackup
     output, status = run_cmd(cmd)
     failure_abort(output) unless status.zero?
 
-    return unless File.exist? "/srv/gitlab/tmp/#{@name}" # Bucket may be empty
     cmd = %W(tar -czf #{@local_tar_path} -C /srv/gitlab/tmp/#{@name} . )
     output, status = run_cmd(cmd)
     failure_abort(output) unless status.zero?
