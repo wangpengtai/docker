@@ -11,6 +11,20 @@ stages:
   - phase-five
   - release
 
+.except-ce: &except-ce
+  except:
+    variables:
+      - $CE_PIPELINE
+      - $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\d+)?$/
+      - $CI_COMMIT_REF_NAME =~ /^\d+-\d+-stable$/
+
+.except-ee: &except-ee
+  except:
+    variables:
+      - $EE_PIPELINE
+      - $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\d+)?-ee$/
+      - $CI_COMMIT_REF_NAME =~ /^\d+-\d+-stable-ee$/
+
 .job-base: &job-base
   image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder:ruby_docker-0.0.7"
   services:
@@ -119,9 +133,7 @@ gitlab-rails-ee:
   - docker pull $pg_image > /dev/null || true
   - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)" --build-arg "TAG=$go_version" --build-arg "PG_IMAGE=$pg_image" --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE_REGISTRY_PREFIX}/gitlab-ee/${ASSETS_IMAGE_PREFIX}-ee:${GITLAB_ASSETS_TAG}"
   - push_if_master_or_tag $GITLAB_REF_SLUG
-  except:
-    variables:
-      - $CE_PIPELINE
+  <<: *except-ce
 
 gitlab-rails-ce:
   <<: *job-base
@@ -135,9 +147,7 @@ gitlab-rails-ce:
   - docker pull $pg_image > /dev/null || true
   - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)" --build-arg "TAG=$go_version" --build-arg "PG_IMAGE=$pg_image" --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE_REGISTRY_PREFIX}/gitlab-ce/${ASSETS_IMAGE_PREFIX}-ce:${GITLAB_ASSETS_TAG}"
   - push_if_master_or_tag $GITLAB_REF_SLUG
-  except:
-    variables:
-      - $EE_PIPELINE
+  <<: *except-ee
 
 gitlab-task-runner-ee:
   <<: *job-base
@@ -153,9 +163,7 @@ gitlab-task-runner-ee:
   - push_if_master_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ee
-  except:
-    variables:
-      - $CE_PIPELINE
+  <<: *except-ce
 
 gitlab-task-runner-ce:
   <<: *job-base
@@ -171,9 +179,7 @@ gitlab-task-runner-ce:
   - push_if_master_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ce
-  except:
-    variables:
-      - $EE_PIPELINE
+  <<: *except-ee
 
 gitlab-unicorn-ee:
   <<: *job-base
@@ -189,9 +195,7 @@ gitlab-unicorn-ee:
   - push_if_master_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ee
-  except:
-    variables:
-      - $CE_PIPELINE
+  <<: *except-ce
 
 gitlab-unicorn-ce:
   <<: *job-base
@@ -207,9 +211,7 @@ gitlab-unicorn-ce:
   - push_if_master_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ce
-  except:
-    variables:
-      - $EE_PIPELINE
+  <<: *except-ee
 
 gitlab-sidekiq-ee:
   <<: *job-base
@@ -225,9 +227,7 @@ gitlab-sidekiq-ee:
   - push_if_master_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ee
-  except:
-    variables:
-      - $CE_PIPELINE
+  <<: *except-ce
 
 gitlab-sidekiq-ce:
   <<: *job-base
@@ -243,9 +243,7 @@ gitlab-sidekiq-ce:
   - push_if_master_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ce
-  except:
-    variables:
-      - $EE_PIPELINE
+  <<: *except-ee
 
 gitlab-mailroom:
   <<: *job-base
@@ -314,9 +312,7 @@ gitlab-workhorse-ee:
       - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$git_version"
       - build_if_needed --build-arg "TAG=$git_version" --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION" --build-arg "RAILS_VERSION=${rails_container}" --build-arg "$RUBY_VERSION=$ruby_version" --build-arg "GITLAB_EDITION=gitlab-rails-ee"
       - push_if_master_or_tag $GITLAB_REF_SLUG
-  except:
-    variables:
-      - $CE_PIPELINE
+  <<: *except-ce
 
 gitlab-workhorse-ce:
   <<: *job-base
@@ -332,9 +328,7 @@ gitlab-workhorse-ce:
       - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$git_version"
       - build_if_needed --build-arg "TAG=$git_version" --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION" --build-arg "RAILS_VERSION=${rails_container}" --build-arg "$RUBY_VERSION=$ruby_version" --build-arg "GITLAB_EDITION=gitlab-rails-ce"
       - push_if_master_or_tag $GITLAB_REF_SLUG
-  except:
-    variables:
-      - $EE_PIPELINE
+  <<: *except-ee
 
 component-details:
   image: "alpine:latest"
@@ -371,3 +365,4 @@ release-chart:
   except:
     variables:
       - $CE_PIPELINE
+      - $CI_COMMIT_TAG
