@@ -27,7 +27,7 @@ class ObjectStorageBackup
       cmd = %W(gsutil rsync gs://#{@remote_bucket_name} /srv/gitlab/tmp/#{@name})
     end
 
-    # Check if the bucket has any files otherwise return
+    # Check if the bucket exists
     output, status = run_cmd(check_bucket_cmd)
     unless status.zero?
       puts "Bucket not found: #{@remote_bucket_name}. Skipping backup of #{@name} ...".blue
