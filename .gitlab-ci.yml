@@ -35,6 +35,10 @@ stages:
     - mkdir -p artifacts
     - source build-scripts/build.sh
     - if [ -n "$GITALY_SERVER_VERSION" ]; then export GITALY_VERSION=$GITALY_SERVER_VERSION; fi
+    - if [ "$CI_REGISTRY" == "dev.gitlab.org:5005" ]; then
+        export ASSETS_IMAGE_REGISTRY_PREFIX="dev.gitlab.org:5005/gitlab";
+        export CE_PROJECT="gitlabhq";
+      fi
     - export {CONTAINER_VERSION,BASE_VERSION}=$(get_version gitlab-ruby)
     - export TARGET_VERSION=$(get_target_version)
     - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
@@ -131,7 +135,12 @@ gitlab-rails-ee:
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$go_version"
   - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
   - docker pull $pg_image > /dev/null || true
-  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)" --build-arg "TAG=$go_version" --build-arg "PG_IMAGE=$pg_image" --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE_REGISTRY_PREFIX}/gitlab-ee/${ASSETS_IMAGE_PREFIX}-ee:${GITLAB_ASSETS_TAG}"
+  - export ASSETS_IMAGE="${ASSETS_IMAGE_REGISTRY_PREFIX}/${EE_PROJECT}/${ASSETS_IMAGE_PREFIX}-ee:${GITLAB_ASSETS_TAG}"
+  - while ! docker pull "${ASSETS_IMAGE}"; do
+      echo "${ASSETS_IMAGE} not available yet. Sleeping for 30 seconds";
+      sleep 30;
+    done
+  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)" --build-arg "TAG=$go_version" --build-arg "PG_IMAGE=$pg_image" --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE}"
   - push_if_master_or_tag $GITLAB_REF_SLUG
   <<: *except-ce
 
@@ -145,7 +154,12 @@ gitlab-rails-ce:
   - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$go_version"
   - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
   - docker pull $pg_image > /dev/null || true
-  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)" --build-arg "TAG=$go_version" --build-arg "PG_IMAGE=$pg_image" --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE_REGISTRY_PREFIX}/gitlab-ce/${ASSETS_IMAGE_PREFIX}-ce:${GITLAB_ASSETS_TAG}"
+  - export ASSETS_IMAGE="${ASSETS_IMAGE_REGISTRY_PREFIX}/${CE_PROJECT}/${ASSETS_IMAGE_PREFIX}-ce:${GITLAB_ASSETS_TAG}"
+  - while ! docker pull "${ASSETS_IMAGE}"; do
+      echo "${ASSETS_IMAGE} not available yet. Sleeping for 30 seconds";
+      sleep 30;
+    done
+  - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce" --build-arg "GITLAB_VERSION=${GITLAB_VERSION}" --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)" --build-arg "TAG=$go_version" --build-arg "PG_IMAGE=$pg_image" --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE}"
   - push_if_master_or_tag $GITLAB_REF_SLUG
   <<: *except-ee
 
