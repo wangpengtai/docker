@@ -28,6 +28,8 @@ RUN mkdir -p /usr/share/man/man7 \
     && apt-get update \
     && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata
 
+RUN echo "hello world"
+
 # Include postgres dev tools
 COPY --from=pg_image /usr/local/psql/bin/ /usr/bin/
 COPY --from=pg_image /usr/local/psql/lib/ /usr/lib/
