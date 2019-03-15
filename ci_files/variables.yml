@@ -21,3 +21,8 @@ variables:
   COMPILE_ASSETS: "false"
   S3CMD_VERSION: "2.0.1"
   PYTHON_VERSION: "3.4.9"
+
+## Note
+# Variables ASSETS_IMAGE_REGISTRY_PREFIX and CE_PROJECT are overridden in the
+# mirror of this project in dev.gitlab.org to match their dev counterpart
+# locations.
