@@ -136,6 +136,7 @@ gitlab-rails-ee:
     - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
     - docker pull $pg_image > /dev/null || true
     - export ASSETS_IMAGE="${ASSETS_IMAGE_REGISTRY_PREFIX}/${EE_PROJECT}/${ASSETS_IMAGE_PREFIX}-ee:${GITLAB_ASSETS_TAG}"
+    - fetch_assets
     - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee"
                       --build-arg "GITLAB_VERSION=${GITLAB_VERSION}"
                       --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)"
@@ -156,6 +157,7 @@ gitlab-rails-ce:
     - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
     - docker pull $pg_image > /dev/null || true
     - export ASSETS_IMAGE="${ASSETS_IMAGE_REGISTRY_PREFIX}/${CE_PROJECT}/${ASSETS_IMAGE_PREFIX}-ce:${GITLAB_ASSETS_TAG}"
+    - fetch_assets
     - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce"
                       --build-arg "GITLAB_VERSION=${GITLAB_VERSION}"
                       --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)"

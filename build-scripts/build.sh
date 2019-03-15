@@ -16,6 +16,17 @@ function is_master(){
   [ "$CI_COMMIT_REF_NAME" == "master" ]
 }
 
+function fetch_assets(){
+  [ -z "${ASSETS_IMAGE}" ] && return 1
+
+  if needs_build; then
+    while ! docker pull "${ASSETS_IMAGE}"; do
+      echo "${ASSETS_IMAGE} not available yet. Sleeping for 30 seconds";
+      sleep 30;
+    done
+  fi
+}
+
 function needs_build(){
   is_nightly || ! $(docker pull "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION" > /dev/null);
 }
