@@ -7,7 +7,9 @@ FROM ${FROM_IMAGE}:${TAG}
 ARG BUILD_DIR=/tmp/build
 ARG GITLAB_SHELL_VERSION=master
 ARG GITLAB_USER=git
-ARG GITLAB_NAMESPACE="https://gitlab.com/gitlab-org"
+ARG GITLAB_NAMESPACE="gitlab-org"
+ARG API_PRIVATE_TOKEN
+ARG CI_API_V4_URL
 
 # install runtime deps
 RUN apt-get update \
@@ -34,7 +36,7 @@ RUN mkdir /srv/sshd && chown ${GITLAB_USER}:${GITLAB_USER} /srv/sshd
 ARG CACHE_BUSTER=false
 RUN mkdir /srv/gitlab-shell && chown ${GITLAB_USER}:${GITLAB_USER} /srv/gitlab-shell && \
     cd /srv/gitlab-shell && \
-    sudo -u ${GITLAB_USER} -H curl -o gitlab-shell.tar.bz2 ${GITLAB_NAMESPACE}/gitlab-shell/repository/${GITLAB_SHELL_VERSION}/archive.tar.bz2 && \
+    sudo -u ${GITLAB_USER} -H curl --header "PRIVATE-TOKEN: ${API_PRIVATE_TOKEN}" -o gitlab-shell.tar.bz2 "${CI_API_V4_URL}/projects/${GITLAB_NAMESPACE}%2Fgitlab-shell/repository/archive.tar.bz2?sha=${GITLAB_SHELL_VERSION}" && \
     sudo -u ${GITLAB_USER} -H tar -xjf gitlab-shell.tar.bz2 --strip-components=1 && \
     rm gitlab-shell.tar.bz2 && \
     ./bin/compile

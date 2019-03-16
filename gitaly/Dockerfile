@@ -10,7 +10,9 @@ FROM ${FROM_IMAGE}:${TAG}
 ARG GITLAB_USER=git
 ARG GITALY_VERSION=v0.96.1
 ARG BUILD_DIR=/tmp/build
-ARG GITLAB_NAMESPACE="https://gitlab.com/gitlab-org"
+ARG GITLAB_NAMESPACE="gitlab-org"
+ARG API_PRIVATE_TOKEN
+ARG CI_API_V4_URL
 ARG BUNDLE_OPTIONS="--jobs 4 --without development test"
 
 # install runtime deps. openssh-client is required so that SSH client binaries
@@ -34,7 +36,7 @@ RUN sudo -u ${GITLAB_USER} -H git config --global gc.auto 0 && \
 # Download and compile Gitaly
 ARG CACHE_BUSTER=false
 RUN cd ${BUILD_DIR} && \
-    curl -o gitaly.tar.bz2 ${GITLAB_NAMESPACE}/gitaly/repository/${GITALY_VERSION}/archive.tar.bz2 && \
+    curl --header "PRIVATE-TOKEN: ${API_PRIVATE_TOKEN}" -o gitaly.tar.bz2 "${CI_API_V4_URL}/projects/${GITLAB_NAMESPACE}%2Fgitaly/repository/archive.tar.bz2?sha=${GITALY_VERSION}" && \
     tar -xjf gitaly.tar.bz2 --strip-components=1 && \
     rm gitaly.tar.bz2 && \
     cd ruby && \
