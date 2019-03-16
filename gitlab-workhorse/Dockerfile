@@ -9,6 +9,7 @@ FROM ${FROM_IMAGE}:${TAG} as builder
 
 ARG WORKHORSE_VERSION=v5.0.0
 ARG BUILD_DIR=/tmp/build
+ARG GITLAB_NAMESPACE="https://gitlab.com/gitlab-org"
 
 RUN buildDeps=' \
   make' \
@@ -16,7 +17,7 @@ RUN buildDeps=' \
   && apt-get install -y --no-install-recommends $buildDeps \
   && mkdir -p ${BUILD_DIR} \
   && cd ${BUILD_DIR} \
-  && curl -o workhorse.tar.bz2 https://gitlab.com/gitlab-org/gitlab-workhorse/repository/${WORKHORSE_VERSION}/archive.tar.bz2 \
+  && curl -o workhorse.tar.bz2 ${GITLAB_NAMESPACE}/gitlab-org/gitlab-workhorse/repository/${WORKHORSE_VERSION}/archive.tar.bz2 \
   && tar -xjf workhorse.tar.bz2 \
   && rm workhorse.tar.bz2 \
   && cd gitlab-workhorse-* \
