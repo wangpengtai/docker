@@ -285,8 +285,9 @@ gitlab-shell:
   stage: phase-three
   script:
     - go_dir_version=$(get_version gitlab-go)
+    - gitlab_shell_dir_version=$(get_version gitlab-shell)
     - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
-    - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$go_version$TARGET_VERSION$GITLAB_SHELL_VERSION$(date -u +%D)" | sha1sum))
+    - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$go_version$TARGET_VERSION$GITLAB_SHELL_VERSION$(date -u +%D)$gitlab_shell_dir_version" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$go_version"
     - build_if_needed --build-arg "TAG=$go_version" \
                       --build-arg "GITLAB_SHELL_VERSION=${GITLAB_SHELL_VERSION}" \
