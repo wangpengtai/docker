@@ -21,6 +21,7 @@ function needs_build(){
 }
 
 function build_if_needed(){
+  set -x
   if needs_build; then
     export BUILDING_IMAGE="true"
     if [ -n "$BASE_IMAGE" ]; then
@@ -53,6 +54,7 @@ function build_if_needed(){
     popd
   fi
   echo "$CI_JOB_NAME:$CONTAINER_VERSION" > "artifacts/$CI_JOB_NAME.txt"
+  set +x
 }
 
 function tag_and_push(){
