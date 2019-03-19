@@ -298,9 +298,10 @@ gitlab-shell:
     - go_dir_version=$(get_version gitlab-go)
     - gitlab_shell_dir_version=$(get_version gitlab-shell)
     - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
-    - echo -n "SHASUMMING $BASE_VERSION$go_version$TARGET_VERSION$GITLAB_SHELL_VERSION$(date -u +%D)$gitlab_shell_dir_version"
+    - export CONTAINER_VERSION_TXT=($(echo -n "SHA_SUMMING: $BASE_VERSION$go_version$TARGET_VERSION$GITLAB_SHELL_VERSION$(date -u +%D)$gitlab_shell_dir_version"))
     - export CONTAINER_VERSION=($(echo -n "$BASE_VERSION$go_version$TARGET_VERSION$GITLAB_SHELL_VERSION$(date -u +%D)$gitlab_shell_dir_version" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$go_version"
+    - echo "$CONTAINER_VERSION_TXT"
     - |
       build_if_needed --build-arg "TAG=$go_version"\
                       --build-arg "GITLAB_SHELL_VERSION=${GITLAB_SHELL_VERSION}"\
@@ -330,10 +331,11 @@ gitaly:
     - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
     - shell_version=$(get_version gitlab-shell)
     - git_version=($(echo -n "$BASE_VERSION$go_version$GIT_VERSION" | sha1sum))
-    - echo -n "SHASUMMING: $BASE_VERSION$go_version$shell_version$GITLAB_SHELL_VERSION$(date -u +%D)"
+    - export shell_container_txt=($(echo -n "SHASUMMING: $BASE_VERSION$go_version$shell_version$GITLAB_SHELL_VERSION$(date -u +%D)"))
     - export shell_container=($(echo -n "$BASE_VERSION$go_version$shell_version$GITLAB_SHELL_VERSION$(date -u +%D)" | sha1sum))
     - export CONTAINER_VERSION=($(echo -n "$shell_container$GITALY_VERSION$git_version$TARGET_VERSION" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-shell:$shell_container"
+    - echo "$shell_container_txt"
     - |
       build_if_needed --build-arg "GITALY_VERSION=${GITALY_VERSION}" \
                       --build-arg "TAG=$GIT_VERSION" \
