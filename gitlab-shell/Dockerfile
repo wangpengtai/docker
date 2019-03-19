@@ -21,7 +21,7 @@ RUN buildDeps=' \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p ${BUILD_DIR}
 
-RUN echo "This is a rebuild"
+RUN echo "This is a rebuild, again"
 
 # create gitlab user
 # openssh daemon does not allow locked user to login, change ! to *
