@@ -35,6 +35,7 @@ function build_if_needed(){
     fi
 
     pushd $(get_trimmed_job_name)
+    echo "PWD is" $(pwd)
 
     if [ -x renderDockerfile ]; then
       ./renderDockerfile
