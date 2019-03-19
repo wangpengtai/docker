@@ -13,8 +13,6 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends openssh-server \
   && rm -rf /var/lib/apt/lists/*
 
-RUN echo "Hello World"
-
 # install build deps
 RUN buildDeps=' \
     sudo' \
