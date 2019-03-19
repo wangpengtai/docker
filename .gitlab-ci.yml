@@ -26,7 +26,7 @@ stages:
       - $CI_COMMIT_REF_NAME =~ /^\d+-\d+-stable-ee$/
 
 .job-base: &job-base
-  image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder/ruby_docker:0.0.29"
+  image: "registry.gitlab.com/gitlab-org/gitlab-omnibus-builder/ruby_docker:0.0.32"
   services:
   - docker:dind
   dependencies: []
