@@ -1,4 +1,4 @@
-nclude: ci_files/variables.yml
+include: ci_files/variables.yml
 
 before_script:
   - source build-scripts/build.sh
