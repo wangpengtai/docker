@@ -42,10 +42,9 @@ function build_if_needed(){
     if [ -x renderDockerfile ]; then
       ./renderDockerfile
     fi
+    echo docker build --build-arg CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE -t $CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION ${DOCKER_ARGS[@]} --cache-from $CACHE_IMAGE .
 
-    echo docker build --build-arg CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE -t "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION" "${DOCKER_ARGS[@]}" --cache-from $CACHE_IMAGE .
-
-    docker build --build-arg CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE -t "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION" "${DOCKER_ARGS[@]}" --cache-from $CACHE_IMAGE .
+    docker build --build-arg CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE -t $CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION ${DOCKER_ARGS[@]} --cache-from $CACHE_IMAGE .
     # Push new image
     docker push "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION"
 
