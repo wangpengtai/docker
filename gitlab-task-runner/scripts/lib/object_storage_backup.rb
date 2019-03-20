@@ -43,7 +43,11 @@ class ObjectStorageBackup
     failure_abort(output) unless status.zero?
 
     # check the destiation for contents. Bucket may have been empty.
-    return unless Dir.empty? "/srv/gitlab/tmp/#{@name}"
+    if Dir.empty? "/srv/gitlab/tmp/#{@name}"
+      puts "empty".green
+      return
+    end
+
 
     cmd = %W(tar -czf #{@local_tar_path} -C /srv/gitlab/tmp/#{@name} . )
     output, status = run_cmd(cmd)
