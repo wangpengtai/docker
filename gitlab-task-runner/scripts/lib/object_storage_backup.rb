@@ -36,10 +36,15 @@ class ObjectStorageBackup
 
     puts "Dumping #{@name} ...".blue
 
+    # create the destination: gsutils requires it to exist, s3cmd does not
+    FileUtils.mkdir_p("/srv/gitlab/tmp/#{@name}", mode: 0700)
+
     output, status = run_cmd(cmd)
     failure_abort(output) unless status.zero?
 
-    return unless File.exist? "/srv/gitlab/tmp/#{@name}" # Bucket may be empty
+    # check the destiation for contents. Bucket may have been empty.
+    return unless Dir.empty? "/srv/gitlab/tmp/#{@name}"
+
     cmd = %W(tar -czf #{@local_tar_path} -C /srv/gitlab/tmp/#{@name} . )
     output, status = run_cmd(cmd)
     failure_abort(output) unless status.zero?
