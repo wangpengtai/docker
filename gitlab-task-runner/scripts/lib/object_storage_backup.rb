@@ -24,7 +24,7 @@ class ObjectStorageBackup
       cmd = %W(s3cmd sync s3://#{@remote_bucket_name} /srv/gitlab/tmp/#{@name})
     elsif @backend == "gcs"
       check_bucket_cmd = %W(gsutil ls gs://#{@remote_bucket_name})
-      cmd = %W(gsutil rsync gs://#{@remote_bucket_name} /srv/gitlab/tmp/#{@name})
+      cmd = %W(gsutil -m rsync -r gs://#{@remote_bucket_name} /srv/gitlab/tmp/#{@name})
     end
 
     # Check if the bucket exists
@@ -71,7 +71,7 @@ class ObjectStorageBackup
         cmd = %W(s3cmd sync #{source_path} s3://#{@remote_bucket_name})
       end
     elsif @backend == "gcs"
-      cmd = %W(gsutil rsync #{source_path}/ gs://#{@remote_bucket_name})
+      cmd = %W(gsutil -m rsync -r #{source_path}/ gs://#{@remote_bucket_name})
     end
 
     output, status = run_cmd(cmd)
@@ -85,7 +85,7 @@ class ObjectStorageBackup
     if @backend == "s3"
       cmd = %W(s3cmd sync s3://#{@remote_bucket_name} s3://#{@tmp_bucket_name}/#{backup_file_name}/)
     elsif @backend == "gcs"
-      cmd = %W(gsutil rsync gs://#{@remote_bucket_name} gs://#{@tmp_bucket_name}/#{backup_file_name}/)
+      cmd = %W(gsutil -m rsync -r gs://#{@remote_bucket_name} gs://#{@tmp_bucket_name}/#{backup_file_name}/)
     end
 
     output, status = run_cmd(cmd)
