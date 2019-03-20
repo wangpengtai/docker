@@ -13,7 +13,7 @@ RUN apt-get update \
   openssl \
   tar \
   python python-pip \
-  && pip install setuptools \
+  python-setuptools python-crcmod \
   && pip install --upgrade s3cmd==${S3CMD_VERSION} gsutil==${GSUTIL_VERSION} \
   && rm -rf /var/lib/apt/lists/*
 
