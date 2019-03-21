@@ -3,6 +3,7 @@ set -e
 
 ACTION="backup"
 export BACKUP_BUCKET_NAME=${BACKUP_BUCKET_NAME-gitlab-backups}
+export BACKUP_BACKEND=${BACKUP_BACKEND-s3}
 
 rails_dir=/srv/gitlab
 backups_path=$rails_dir/tmp/backups
@@ -220,7 +221,7 @@ do
       shift
       ;;
     --backend)
-      BACKUP_BACKEND="$2"
+      export BACKUP_BACKEND="$2"
       shift
       shift
       ;;
