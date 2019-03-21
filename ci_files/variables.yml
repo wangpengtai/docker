@@ -21,7 +21,7 @@ variables:
   EE_PROJECT: "gitlab-ee"
   COMPILE_ASSETS: "false"
   S3CMD_VERSION: "2.0.1"
-  PYTHON_VERSION: "3.4.9"
+  PYTHON_VERSION: "3.7.3"
 
 ## Note
 # Variables ASSETS_IMAGE_REGISTRY_PREFIX, GITLAB_NAMESPACE and CE_PROJECT are
