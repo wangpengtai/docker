@@ -106,7 +106,7 @@ class ObjectStorageBackup
     if @backend == "s3"
       cmd = %W(s3cmd del --force --recursive s3://#{@remote_bucket_name})
     elsif @backend == "gcs"
-      cmd = %W(gsutil rm -f -r gs://#{@remote_bucket_name})
+      cmd = %W(gsutil rm -f -r gs://#{@remote_bucket_name}/*)
     end
     output, status = run_cmd(cmd)
     failure_abort(output) unless status.zero?
