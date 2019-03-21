@@ -11,7 +11,7 @@ ARG GITLAB_USER=git
 ARG GITALY_VERSION=v0.96.1
 ARG BUILD_DIR=/tmp/build
 ARG GITLAB_NAMESPACE="gitlab-org"
-ARG API_PRIVATE_TOKEN
+ARG FETCH_ARTIFACTS_PAT
 ARG CI_API_V4_URL
 ARG BUNDLE_OPTIONS="--jobs 4 --without development test"
 
@@ -37,7 +37,7 @@ RUN sudo -u ${GITLAB_USER} -H git config --global gc.auto 0 && \
 ARG CACHE_BUSTER=false
 RUN cd ${BUILD_DIR} && \
     echo "Downloading source code from ${CI_API_V4_URL}/projects/${GITLAB_NAMESPACE}%2Fgitaly/repository/archive.tar.bz2?sha=${GITALY_VERSION}" && \
-    curl --header "PRIVATE-TOKEN: ${API_PRIVATE_TOKEN}" -o gitaly.tar.bz2 "${CI_API_V4_URL}/projects/${GITLAB_NAMESPACE}%2Fgitaly/repository/archive.tar.bz2?sha=${GITALY_VERSION}" && \
+    curl --header "PRIVATE-TOKEN: ${FETCH_ARTIFACTS_PAT}" -o gitaly.tar.bz2 "${CI_API_V4_URL}/projects/${GITLAB_NAMESPACE}%2Fgitaly/repository/archive.tar.bz2?sha=${GITALY_VERSION}" && \
     tar -xjf gitaly.tar.bz2 --strip-components=1 && \
     rm gitaly.tar.bz2 && \
     cd ruby && \
