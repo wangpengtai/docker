@@ -19,6 +19,7 @@ RUN buildDeps=' \
   && apt-get install -y --no-install-recommends $buildDeps \
   && mkdir -p ${BUILD_DIR} \
   && cd ${BUILD_DIR} \
+  && echo "Downloading source code from ${CI_API_V4_URL}/projects/${GITLAB_NAMESPACE}%2Fgitlab-workhorse/repository/archive.tar.bz2?sha=${WORKHORSE_VERSION}" \
   && curl --header "PRIVATE-TOKEN: ${API_PRIVATE_TOKEN}" -o workhorse.tar.bz2 "${CI_API_V4_URL}/projects/${GITLAB_NAMESPACE}%2Fgitlab-workhorse/repository/archive.tar.bz2?sha=${WORKHORSE_VERSION}" \
   && tar -xjf workhorse.tar.bz2 \
   && rm workhorse.tar.bz2 \
