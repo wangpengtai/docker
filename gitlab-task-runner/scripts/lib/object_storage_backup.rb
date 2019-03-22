@@ -106,6 +106,16 @@ class ObjectStorageBackup
     if @backend == "s3"
       cmd = %W(s3cmd del --force --recursive s3://#{@remote_bucket_name})
     elsif @backend == "gcs"
+      # Check if the bucket has any objects
+      list_objects_cmd = %W(gsutil ls gs://#{@remote_bucket_name}/)
+      output, status = run_cmd(list_objects_cmd)
+      failure_abort(output) unless status.zero?
+
+      # There are no objects in the bucket so skip the cleanup
+      if output.length == 0
+        return
+      end
+
       cmd = %W(gsutil rm -f -r gs://#{@remote_bucket_name}/*)
     end
     output, status = run_cmd(cmd)
