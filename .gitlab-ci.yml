@@ -135,12 +135,18 @@ gitlab-rails-ee:
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$go_version"
     - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
     - docker pull $pg_image > /dev/null || true
+    - export ASSETS_IMAGE="${ASSETS_IMAGE_REGISTRY_PREFIX}/${EE_PROJECT}/${ASSETS_IMAGE_PREFIX}-ee:${GITLAB_ASSETS_TAG}"
+    - fetch_assets
     - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ee"
                       --build-arg "GITLAB_VERSION=${GITLAB_VERSION}"
+                      --build-arg "GITLAB_NAMESPACE=${GITLAB_NAMESPACE}"
+                      --build-arg "GITLAB_PROJECT=${EE_PROJECT}"
+                      --build-arg "FETCH_ARTIFACTS_PAT=${FETCH_DEV_ARTIFACTS_PAT}"
+                      --build-arg "CI_API_V4_URL=${CI_API_V4_URL}"
                       --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)"
                       --build-arg "TAG=$go_version"
                       --build-arg "PG_IMAGE=$pg_image"
-                      --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE_REGISTRY_PREFIX}/gitlab-ee/${ASSETS_IMAGE_PREFIX}-ee:${GITLAB_ASSETS_TAG}"
+                      --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE}"
     - push_if_master_or_tag $GITLAB_REF_SLUG
   <<: *except-ce
 
@@ -154,12 +160,18 @@ gitlab-rails-ce:
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$go_version"
     - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
     - docker pull $pg_image > /dev/null || true
+    - export ASSETS_IMAGE="${ASSETS_IMAGE_REGISTRY_PREFIX}/${CE_PROJECT}/${ASSETS_IMAGE_PREFIX}-ce:${GITLAB_ASSETS_TAG}"
+    - fetch_assets
     - build_if_needed --build-arg "GITLAB_EDITION=gitlab-ce"
                       --build-arg "GITLAB_VERSION=${GITLAB_VERSION}"
+                      --build-arg "GITLAB_NAMESPACE=${GITLAB_NAMESPACE}"
+                      --build-arg "GITLAB_PROJECT=${CE_PROJECT}"
+                      --build-arg "FETCH_ARTIFACTS_PAT=${FETCH_DEV_ARTIFACTS_PAT}"
+                      --build-arg "CI_API_V4_URL=${CI_API_V4_URL}"
                       --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)"
                       --build-arg "TAG=$go_version"
                       --build-arg "PG_IMAGE=$pg_image"
-                      --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE_REGISTRY_PREFIX}/gitlab-ce/${ASSETS_IMAGE_PREFIX}-ce:${GITLAB_ASSETS_TAG}"
+                      --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE}"
     - push_if_master_or_tag $GITLAB_REF_SLUG
   <<: *except-ee
 
@@ -290,6 +302,9 @@ gitlab-shell:
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$go_version"
     - build_if_needed --build-arg "TAG=$go_version"
                       --build-arg "GITLAB_SHELL_VERSION=${GITLAB_SHELL_VERSION}"
+                      --build-arg "GITLAB_NAMESPACE=${GITLAB_NAMESPACE}"
+                      --build-arg "FETCH_ARTIFACTS_PAT=${FETCH_DEV_ARTIFACTS_PAT}"
+                      --build-arg "CI_API_V4_URL=${CI_API_V4_URL}"
                       --build-arg "CACHE_BUSTER=$GITLAB_SHELL_VERSION$(date -uI)"
     - push_if_master_or_tag $GITLAB_SHELL_VERSION
   dependencies:
@@ -321,6 +336,9 @@ gitaly:
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-shell:$shell_container"
     - build_if_needed --build-arg "GITALY_VERSION=${GITALY_VERSION}"
                       --build-arg "TAG=$GIT_VERSION"
+                      --build-arg "GITLAB_NAMESPACE=${GITLAB_NAMESPACE}"
+                      --build-arg "FETCH_ARTIFACTS_PAT=${FETCH_DEV_ARTIFACTS_PAT}"
+                      --build-arg "CI_API_V4_URL=${CI_API_V4_URL}"
                       --build-arg "SHELL_CONTAINER=$shell_container"
                       --build-arg "CACHE_BUSTER=$GITALY_VERSION$(date -uI)"
     - push_if_master_or_tag $GITALY_VERSION
@@ -343,6 +361,9 @@ gitlab-workhorse-ee:
                       --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION"
                       --build-arg "RAILS_VERSION=${rails_container}"
                       --build-arg "RUBY_VERSION=$ruby_version"
+                      --build-arg "GITLAB_NAMESPACE=${GITLAB_NAMESPACE}"
+                      --build-arg "FETCH_ARTIFACTS_PAT=${FETCH_DEV_ARTIFACTS_PAT}"
+                      --build-arg "CI_API_V4_URL=${CI_API_V4_URL}"
                       --build-arg "GITLAB_EDITION=gitlab-rails-ee"
     - push_if_master_or_tag $GITLAB_REF_SLUG
   <<: *except-ce
@@ -363,6 +384,9 @@ gitlab-workhorse-ce:
                       --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION"
                       --build-arg "RAILS_VERSION=${rails_container}"
                       --build-arg "RUBY_VERSION=$ruby_version"
+                      --build-arg "GITLAB_NAMESPACE=${GITLAB_NAMESPACE}"
+                      --build-arg "FETCH_ARTIFACTS_PAT=${FETCH_DEV_ARTIFACTS_PAT}"
+                      --build-arg "CI_API_V4_URL=${CI_API_V4_URL}"
                       --build-arg "GITLAB_EDITION=gitlab-rails-ce"
     - push_if_master_or_tag $GITLAB_REF_SLUG
   <<: *except-ee
