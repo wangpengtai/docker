@@ -8,23 +8,47 @@ class String
 end
 
 class ObjectStorageBackup
-  attr_accessor :name, :local_tar_path, :remote_bucket_name, :tmp_bucket_name
+  attr_accessor :name, :local_tar_path, :remote_bucket_name, :tmp_bucket_name, :backend
 
-  def initialize(name, local_tar_path, remote_bucket_name, tmp_bucket_name = 'tmp')
+  def initialize(name, local_tar_path, remote_bucket_name, tmp_bucket_name = 'tmp', backend = 's3')
     @name = name
     @local_tar_path = local_tar_path
     @remote_bucket_name = remote_bucket_name
     @tmp_bucket_name = tmp_bucket_name
+    @backend = backend
   end
 
   def backup
+    if @backend == "s3"
+      check_bucket_cmd = %W(s3cmd ls s3://#{@remote_bucket_name})
+      cmd = %W(s3cmd sync s3://#{@remote_bucket_name} /srv/gitlab/tmp/#{@name})
+    elsif @backend == "gcs"
+      check_bucket_cmd = %W(gsutil ls gs://#{@remote_bucket_name})
+      cmd = %W(gsutil -m rsync -r gs://#{@remote_bucket_name} /srv/gitlab/tmp/#{@name})
+    end
+
+    # Check if the bucket exists
+    output, status = run_cmd(check_bucket_cmd)
+    unless status.zero?
+      puts "Bucket not found: #{@remote_bucket_name}. Skipping backup of #{@name} ...".blue
+      return
+    end
+
     puts "Dumping #{@name} ...".blue
 
-    cmd = %W(s3cmd sync s3://#{@remote_bucket_name} /srv/gitlab/tmp/#{@name})
+    # create the destination: gsutils requires it to exist, s3cmd does not
+    FileUtils.mkdir_p("/srv/gitlab/tmp/#{@name}", mode: 0700)
+
     output, status = run_cmd(cmd)
     failure_abort(output) unless status.zero?
 
-    return unless File.exist? "/srv/gitlab/tmp/#{@name}" # Bucket may be empty
+    # check the destiation for contents. Bucket may have been empty.
+    if Dir.empty? "/srv/gitlab/tmp/#{@name}"
+      puts "empty".green
+      return
+    end
+
+
     cmd = %W(tar -czf #{@local_tar_path} -C /srv/gitlab/tmp/#{@name} . )
     output, status = run_cmd(cmd)
     failure_abort(output) unless status.zero?
@@ -47,12 +71,16 @@ class ObjectStorageBackup
   end
 
   def upload_to_object_storage(source_path)
-    # s3cmd treats `-` as a special filename for using stdin, as a result
-    # we need a slightly different syntax to support syncing the `-` directory (used for system uploads)
-    if File.basename(source_path) == '-'
-      cmd = %W(s3cmd sync #{source_path}/ s3://#{@remote_bucket_name}/-/)
-    else
-      cmd = %W(s3cmd sync #{source_path} s3://#{@remote_bucket_name})
+    if @backend == "s3"
+      # s3cmd treats `-` as a special filename for using stdin, as a result
+      # we need a slightly different syntax to support syncing the `-` directory (used for system uploads)
+      if File.basename(source_path) == '-'
+        cmd = %W(s3cmd sync #{source_path}/ s3://#{@remote_bucket_name}/-/)
+      else
+        cmd = %W(s3cmd sync #{source_path} s3://#{@remote_bucket_name})
+      end
+    elsif @backend == "gcs"
+      cmd = %W(gsutil -m rsync -r #{source_path}/ gs://#{@remote_bucket_name})
     end
 
     output, status = run_cmd(cmd)
@@ -62,14 +90,34 @@ class ObjectStorageBackup
 
   def backup_existing
     backup_file_name = "#{@name}.#{Time.now.to_i}"
-    cmd = %W(s3cmd sync s3://#{@remote_bucket_name} s3://#{@tmp_bucket_name}/#{backup_file_name}/)
+
+    if @backend == "s3"
+      cmd = %W(s3cmd sync s3://#{@remote_bucket_name} s3://#{@tmp_bucket_name}/#{backup_file_name}/)
+    elsif @backend == "gcs"
+      cmd = %W(gsutil -m rsync -r gs://#{@remote_bucket_name} gs://#{@tmp_bucket_name}/#{backup_file_name}/)
+    end
+
     output, status = run_cmd(cmd)
 
     failure_abort(output) unless status.zero?
   end
 
   def cleanup
-    cmd = %W(s3cmd del --force --recursive s3://#{@remote_bucket_name})
+    if @backend == "s3"
+      cmd = %W(s3cmd del --force --recursive s3://#{@remote_bucket_name})
+    elsif @backend == "gcs"
+      # Check if the bucket has any objects
+      list_objects_cmd = %W(gsutil ls gs://#{@remote_bucket_name}/)
+      output, status = run_cmd(list_objects_cmd)
+      failure_abort(output) unless status.zero?
+
+      # There are no objects in the bucket so skip the cleanup
+      if output.length == 0
+        return
+      end
+
+      cmd = %W(gsutil rm -f -r gs://#{@remote_bucket_name}/*)
+    end
     output, status = run_cmd(cmd)
     failure_abort(output) unless status.zero?
   end
