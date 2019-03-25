@@ -331,7 +331,7 @@ gitlab-elasticsearch-indexer:
   script:
     - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
     - export CONTAINER_VERSION=($(echo -n "$GEI_VERSION$go_version$TARGET_VERSION" | sha1sum))
-    - build_if_needed --build-arg "TAG=${GO_VERSION}"
+    - build_if_needed --build-arg "TAG=${go_version}"
                       --build-arg "GEI_VERSION=${GEI_VERSION}"
     - push_if_master_or_tag "$GEI_VERSION"
 
