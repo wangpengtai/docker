@@ -345,6 +345,16 @@ gitaly:
   dependencies:
     - gitlab-shell
 
+gitlab-elasticsearch-indexer:
+  <<: *job-base
+  stage: phase-four
+  script:
+    - git_version=($(echo -n "$BASE_VERSION$go_version$GIT_VERSION" | sha1sum))
+    - export CONTAINER_VERSION=($(echo -n "$GEI_VERSION$git_version$TARGET_VERSION" | sha1sum))
+    - build_if_needed --build-arg "TAG=${GIT_VERSION}"
+                      --build-arg "GEI_VERSION=${GEI_VERSION}"
+    - push_if_master_or_tag "$GEI_VERSION"
+
 gitlab-workhorse-ee:
   <<: *job-base
   stage: phase-five
