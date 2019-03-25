@@ -134,6 +134,7 @@ gitlab-rails-ee:
     - export CONTAINER_VERSION=($(echo -n "$go_version$TARGET_VERSION$GITLAB_VERSION$(date -u +%D)" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$go_version"
     - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
+    - gei_image="${CIREGISTRY_IMAGE}/gitlab-elasticsearch-indexer:${GEI_VERSION}"
     - docker pull $pg_image > /dev/null || true
     - export ASSETS_IMAGE="${ASSETS_IMAGE_REGISTRY_PREFIX}/${EE_PROJECT}/${ASSETS_IMAGE_PREFIX}-ee:${GITLAB_ASSETS_TAG}"
     - fetch_assets
@@ -146,6 +147,7 @@ gitlab-rails-ee:
                       --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)"
                       --build-arg "TAG=$go_version"
                       --build-arg "PG_IMAGE=$pg_image"
+                      --build-arg "GEI_IMAGE=${gei_image}"
                       --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE}"
     - push_if_master_or_tag $GITLAB_REF_SLUG
   <<: *except-ce
@@ -323,6 +325,16 @@ git-base:
     - fi
     - push_if_master_or_tag
 
+gitlab-elasticsearch-indexer:
+  <<: *job-base
+  stage: phase-three
+  script:
+    - git_version=($(echo -n "$BASE_VERSION$go_version$GIT_VERSION" | sha1sum))
+    - export CONTAINER_VERSION=($(echo -n "$GEI_VERSION$git_version$TARGET_VERSION" | sha1sum))
+    - build_if_needed --build-arg "TAG=${GIT_VERSION}"
+                      --build-arg "GEI_VERSION=${GEI_VERSION}"
+    - push_if_master_or_tag "$GEI_VERSION"
+
 gitaly:
   <<: *job-base
   stage: phase-four
@@ -344,16 +356,6 @@ gitaly:
     - push_if_master_or_tag $GITALY_VERSION
   dependencies:
     - gitlab-shell
-
-gitlab-elasticsearch-indexer:
-  <<: *job-base
-  stage: phase-four
-  script:
-    - git_version=($(echo -n "$BASE_VERSION$go_version$GIT_VERSION" | sha1sum))
-    - export CONTAINER_VERSION=($(echo -n "$GEI_VERSION$git_version$TARGET_VERSION" | sha1sum))
-    - build_if_needed --build-arg "TAG=${GIT_VERSION}"
-                      --build-arg "GEI_VERSION=${GEI_VERSION}"
-    - push_if_master_or_tag "$GEI_VERSION"
 
 gitlab-workhorse-ee:
   <<: *job-base
