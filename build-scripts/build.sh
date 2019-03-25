@@ -16,6 +16,14 @@ function is_master(){
   [ "$CI_COMMIT_REF_NAME" == "master" ]
 }
 
+function force_build(){
+  [ "${FORCE_IMAGE_BUILDS}" == "true" ]
+}
+
+function force_build_master(){
+  is_master && force_build
+}
+
 function fetch_assets(){
   [ -z "${ASSETS_IMAGE}" ] && return 1
 
@@ -28,7 +36,7 @@ function fetch_assets(){
 }
 
 function needs_build(){
-  is_nightly || ! $(docker pull "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION" > /dev/null);
+  force_build_master || is_nightly || ! $(docker pull "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION" > /dev/null);
 }
 
 function build_if_needed(){
