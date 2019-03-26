@@ -31,9 +31,6 @@ RUN mkdir -p /usr/share/man/man7 \
     && apt-get update \
     && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata
 
-# Include the gitlab-elasticsearch-indexer
-COPY --from=gei_image /usr/local/bin/gitlab-elasticsearch-indexer /usr/bin/
-
 # Include postgres dev tools
 COPY --from=pg_image /usr/local/psql/bin/ /usr/bin/
 COPY --from=pg_image /usr/local/psql/lib/ /usr/lib/
@@ -152,6 +149,9 @@ ARG GITLAB_USER=git
 RUN mkdir -p /usr/share/man/man7 \
     && apt-get update \
     && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata
+
+# Include the gitlab-elasticsearch-indexer
+COPY --from=gei_image /usr/local/bin/gitlab-elasticsearch-indexer /usr/bin/
 
 # Include postgres client tools
 COPY --from=pg_image /usr/local/psql/bin/pg_* /usr/bin/
