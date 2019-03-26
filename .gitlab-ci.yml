@@ -134,7 +134,8 @@ gitlab-rails-ee:
     - export CONTAINER_VERSION=($(echo -n "$go_version$TARGET_VERSION$GITLAB_VERSION$(date -u +%D)" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$go_version"
     - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
-    - gei_image="${CI_REGISTRY_IMAGE}/gitlab-elasticsearch-indexer:${GEI_VERSION}"
+    - gei_version=($(echo -n "$GEI_VERSION$go_version$TARGET_VERSION" | sha1sum))
+    - gei_image="${CI_REGISTRY_IMAGE}/gitlab-elasticsearch-indexer:${gei_version}"
     - docker pull $pg_image > /dev/null || true
     - export ASSETS_IMAGE="${ASSETS_IMAGE_REGISTRY_PREFIX}/${EE_PROJECT}/${ASSETS_IMAGE_PREFIX}-ee:${GITLAB_ASSETS_TAG}"
     - fetch_assets
@@ -161,7 +162,8 @@ gitlab-rails-ce:
     - export CONTAINER_VERSION=($(echo -n "$go_version$TARGET_VERSION$GITLAB_VERSION$(date -u +%D)" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$go_version"
     - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
-    - gei_image="${CI_REGISTRY_IMAGE}/gitlab-elasticsearch-indexer:${GEI_VERSION}"
+    - gei_version=($(echo -n "$GEI_VERSION$go_version$TARGET_VERSION" | sha1sum))
+    - gei_image="${CI_REGISTRY_IMAGE}/gitlab-elasticsearch-indexer:${gei_version}"
     - docker pull $pg_image > /dev/null || true
     - export ASSETS_IMAGE="${ASSETS_IMAGE_REGISTRY_PREFIX}/${CE_PROJECT}/${ASSETS_IMAGE_PREFIX}-ce:${GITLAB_ASSETS_TAG}"
     - fetch_assets
