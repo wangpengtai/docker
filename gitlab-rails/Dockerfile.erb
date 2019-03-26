@@ -1,6 +1,6 @@
 ARG CI_REGISTRY_IMAGE="registry.gitlab.com/gitlab-org/build/cng"
 ARG TAG=latest
-ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go"
+ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby"
 ARG PG_IMAGE="$CI_REGISTRY_IMAGE/postgresql:9.6.8"
 ARG GITLAB_VERSION=v10.7.0-ee
 ARG GITLAB_EDITION=gitlab-ee
@@ -137,7 +137,7 @@ COPY --chown=git --from=assets assets /srv/gitlab/public/assets/
 <% end %>
 
 # Final image
-FROM "$CI_REGISTRY_IMAGE/gitlab-go:${TAG}"
+FROM "$CI_REGISTRY_IMAGE/gitlab-ruby:${TAG}"
 ARG DATADIR=/var/opt/gitlab
 ARG CONFIG=/srv/gitlab/config
 ARG GITLAB_USER=git
