@@ -12,8 +12,9 @@ FROM ${ASSETS_IMAGE} as assets
 <% end %>
 FROM ${PG_IMAGE} as pg_image
 
+<% if ee? %>
 FROM ${GEI_IMAGE} as gei_image
-
+<% end %>
 FROM ${FROM_IMAGE}:${TAG} as builder
 
 ARG BUILD_DIR=/tmp/build
