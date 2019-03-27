@@ -129,10 +129,9 @@ gitlab-rails-ee:
   <<: *job-base
   stage: phase-four
   script:
-    - go_dir_version=$(get_version gitlab-go)
-    - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
-    - export CONTAINER_VERSION=($(echo -n "$go_version$TARGET_VERSION$GITLAB_VERSION$(date -u +%D)" | sha1sum))
-    - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$go_version"
+    - ruby_version=$(get_version gitlab-ruby)
+    - export CONTAINER_VERSION=($(echo -n "$ruby_version$TARGET_VERSION$GITLAB_VERSION$(date -u +%D)" | sha1sum))
+    - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$ruby_version"
     - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
     - docker pull $pg_image > /dev/null || true
     - export ASSETS_IMAGE="${ASSETS_IMAGE_REGISTRY_PREFIX}/${EE_PROJECT}/${ASSETS_IMAGE_PREFIX}-ee:${GITLAB_ASSETS_TAG}"
@@ -144,7 +143,7 @@ gitlab-rails-ee:
                       --build-arg "FETCH_ARTIFACTS_PAT=${FETCH_DEV_ARTIFACTS_PAT}"
                       --build-arg "CI_API_V4_URL=${CI_API_V4_URL}"
                       --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)"
-                      --build-arg "TAG=$go_version"
+                      --build-arg "TAG=$ruby_version"
                       --build-arg "PG_IMAGE=$pg_image"
                       --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE}"
     - push_if_master_or_tag $GITLAB_REF_SLUG
@@ -154,10 +153,9 @@ gitlab-rails-ce:
   <<: *job-base
   stage: phase-four
   script:
-    - go_dir_version=$(get_version gitlab-go)
-    - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
-    - export CONTAINER_VERSION=($(echo -n "$go_version$TARGET_VERSION$GITLAB_VERSION$(date -u +%D)" | sha1sum))
-    - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go:$go_version"
+    - ruby_version=$(get_version gitlab-ruby)
+    - export CONTAINER_VERSION=($(echo -n "$ruby_version$TARGET_VERSION$GITLAB_VERSION$(date -u +%D)" | sha1sum))
+    - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$ruby_version"
     - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
     - docker pull $pg_image > /dev/null || true
     - export ASSETS_IMAGE="${ASSETS_IMAGE_REGISTRY_PREFIX}/${CE_PROJECT}/${ASSETS_IMAGE_PREFIX}-ce:${GITLAB_ASSETS_TAG}"
@@ -169,7 +167,7 @@ gitlab-rails-ce:
                       --build-arg "FETCH_ARTIFACTS_PAT=${FETCH_DEV_ARTIFACTS_PAT}"
                       --build-arg "CI_API_V4_URL=${CI_API_V4_URL}"
                       --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)"
-                      --build-arg "TAG=$go_version"
+                      --build-arg "TAG=$ruby_version"
                       --build-arg "PG_IMAGE=$pg_image"
                       --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE}"
     - push_if_master_or_tag $GITLAB_REF_SLUG
@@ -179,10 +177,9 @@ gitlab-task-runner-ee:
   <<: *job-base
   stage: phase-five
   script:
-    - go_dir_version=$(get_version gitlab-go)
-    - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
+    - ruby_version=$(get_version gitlab-ruby)
     - rails_version=$(get_version gitlab-rails)
-    - rails_container=($(echo -n "$go_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
+    - rails_container=($(echo -n "$ruby_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
     - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee:$rails_container"
     - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ee"
@@ -197,10 +194,9 @@ gitlab-task-runner-ce:
   <<: *job-base
   stage: phase-five
   script:
-    - go_dir_version=$(get_version gitlab-go)
-    - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
+    - ruby_version=$(get_version gitlab-ruby)
     - rails_version=$(get_version gitlab-rails)
-    - rails_container=($(echo -n "$go_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
+    - rails_container=($(echo -n "$ruby_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
     - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ce:$rails_container"
     - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce"
@@ -215,10 +211,9 @@ gitlab-unicorn-ee:
   <<: *job-base
   stage: phase-five
   script:
-    - go_dir_version=$(get_version gitlab-go)
-    - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
+    - ruby_version=$(get_version gitlab-ruby)
     - rails_version=$(get_version gitlab-rails)
-    - rails_container=($(echo -n "$go_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
+    - rails_container=($(echo -n "$ruby_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
     - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee:$rails_container"
     - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ee"
@@ -232,10 +227,9 @@ gitlab-unicorn-ce:
   <<: *job-base
   stage: phase-five
   script:
-    - go_dir_version=$(get_version gitlab-go)
-    - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
+    - ruby_version=$(get_version gitlab-ruby)
     - rails_version=$(get_version gitlab-rails)
-    - rails_container=($(echo -n "$go_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
+    - rails_container=($(echo -n "$ruby_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
     - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ce:$rails_container"
     - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce"
@@ -249,10 +243,9 @@ gitlab-sidekiq-ee:
   <<: *job-base
   stage: phase-five
   script:
-    - go_dir_version=$(get_version gitlab-go)
-    - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
+    - ruby_version=$(get_version gitlab-ruby)
     - rails_version=$(get_version gitlab-rails)
-    - rails_container=($(echo -n "$go_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
+    - rails_container=($(echo -n "$ruby_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
     - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee:$rails_container"
     - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ee"
@@ -266,10 +259,9 @@ gitlab-sidekiq-ce:
   <<: *job-base
   stage: phase-five
   script:
-    - go_dir_version=$(get_version gitlab-go)
-    - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
+    - ruby_version=$(get_version gitlab-ruby)
     - rails_version=$(get_version gitlab-rails)
-    - rails_container=($(echo -n "$go_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
+    - rails_container=($(echo -n "$ruby_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
     - export CONTAINER_VERSION=($(echo -n "$rails_container$TARGET_VERSION" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ce:$rails_container"
     - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce"
@@ -354,8 +346,8 @@ gitlab-workhorse-ee:
     - go_dir_version=$(get_version gitlab-go)
     - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
     - git_version=($(echo -n "$BASE_VERSION$go_version$GIT_VERSION" | sha1sum))
-    - rails_container=($(echo -n "$go_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
-    - export CONTAINER_VERSION=($(echo -n "$GITLAB_WORKHORSE_VERSION$rails_container$TARGET_VERSION" | sha1sum))
+    - rails_container=($(echo -n "$ruby_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
+    - export CONTAINER_VERSION=($(echo -n "$GITLAB_WORKHORSE_VERSION$rails_container$go_version$TARGET_VERSION" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$git_version"
     - build_if_needed --build-arg "TAG=$git_version"
                       --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION"
@@ -377,8 +369,8 @@ gitlab-workhorse-ce:
     - go_dir_version=$(get_version gitlab-go)
     - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
     - git_version=($(echo -n "$BASE_VERSION$go_version$GIT_VERSION" | sha1sum))
-    - rails_container=($(echo -n "$go_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
-    - export CONTAINER_VERSION=($(echo -n "$GITLAB_WORKHORSE_VERSION$rails_container$TARGET_VERSION" | sha1sum))
+    - rails_container=($(echo -n "$ruby_version$rails_version$GITLAB_VERSION$(date -u +%D)" | sha1sum))
+    - export CONTAINER_VERSION=($(echo -n "$GITLAB_WORKHORSE_VERSION$rails_container$go_version$TARGET_VERSION" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/git-base:$git_version"
     - build_if_needed --build-arg "TAG=$git_version"
                       --build-arg "WORKHORSE_VERSION=$GITLAB_WORKHORSE_VERSION"
