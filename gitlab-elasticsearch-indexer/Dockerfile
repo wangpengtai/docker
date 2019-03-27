@@ -5,7 +5,7 @@ ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go"
 FROM ${FROM_IMAGE}:${TAG}
 
 ARG BUILD_DIR=/tmp/build
-ARG GEI_VERSION="1.0.0"
+ARG GITLAB_ELASTICSEARCH_INDEXER_VERSION="1.0.0"
 
 RUN buildDeps=' \
   gcc \
@@ -18,8 +18,8 @@ RUN buildDeps=' \
   && mkdir -p ${BUILD_DIR}
 
 RUN cd ${BUILD_DIR} \
-  && curl -s "https://gitlab.com/gitlab-org/gitlab-elasticsearch-indexer/-/archive/v${GEI_VERSION}/gitlab-elasticsearch-indexer-v${GEI_VERSION}.tar.gz" | tar zx \
-  && cd "${BUILD_DIR}/gitlab-elasticsearch-indexer-v${GEI_VERSION}" \
+  && curl -s "https://gitlab.com/gitlab-org/gitlab-elasticsearch-indexer/-/archive/v${GITLAB_ELASTICSEARCH_INDEXER_VERSION}/gitlab-elasticsearch-indexer-v${GITLAB_ELASTICSEARCH_INDEXER_VERSION}.tar.gz" | tar zx \
+  && cd "${BUILD_DIR}/gitlab-elasticsearch-indexer-v${GITLAB_ELASTICSEARCH_INDEXER_VERSION}" \
   && make \
   && make install \
   && cd / \

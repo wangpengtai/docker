@@ -1,5 +1,5 @@
 variables:
-  GEI_VERSION: "1.0.0"
+  GITLAB_ELASTICSEARCH_INDEXER_VERSION: "1.0.0"
   GITLAB_VERSION: "master"
   GITLAB_REF_SLUG: "master"
   GITLAB_ASSETS_TAG: "master"

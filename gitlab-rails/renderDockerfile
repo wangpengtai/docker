@@ -7,6 +7,10 @@ def compile_assets
   ENV['COMPILE_ASSETS'].eql?('true')
 end
 
+def ee?
+  ENV['CI_JOB_NAME'].eql?('gitlab-rails-ee')
+end
+
 puts "Rendering Dockerfile"
 
 template = ERB.new(File.read('Dockerfile.erb'))
