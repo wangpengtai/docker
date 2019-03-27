@@ -8,7 +8,7 @@ def compile_assets
 end
 
 def ee?
-  ENV['CI_JOB_NAME'].eql?('gitlab-rails-ee')
+  ENV['ee'].eql?('true')
 end
 
 puts "Rendering Dockerfile"
