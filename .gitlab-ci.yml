@@ -128,11 +128,16 @@ gitlab-go:
 gitlab-rails-ee:
   <<: *job-base
   stage: phase-four
+  variables:
+    ee: "true"
   script:
     - ruby_version=$(get_version gitlab-ruby)
     - export CONTAINER_VERSION=($(echo -n "$ruby_version$TARGET_VERSION$GITLAB_VERSION$(date -u +%D)" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$ruby_version"
     - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
+    - gei_dir_version=$(get_version gitlab-elasticsearch-indexer)
+    - gei_version=($(echo -n "$GITLAB_ELASTICSEARCH_INDEXER_VERSION$go_version$gei_dir_version" | sha1sum))
+    - gei_image="${CI_REGISTRY_IMAGE}/gitlab-elasticsearch-indexer:${gei_version}"
     - docker pull $pg_image > /dev/null || true
     - export ASSETS_IMAGE="${ASSETS_IMAGE_REGISTRY_PREFIX}/${EE_PROJECT}/${ASSETS_IMAGE_PREFIX}-ee:${GITLAB_ASSETS_TAG}"
     - fetch_assets
@@ -145,6 +150,7 @@ gitlab-rails-ee:
                       --build-arg "CACHE_BUSTER=$GITLAB_VERSION$(date -uI)"
                       --build-arg "TAG=$ruby_version"
                       --build-arg "PG_IMAGE=$pg_image"
+                      --build-arg "GEI_IMAGE=${gei_image}"
                       --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE}"
     - push_if_master_or_tag $GITLAB_REF_SLUG
   <<: *except-ce
@@ -314,6 +320,18 @@ git-base:
     -  tag_and_push $GIT_VERSION
     - fi
     - push_if_master_or_tag
+
+gitlab-elasticsearch-indexer:
+  <<: *job-base
+  stage: phase-three
+  script:
+    - go_dir_version=$(get_version gitlab-go)
+    - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
+    - export CONTAINER_VERSION=($(echo -n "$GITLAB_ELASTICSEARCH_INDEXER_VERSION$go_version$TARGET_VERSION" | sha1sum))
+    - build_if_needed --build-arg "TAG=${go_version}"
+                      --build-arg "GITLAB_ELASTICSEARCH_INDEXER_VERSION=${GITLAB_ELASTICSEARCH_INDEXER_VERSION}"
+    - push_if_master_or_tag "$GITLAB_ELASTICSEARCH_INDEXER_VERSION"
+  <<: *except-ce
 
 gitaly:
   <<: *job-base

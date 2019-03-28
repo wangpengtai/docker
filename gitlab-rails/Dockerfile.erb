@@ -2,6 +2,7 @@ ARG CI_REGISTRY_IMAGE="registry.gitlab.com/gitlab-org/build/cng"
 ARG TAG=latest
 ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby"
 ARG PG_IMAGE="$CI_REGISTRY_IMAGE/postgresql:9.6.8"
+ARG GEI_IMAGE="$CI_REGISTRY_IMAGE/gitlab-elasticsearch-indexer:1.0.0"
 ARG GITLAB_VERSION=v10.7.0-ee
 ARG GITLAB_EDITION=gitlab-ee
 ARG ASSETS_IMAGE="registry.gitlab.com/gitlab-org/gitlab-ee/gitlab-assets-ee:${GITLAB_VERSION}"
@@ -11,6 +12,9 @@ FROM ${ASSETS_IMAGE} as assets
 <% end %>
 FROM ${PG_IMAGE} as pg_image
 
+<% if ee? %>
+FROM ${GEI_IMAGE} as gei_image
+<% end %>
 FROM ${FROM_IMAGE}:${TAG} as builder
 
 ARG BUILD_DIR=/tmp/build
@@ -146,6 +150,11 @@ ARG GITLAB_USER=git
 RUN mkdir -p /usr/share/man/man7 \
     && apt-get update \
     && apt-get install -y --no-install-recommends libicu57 libre2-3 tzdata
+
+<% if ee? %>
+# Include the gitlab-elasticsearch-indexer
+COPY --from=gei_image /usr/local/bin/gitlab-elasticsearch-indexer /usr/bin/
+<% end %>
 
 # Include postgres client tools
 COPY --from=pg_image /usr/local/psql/bin/pg_* /usr/bin/

@@ -7,6 +7,10 @@ def compile_assets
   ENV['COMPILE_ASSETS'].eql?('true')
 end
 
+def ee?
+  ENV['ee'].eql?('true')
+end
+
 puts "Rendering Dockerfile"
 
 template = ERB.new(File.read('Dockerfile.erb'))
