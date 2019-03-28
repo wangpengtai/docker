@@ -52,7 +52,7 @@ services:
       - "${WORKHORSE_HOST_PORT}:8181"
     volumes:
       - ./dev/workhorse-config:/var/opt/gitlab/config/templates
-      - ./dev/workhorse-config/.gitlab_workhorse_secret:/srv/gitlab/.gitlab_workhorse_secret
+      - ./dev/workhorse-config/.gitlab_workhorse_secret:/etc/gitlab/gitlab-workhorse/secret
       - uploads:/srv/gitlab/public/uploads
   sidekiq:
     image: registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-${GITLAB_EDITION}:latest
