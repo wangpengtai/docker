@@ -1,7 +1,7 @@
 FROM debian:stretch-slim
 
 ARG BUILD_DIR=/tmp/build
-ARG PYTHON_VERSION="3.4.9"
+ARG PYTHON_VERSION="3.7.3"
 ARG DOCUTILS_VERSION="0.11"
 
 RUN buildDeps=' \
@@ -10,6 +10,7 @@ RUN buildDeps=' \
   curl \
   file \
   gcc \
+  libffi-dev \
   libssl1.0-dev \
   make \
   zlib1g-dev' && \
@@ -23,10 +24,10 @@ RUN buildDeps=' \
   make install && \
   ldconfig && \
   /usr/local/bin/pip3 install --compile docutils==${DOCUTILS_VERSION} && \
-  rm -rf /usr/local/lib/python/3.4/lib-dynload/dbm.* && \
-  rm -rf /usr/local/lib/python/3.4/lib-dynload/_sqlite3.* && \
-  rm -rf /usr/local/lib/python/3.4/test && \
-  find /usr/local/lib/python3.4 -name '__pycache__' -type d -print -exec rm -r {} + && \
+  rm -rf /usr/local/lib/python/3.7/lib-dynload/dbm.* && \
+  rm -rf /usr/local/lib/python/3.7/lib-dynload/_sqlite3.* && \
+  rm -rf /usr/local/lib/python/3.7/test && \
+  find /usr/local/lib/python3.7 -name '__pycache__' -type d -print -exec rm -r {} + && \
   apt-get purge -y $buildDeps && \
   rm -rf /var/lib/apt/list/* && \
   rm -rf ${BUILD_DIR}
