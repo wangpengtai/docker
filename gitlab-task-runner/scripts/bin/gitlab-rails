@@ -1,0 +1,5 @@
+#!/bin/bash
+
+rails_dir=/srv/gitlab
+cd $rails_dir
+$rails_dir/bin/bundle exec rails "$@"
