@@ -429,6 +429,7 @@ release-chart:
     - git config --global user.name "GitLab Helm Chart Release Bot"
     - bundle install --jobs=$(nproc) --retry=3
     - bundle exec rake helm:tag_chart[,$(trim_tag $GITLAB_VERSION)]
+  when: manual
   only:
     refs:
       - pipelines@gitlab-org/build/CNG
