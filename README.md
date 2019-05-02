@@ -1,6 +1,6 @@
-### Gitlab Enterprise Edition Docker Images
+### Cloud native GitLab Docker Images
 
-Based on the [Alpine Linux](https://alpinelinux.org/) [official image](https://hub.docker.com/_/alpine/).
+Most images are based on the [Debian Linux](https://debian.org), using the [official stretch-slim image](https://hub.docker.com/_/debian). A few smaller, quick running tasks are based on [Alpine Linux](https://alpinelinux.org/), using the [official image](https://hub.docker.com/_/alpine/).
 
 Built using [the official source installation instructions](http://docs.gitlab.com/ee/install/installation.html) with some Alpine specific fixes
 and some dependency compilation tweaks picked up from from the [omnibus build packages](https://gitlab.com/gitlab-org/omnibus-gitlab).
@@ -8,11 +8,13 @@ and some dependency compilation tweaks picked up from from the [omnibus build pa
 Each directory contains the `Dockerfile` for a specific component of the
 infrastructure needed to run GitLab.
 
-* [rails](/rails) - The Rails code needed for both API and web.
-* [unicorn](/unicorn) - The Unicorn container that exposes Rails.
-* [sidekiq](/sidekiq) - The Sidekiq container that runs async Rails jobs
-* [shell](/shell) - Running GitLab Shell and OpenSSH to provide git over ssh, and authorized keys support from the database
+* [rails](/gitlab-rails) - The Rails code needed for both API and web.
+* [unicorn](/gitlab-unicorn) - The Unicorn container that exposes Rails.
+* [workhorse](/gitlab-workhorse) - The GitLab Workhorse container providing smart-proxy in front of Rails.
+* [sidekiq](/gitlab-sidekiq) - The Sidekiq container that runs async Rails jobs.
+* [shell](/gitlab-shell) - Running GitLab Shell and OpenSSH to provide git over ssh, and authorized keys support from the database
 * [gitaly](/gitaly) - The Gitaly container that provides a distributed git repos
+* [task-runner](/gitlab-task-runner) - The task runner container provides utilities for direct interaction with the application suite, without interruping service containers.
 
 ### Dev environment using Docker Compose
 
