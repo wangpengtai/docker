@@ -5,7 +5,7 @@ set -e
 cd /srv/gitlab
 
 echo "Starting geo_log_cursor"
-/srv/gitlab/ee/bin/geo_log_cursor >> /var/log/gitla/geo_log_cursor.log 2>&1 &
+/srv/gitlab/ee/bin/geo_log_cursor >> /var/log/gitlab/geo_log_cursor.log 2>&1 &
 
 tail -f /var/log/gitlab/*
 
