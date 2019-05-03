@@ -1,5 +1,12 @@
+# ARGS for entire build
 ARG KUBECTL_VERSION="v1.9.3"
+
 FROM debian:stretch-slim
+# ARG must be redeclared after each FROM
+ARG KUBECTL_VERSION
+
+# Providing to environment, for easy information gathering.
+ENV KUBECTL_VERSION ${KUBECTL_VERSION}
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends curl ca-certificates libssl1.0.2 openssh-client \
