@@ -60,6 +60,7 @@ function build_if_needed(){
     fi
 
     docker build --build-arg CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE -t "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION" "${DOCKER_ARGS[@]}" --cache-from $CACHE_IMAGE .
+
     # Push new image
     docker push "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION"
 
@@ -68,6 +69,12 @@ function build_if_needed(){
     popd
   fi
   echo "$CI_JOB_NAME:$CONTAINER_VERSION" > "artifacts/$CI_JOB_NAME.txt"
+}
+
+function copy_gems_from_image(){
+  if needs_build; then
+    docker run -v ${CI_PROJECT_DIR}:/opt/mount --rm --entrypoint cp "$CI_REGISTRY_IMAGE/$CI_JOB_NAME:$CONTAINER_VERSION" /vendor/bundle/ /opt/mount/vendor/bundle/
+  fi
 }
 
 function tag_and_push(){

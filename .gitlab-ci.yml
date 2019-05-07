@@ -125,8 +125,15 @@ gitlab-go:
   dependencies:
       - gitlab-ruby
 
+.gitlab-rails-cache: &gitlab-rails-cache
+  cache:
+    key: "gitlab-rails-bundle"
+    paths:
+      - vendor/bundle
+
 gitlab-rails-ee:
   <<: *job-base
+  <<: *gitlab-rails-cache
   stage: phase-four
   variables:
     ee: "true"
@@ -155,10 +162,12 @@ gitlab-rails-ee:
                       --build-arg "GEI_IMAGE=${gei_image}"
                       --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE}"
     - push_if_master_or_tag $GITLAB_REF_SLUG
+    - copy_gems_from_image
   <<: *except-ce
 
 gitlab-rails-ce:
   <<: *job-base
+  <<: *gitlab-rails-cache
   stage: phase-four
   script:
     - ruby_version=$(get_version gitlab-ruby)
@@ -179,6 +188,7 @@ gitlab-rails-ce:
                       --build-arg "PG_IMAGE=$pg_image"
                       --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE}"
     - push_if_master_or_tag $GITLAB_REF_SLUG
+    - copy_gems_from_image
   <<: *except-ee
 
 gitlab-task-runner-ee:
