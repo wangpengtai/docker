@@ -3,6 +3,7 @@ variables:
   GITLAB_VERSION: "master"
   GITLAB_REF_SLUG: "master"
   GITLAB_ASSETS_TAG: "master"
+  GITLAB_MONITOR_VERSION: "v4.0.0"
   GITLAB_SHELL_VERSION: "master"
   GITLAB_WORKHORSE_VERSION: "master"
   GITALY_VERSION: "master"
