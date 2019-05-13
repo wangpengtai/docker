@@ -33,4 +33,7 @@ RUN mkdir -p /etc/gitlab-monitor; chown -R $GITLAB_USER /etc/gitlab-monitor
 
 USER $GITLAB_USER:$GITLAB_USER
 
+ENV CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab-monitor/templates
+ENV CONFIG_DIRECTORY=/etc/gitlab-monitor
+
 CMD ["/usr/bin/gitlab-mon", "web", "-c", "/etc/gitlab-monitor/gitlab-monitor.yml"]
