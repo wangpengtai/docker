@@ -14,9 +14,9 @@ RUN adduser --disabled-password --gecos 'GitLab' ${GITLAB_USER} && \
     sed -i "s/${GITLAB_USER}:!/${GITLAB_USER}:*/" /etc/shadow
 
 # install build deps
-RUN buildDeps='build-essential libpq-dev git' && \
+RUN buildDeps='build-essential git' && \
     apt-get update && \
-    apt-get install -y --no-install-recommends $buildDeps && \
+    apt-get install -y --no-install-recommends $buildDeps libpq-dev && \
     rm -rf /var/lib/apt/lists/* && \
     mkdir -p ${BUILD_DIR} && \
     chown ${GITLAB_USER}:${GITLAB_USER} ${BUILD_DIR} && \
