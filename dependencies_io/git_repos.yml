@@ -1,10 +1,10 @@
 repos:
-  - url: https://github.com/s3tools/s3cmd.git
-    installed: 2.0.1
-    replace_in_files:
-      ci_files/variables.yml: 'S3CMD_VERSION: "{version_clean}"'
-      gitlab-task-runner/Dockerfile: ARG S3CMD_VERSION="{version_clean}"
-  - url: https://github.com/mikefarah/yq.git
-    installed: 2.3.0
-    replace_in_files:
-      gitlab-task-runner/Dockerfile: ARG YQ_VERSION="{version_clean}"
+- url: https://github.com/s3tools/s3cmd.git
+  installed: 2.0.1
+  replace_in_files:
+    ci_files/variables.yml: 'S3CMD_VERSION: "{version_clean}"'
+    gitlab-task-runner/Dockerfile: ARG S3CMD_VERSION="{version_clean}"
+- url: https://github.com/mikefarah/yq.git
+  installed: 2.4.0
+  replace_in_files:
+    gitlab-task-runner/Dockerfile: ARG YQ_VERSION="{version_clean}"
