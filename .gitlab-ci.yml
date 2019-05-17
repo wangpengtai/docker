@@ -289,6 +289,7 @@ gitlab-monitor:
                       --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-ruby"
                       --build-arg "TAG=$ruby_version"
     - push_if_master_or_tag
+    - push_if_master_or_tag $GITLAB_MONITOR_VERSION
   dependencies:
       - gitlab-ruby
 
