@@ -1,9 +1,10 @@
 ARG CI_REGISTRY_IMAGE="registry.gitlab.com/gitlab-org/build/cng"
 ARG TAG=latest
 ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby"
-ARG GITLAB_MONITOR_VERSION=v4.0.0
+ARG GITLAB_MONITOR_VERSION=4.0.0
 FROM ${FROM_IMAGE}:${TAG}
 
+# https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
 ARG GITLAB_USER=git
 ARG BUILD_DIR=/tmp/build
 ARG GITLAB_MONITOR_VERSION
@@ -14,18 +15,14 @@ RUN adduser --disabled-password --gecos 'GitLab' ${GITLAB_USER} && \
     sed -i "s/${GITLAB_USER}:!/${GITLAB_USER}:*/" /etc/shadow
 
 # install build deps
-RUN buildDeps='build-essential git' && \
+RUN buildDeps='build-essential' && \
     apt-get update && \
     apt-get install -y --no-install-recommends $buildDeps libpq-dev && \
     rm -rf /var/lib/apt/lists/* && \
     mkdir -p ${BUILD_DIR} && \
     chown ${GITLAB_USER}:${GITLAB_USER} ${BUILD_DIR} && \
     cd ${BUILD_DIR} && \
-    echo "Cloning source code from https://gitlab.com/gitlab-org/gitlab-monitor.git" && \
-    git clone --branch ${GITLAB_MONITOR_VERSION} https://gitlab.com/gitlab-org/gitlab-monitor.git && \
-    cd gitlab-monitor && \
-    gem build gitlab-monitor.gemspec && \
-    gem install gitlab-monitor && \
+    gem install gitlab-monitor -v ${GITLAB_MONITOR_VERSION} && \
     SUDO_FORCE_REMOVE=yes apt-get purge -y --auto-remove $buildDeps && \
     rm -rf ${BUILD_DIR}
 
@@ -35,5 +32,6 @@ USER $GITLAB_USER:$GITLAB_USER
 
 ENV CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab-monitor/templates
 ENV CONFIG_DIRECTORY=/etc/gitlab-monitor
+ENV CONFIG_FILENAME=gitlab-monitor.yml
 
 CMD ["/usr/bin/gitlab-mon", "web", "-c", "/etc/gitlab-monitor/gitlab-monitor.yml"]
