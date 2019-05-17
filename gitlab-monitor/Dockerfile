@@ -6,7 +6,6 @@ FROM ${FROM_IMAGE}:${TAG}
 
 # https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
 ARG GITLAB_USER=git
-ARG BUILD_DIR=/tmp/build
 ARG GITLAB_MONITOR_VERSION
 
 # create gitlab user
@@ -19,19 +18,15 @@ RUN buildDeps='build-essential' && \
     apt-get update && \
     apt-get install -y --no-install-recommends $buildDeps libpq-dev && \
     rm -rf /var/lib/apt/lists/* && \
-    mkdir -p ${BUILD_DIR} && \
-    chown ${GITLAB_USER}:${GITLAB_USER} ${BUILD_DIR} && \
-    cd ${BUILD_DIR} && \
     gem install gitlab-monitor -v ${GITLAB_MONITOR_VERSION} && \
-    SUDO_FORCE_REMOVE=yes apt-get purge -y --auto-remove $buildDeps && \
-    rm -rf ${BUILD_DIR}
-
-RUN mkdir -p /etc/gitlab-monitor; chown -R $GITLAB_USER /etc/gitlab-monitor
-
-USER $GITLAB_USER:$GITLAB_USER
+    SUDO_FORCE_REMOVE=yes apt-get purge -y --auto-remove $buildDeps
 
 ENV CONFIG_TEMPLATE_DIRECTORY=/var/opt/gitlab-monitor/templates
 ENV CONFIG_DIRECTORY=/etc/gitlab-monitor
 ENV CONFIG_FILENAME=gitlab-monitor.yml
+
+RUN mkdir -p ${CONFIG_DIRECTORY}; chown -R $GITLAB_USER ${CONFIG_DIRECTORY}
+
+USER $GITLAB_USER:$GITLAB_USER
 
 CMD ["/usr/bin/gitlab-mon", "web", "-c", "/etc/gitlab-monitor/gitlab-monitor.yml"]
