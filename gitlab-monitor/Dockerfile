@@ -29,4 +29,4 @@ RUN mkdir -p ${CONFIG_DIRECTORY}; chown -R $GITLAB_USER ${CONFIG_DIRECTORY}
 
 USER $GITLAB_USER:$GITLAB_USER
 
-CMD ["/usr/bin/gitlab-mon", "web", "-c", "/etc/gitlab-monitor/gitlab-monitor.yml"]
+CMD /usr/bin/gitlab-mon web -c ${CONFIG_DIRECTORY}/${CONFIG_FILENAME}
