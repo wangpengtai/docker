@@ -284,7 +284,8 @@ gitlab-monitor:
   stage: phase-two
   script:
     - ruby_version=$(get_version gitlab-ruby)
-    - export CONTAINER_VERSION=($(echo -n "$ruby_version$GITLAB_MONITOR_VERSION" | sha1sum))
+    - ruby_container=($(echo -n "$ruby_version$GITLAB_MONITOR_VERSION" | sha1sum))
+    - export CONTAINER_VERSION=($(echo -n "$ruby_container$TARGET_VERSION" | sha1sum))
     - build_if_needed --build-arg "GITLAB_MONITOR_VERSION=$GITLAB_MONITOR_VERSION"
                       --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-ruby"
                       --build-arg "TAG=$ruby_version"
