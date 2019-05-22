@@ -5,7 +5,10 @@ ARG FROM_IMAGE="$CI_REGISTRY_IMAGE/gitlab-go"
 FROM ${FROM_IMAGE}:${TAG}
 
 ARG BUILD_DIR=/tmp/build
-ARG GITLAB_ELASTICSEARCH_INDEXER_VERSION="1.0.0"
+ARG GITLAB_ELASTICSEARCH_INDEXER_VERSION="v1.1.0"
+ARG GITLAB_NAMESPACE="gitlab-org"
+ARG FETCH_ARTIFACTS_PAT
+ARG CI_API_V4_URL
 
 RUN buildDeps=' \
   gcc \
@@ -17,10 +20,12 @@ RUN buildDeps=' \
   && rm -rf /var/lib/apt/lists/* \
   && mkdir -p ${BUILD_DIR}
 
-RUN cd ${BUILD_DIR} \
-  && curl -s "https://gitlab.com/gitlab-org/gitlab-elasticsearch-indexer/-/archive/v${GITLAB_ELASTICSEARCH_INDEXER_VERSION}/gitlab-elasticsearch-indexer-v${GITLAB_ELASTICSEARCH_INDEXER_VERSION}.tar.gz" | tar zx \
-  && cd "${BUILD_DIR}/gitlab-elasticsearch-indexer-v${GITLAB_ELASTICSEARCH_INDEXER_VERSION}" \
-  && make \
-  && make install \
-  && cd / \
-  && rm -rf "${BUILD_DIR}"
+RUN cd ${BUILD_DIR} && \
+  echo "Downloading source code from ${CI_API_V4_URL}/projects/${GITLAB_NAMESPACE}%2Fgitlab-elasticsearch-indexer/repository/archive.tar.bz2?sha=${GITLAB_ELASTICSEARCH_INDEXER_VERSION}" && \
+  curl --header "PRIVATE-TOKEN: ${FETCH_ARTIFACTS_PAT}" -o gitlab-elasticsearch-indexer.tar.bz2 "${CI_API_V4_URL}/projects/${GITLAB_NAMESPACE}%2Fgitlab-elasticsearch-indexer/repository/archive.tar.bz2?sha=${GITLAB_ELASTICSEARCH_INDEXER_VERSION}" && \
+  tar -xjf gitlab-elasticsearch-indexer.tar.bz2 --strip-components=1 && \
+  rm gitlab-elasticsearch-indexer.tar.bz2 && \
+  make && \
+  make install && \
+  cd / && \
+  rm -rf "${BUILD_DIR}"
