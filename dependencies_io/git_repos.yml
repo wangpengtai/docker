@@ -7,4 +7,4 @@ repos:
   - url: https://github.com/mikefarah/yq.git
     installed: 2.3.0
     replace_in_files:
-      gitlab-task-runner/Dockerfile: ARG YQ_VERSION="{version_clean}"
+      kubectl/Dockerfile: ARG YQ_VERSION="{version_clean}"
