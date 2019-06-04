@@ -136,6 +136,7 @@ gitlab-rails-ee:
     - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
     - git_version=($(echo -n "$BASE_VERSION$go_version$GIT_VERSION" | sha1sum))
     - ruby_version=$(get_version gitlab-ruby)
+    - export FORCE_IMAGE_BUILDS="${FORCE_IMAGE_BUILDS-${FORCE_RAILS_IMAGE_BUILDS-false}}"
     - export CONTAINER_VERSION=($(echo -n "$ruby_version$TARGET_VERSION$GITLAB_VERSION$(date -u +%D)" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$ruby_version"
     - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
@@ -164,6 +165,7 @@ gitlab-rails-ce:
   stage: phase-five
   script:
     - ruby_version=$(get_version gitlab-ruby)
+    - export FORCE_IMAGE_BUILDS="${FORCE_IMAGE_BUILDS-${FORCE_RAILS_IMAGE_BUILDS-false}}"
     - export CONTAINER_VERSION=($(echo -n "$ruby_version$TARGET_VERSION$GITLAB_VERSION$(date -u +%D)" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$ruby_version"
     - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
