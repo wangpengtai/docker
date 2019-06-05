@@ -4,12 +4,17 @@ set -e
 
 cd /srv/gitlab
 
+LOGFILE=/var/log/gitlab/geo_log_cursor.log
+touch $LOGFILE
+
 debug=''
-if [ "${DEBUG}x" -ne "x"]; then
+if [ "${DEBUG}x" != "x"]; then
   debug='--debug'
 fi
 
 echo "Starting geo_log_cursor"
-/srv/gitlab/ee/bin/geo_log_cursor ${debug} >> /var/log/gitlab/geo_log_cursor.log 2>&1
+/srv/gitlab/ee/bin/geo_log_cursor ${debug} >> $LOGFILE 2>&1
+
+tail -f $LOGFILE
 
 wait
