@@ -8,7 +8,7 @@ LOGFILE=/var/log/gitlab/geo_log_cursor.log
 touch $LOGFILE
 
 debug=''
-if [ "${DEBUG}x" != "x"]; then
+if [ "${DEBUG}x" != "x" ]; then
   debug='--debug'
 fi
 
