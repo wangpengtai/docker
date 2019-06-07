@@ -9,6 +9,7 @@ stages:
   - phase-three
   - phase-four
   - phase-five
+  - phase-siz
   - release
 
 .except-ce: &except-ce
@@ -127,18 +128,19 @@ gitlab-go:
 
 gitlab-rails-ee:
   <<: *job-base
-  stage: phase-four
+  stage: phase-five
   variables:
     ee: "true"
   script:
     - go_dir_version=$(get_version gitlab-go)
     - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
+    - git_version=($(echo -n "$BASE_VERSION$go_version$GIT_VERSION" | sha1sum))
     - ruby_version=$(get_version gitlab-ruby)
     - export CONTAINER_VERSION=($(echo -n "$ruby_version$TARGET_VERSION$GITLAB_VERSION$(date -u +%D)" | sha1sum))
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-ruby:$ruby_version"
     - pg_image="$CI_REGISTRY_IMAGE/postgresql:$PG_VERSION"
     - gei_dir_version=$(get_version gitlab-elasticsearch-indexer)
-    - gei_version=($(echo -n "$GITLAB_ELASTICSEARCH_INDEXER_VERSION$go_version$gei_dir_version" | sha1sum))
+    - gei_version=($(echo -n "$GITLAB_ELASTICSEARCH_INDEXER_VERSION$git_version$gei_dir_version" | sha1sum))
     - gei_image="${CI_REGISTRY_IMAGE}/gitlab-elasticsearch-indexer:${gei_version}"
     - docker pull $pg_image > /dev/null || true
     - export ASSETS_IMAGE="${ASSETS_IMAGE_REGISTRY_PREFIX}/${EE_PROJECT}/${ASSETS_IMAGE_PREFIX}-ee:${GITLAB_ASSETS_TAG}"
@@ -159,7 +161,7 @@ gitlab-rails-ee:
 
 gitlab-rails-ce:
   <<: *job-base
-  stage: phase-four
+  stage: phase-five
   script:
     - ruby_version=$(get_version gitlab-ruby)
     - export CONTAINER_VERSION=($(echo -n "$ruby_version$TARGET_VERSION$GITLAB_VERSION$(date -u +%D)" | sha1sum))
@@ -183,7 +185,7 @@ gitlab-rails-ce:
 
 gitlab-task-runner-ee:
   <<: *job-base
-  stage: phase-five
+  stage: phase-six
   script:
     - ruby_version=$(get_version gitlab-ruby)
     - rails_version=$(get_version gitlab-rails)
@@ -200,7 +202,7 @@ gitlab-task-runner-ee:
 
 gitlab-task-runner-ce:
   <<: *job-base
-  stage: phase-five
+  stage: phase-six
   script:
     - ruby_version=$(get_version gitlab-ruby)
     - rails_version=$(get_version gitlab-rails)
@@ -217,7 +219,7 @@ gitlab-task-runner-ce:
 
 gitlab-unicorn-ee:
   <<: *job-base
-  stage: phase-five
+  stage: phase-six
   script:
     - ruby_version=$(get_version gitlab-ruby)
     - rails_version=$(get_version gitlab-rails)
@@ -233,7 +235,7 @@ gitlab-unicorn-ee:
 
 gitlab-unicorn-ce:
   <<: *job-base
-  stage: phase-five
+  stage: phase-six
   script:
     - ruby_version=$(get_version gitlab-ruby)
     - rails_version=$(get_version gitlab-rails)
@@ -249,7 +251,7 @@ gitlab-unicorn-ce:
 
 gitlab-sidekiq-ee:
   <<: *job-base
-  stage: phase-five
+  stage: phase-six
   script:
     - ruby_version=$(get_version gitlab-ruby)
     - rails_version=$(get_version gitlab-rails)
@@ -265,7 +267,7 @@ gitlab-sidekiq-ee:
 
 gitlab-sidekiq-ce:
   <<: *job-base
-  stage: phase-five
+  stage: phase-six
   script:
     - ruby_version=$(get_version gitlab-ruby)
     - rails_version=$(get_version gitlab-rails)
@@ -340,12 +342,13 @@ git-base:
 
 gitlab-elasticsearch-indexer:
   <<: *job-base
-  stage: phase-three
+  stage: phase-four
   script:
     - go_dir_version=$(get_version gitlab-go)
     - go_version=($(echo -n "$BASE_VERSION$go_dir_version$GO_VERSION" | sha1sum))
-    - export CONTAINER_VERSION=($(echo -n "$GITLAB_ELASTICSEARCH_INDEXER_VERSION$go_version$TARGET_VERSION" | sha1sum))
-    - build_if_needed --build-arg "TAG=${go_version}"
+    - git_version=($(echo -n "$BASE_VERSION$go_version$GIT_VERSION" | sha1sum))
+    - export CONTAINER_VERSION=($(echo -n "$GITLAB_ELASTICSEARCH_INDEXER_VERSION$git_version$TARGET_VERSION" | sha1sum))
+    - build_if_needed --build-arg "TAG=${git_version}"
                       --build-arg "GITLAB_NAMESPACE=${GITLAB_NAMESPACE}"
                       --build-arg "FETCH_ARTIFACTS_PAT=${FETCH_DEV_ARTIFACTS_PAT}"
                       --build-arg "CI_API_V4_URL=${CI_API_V4_URL}"
@@ -377,7 +380,7 @@ gitaly:
 
 gitlab-workhorse-ee:
   <<: *job-base
-  stage: phase-five
+  stage: phase-six
   script:
     - rails_version=$(get_version gitlab-rails)
     - ruby_version=$(get_version gitlab-ruby)
@@ -400,7 +403,7 @@ gitlab-workhorse-ee:
 
 gitlab-workhorse-ce:
   <<: *job-base
-  stage: phase-five
+  stage: phase-six
   script:
     - rails_version=$(get_version gitlab-rails)
     - ruby_version=$(get_version gitlab-ruby)
