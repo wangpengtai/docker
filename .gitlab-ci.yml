@@ -9,7 +9,7 @@ stages:
   - phase-three
   - phase-four
   - phase-five
-  - phase-siz
+  - phase-six
   - release
 
 .except-ce: &except-ce
