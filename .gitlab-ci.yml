@@ -48,7 +48,7 @@ gitlab-ruby:
   stage: phase-one
   script:
     - build_if_needed
-    - push_if_master_or_tag
+    - push_if_master_or_stable_or_tag
 
 postgresql:
   <<: *job-base
@@ -59,7 +59,7 @@ postgresql:
     - if [ -n "$BUILDING_IMAGE" ]; then
     -  tag_and_push $PG_VERSION
     - fi
-    - push_if_master_or_tag
+    - push_if_master_or_stable_or_tag
 
 cfssl-self-sign:
   <<: *job-base
@@ -68,8 +68,8 @@ cfssl-self-sign:
     - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$CFSSL_VERSION" | sha1sum))
     - build_if_needed --build-arg "CFSSL_VERSION=$CFSSL_VERSION"
                       --build-arg "ALPINE_VERSION=$ALPINE_VERSION"
-    - push_if_master_or_tag
-    - push_if_master_or_tag "$CFSSL_VERSION"
+    - push_if_master_or_stable_or_tag
+    - push_if_master_or_stable_or_tag "$CFSSL_VERSION"
 
 kubectl:
   <<: *job-base
@@ -80,7 +80,7 @@ kubectl:
     - if [ -n "$BUILDING_IMAGE" ]; then
     -  tag_and_push $KUBECTL_VERSION
     - fi
-    - push_if_master_or_tag
+    - push_if_master_or_stable_or_tag
 
 alpine-certificates:
   <<: *job-base
@@ -91,8 +91,8 @@ alpine-certificates:
     - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$CA_PKG_VERSION" | sha1sum))
     - build_if_needed --build-arg "ALPINE_VERSION=${ALPINE_VERSION}"
                       --build-arg "CA_PKG_VERSION=${CA_PKG_VERSION}"
-    - push_if_master_or_tag
-    - push_if_master_or_tag ${CA_PKG_VERSION}
+    - push_if_master_or_stable_or_tag
+    - push_if_master_or_stable_or_tag ${CA_PKG_VERSION}
 
 gitlab-python:
   <<: *job-base
@@ -103,7 +103,7 @@ gitlab-python:
     - if [ -n "$BUILDING_IMAGE" ]; then
     -   tag_and_push $PYTHON_VERSION
     - fi
-    - push_if_master_or_tag
+    - push_if_master_or_stable_or_tag
 
 gitlab-redis-ha:
   <<: *job-base
@@ -111,7 +111,7 @@ gitlab-redis-ha:
   script:
     - export CONTAINER_VERSION=($(echo -n "$TARGET_VERSION$(date -u +%D)" | sha1sum))
     - build_if_needed
-    - push_if_master_or_tag
+    - push_if_master_or_stable_or_tag
 
 gitlab-go:
   <<: *job-base
@@ -122,7 +122,7 @@ gitlab-go:
     - build_if_needed --build-arg "GO_VERSION=$GO_VERSION"
                       --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-ruby"
                       --build-arg "TAG=$ruby_version"
-    - push_if_master_or_tag
+    - push_if_master_or_stable_or_tag
   dependencies:
       - gitlab-ruby
 
@@ -157,7 +157,7 @@ gitlab-rails-ee:
                       --build-arg "PG_IMAGE=$pg_image"
                       --build-arg "GEI_IMAGE=${gei_image}"
                       --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE}"
-    - push_if_master_or_tag $GITLAB_REF_SLUG
+    - push_if_master_or_stable_or_tag $GITLAB_REF_SLUG
   <<: *except-ce
 
 gitlab-rails-ce:
@@ -182,7 +182,7 @@ gitlab-rails-ce:
                       --build-arg "TAG=$ruby_version"
                       --build-arg "PG_IMAGE=$pg_image"
                       --build-arg "ASSETS_IMAGE=${ASSETS_IMAGE}"
-    - push_if_master_or_tag $GITLAB_REF_SLUG
+    - push_if_master_or_stable_or_tag $GITLAB_REF_SLUG
   <<: *except-ee
 
 gitlab-task-runner-ee:
@@ -197,7 +197,7 @@ gitlab-task-runner-ee:
     - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ee"
                       --build-arg "TAG=$rails_container"
                       --build-arg "S3CMD_VERSION=$S3CMD_VERSION"
-    - push_if_master_or_tag $GITLAB_REF_SLUG
+    - push_if_master_or_stable_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ee
   <<: *except-ce
@@ -214,7 +214,7 @@ gitlab-task-runner-ce:
     - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce"
                       --build-arg "TAG=$rails_container"
                       --build-arg "S3CMD_VERSION=$S3CMD_VERSION"
-    - push_if_master_or_tag $GITLAB_REF_SLUG
+    - push_if_master_or_stable_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ce
   <<: *except-ee
@@ -230,7 +230,7 @@ gitlab-unicorn-ee:
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee:$rails_container"
     - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ee"
                       --build-arg "TAG=$rails_container"
-    - push_if_master_or_tag $GITLAB_REF_SLUG
+    - push_if_master_or_stable_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ee
   <<: *except-ce
@@ -246,7 +246,7 @@ gitlab-unicorn-ce:
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ce:$rails_container"
     - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce"
                       --build-arg "TAG=$rails_container"
-    - push_if_master_or_tag $GITLAB_REF_SLUG
+    - push_if_master_or_stable_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ce
   <<: *except-ee
@@ -262,7 +262,7 @@ gitlab-sidekiq-ee:
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ee:$rails_container"
     - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ee"
                       --build-arg "TAG=$rails_container"
-    - push_if_master_or_tag $GITLAB_REF_SLUG
+    - push_if_master_or_stable_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ee
   <<: *except-ce
@@ -278,7 +278,7 @@ gitlab-sidekiq-ce:
     - export BASE_IMAGE="$CI_REGISTRY_IMAGE/gitlab-rails-ce:$rails_container"
     - build_if_needed --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-rails-ce"
                       --build-arg "TAG=$rails_container"
-    - push_if_master_or_tag $GITLAB_REF_SLUG
+    - push_if_master_or_stable_or_tag $GITLAB_REF_SLUG
   dependencies:
     - gitlab-rails-ce
   <<: *except-ee
@@ -293,8 +293,8 @@ gitlab-monitor:
     - build_if_needed --build-arg "GITLAB_MONITOR_VERSION=$GITLAB_MONITOR_VERSION"
                       --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-ruby"
                       --build-arg "TAG=$ruby_version"
-    - push_if_master_or_tag
-    - push_if_master_or_tag $GITLAB_MONITOR_VERSION
+    - push_if_master_or_stable_or_tag
+    - push_if_master_or_stable_or_tag $GITLAB_MONITOR_VERSION
   dependencies:
       - gitlab-ruby
 
@@ -307,7 +307,7 @@ gitlab-mailroom:
     - build_if_needed --build-arg "MAILROOM_VERSION=$MAILROOM_VERSION"
                       --build-arg "FROM_IMAGE=$CI_REGISTRY_IMAGE/gitlab-ruby"
                       --build-arg "TAG=$ruby_version"
-    - push_if_master_or_tag
+    - push_if_master_or_stable_or_tag
   dependencies:
       - gitlab-ruby
 
@@ -325,7 +325,7 @@ gitlab-shell:
                       --build-arg "FETCH_ARTIFACTS_PAT=${FETCH_DEV_ARTIFACTS_PAT}"
                       --build-arg "CI_API_V4_URL=${CI_API_V4_URL}"
                       --build-arg "CACHE_BUSTER=$GITLAB_SHELL_VERSION$(date -uI)"
-    - push_if_master_or_tag $GITLAB_SHELL_VERSION
+    - push_if_master_or_stable_or_tag $GITLAB_SHELL_VERSION
   dependencies:
     - gitlab-go
 
@@ -340,7 +340,7 @@ git-base:
     - if [ -n "$BUILDING_IMAGE" ]; then
     -  tag_and_push $GIT_VERSION
     - fi
-    - push_if_master_or_tag
+    - push_if_master_or_stable_or_tag
 
 gitlab-elasticsearch-indexer:
   <<: *job-base
@@ -355,7 +355,7 @@ gitlab-elasticsearch-indexer:
                       --build-arg "FETCH_ARTIFACTS_PAT=${FETCH_DEV_ARTIFACTS_PAT}"
                       --build-arg "CI_API_V4_URL=${CI_API_V4_URL}"
                       --build-arg "GITLAB_ELASTICSEARCH_INDEXER_VERSION=${GITLAB_ELASTICSEARCH_INDEXER_VERSION}"
-    - push_if_master_or_tag "$GITLAB_ELASTICSEARCH_INDEXER_VERSION"
+    - push_if_master_or_stable_or_tag "$GITLAB_ELASTICSEARCH_INDEXER_VERSION"
   <<: *except-ce
 
 gitaly:
@@ -376,7 +376,7 @@ gitaly:
                       --build-arg "CI_API_V4_URL=${CI_API_V4_URL}"
                       --build-arg "SHELL_CONTAINER=$shell_container"
                       --build-arg "CACHE_BUSTER=$GITALY_VERSION$(date -uI)"
-    - push_if_master_or_tag $GITALY_VERSION
+    - push_if_master_or_stable_or_tag $GITALY_VERSION
   dependencies:
     - gitlab-shell
 
@@ -400,7 +400,7 @@ gitlab-workhorse-ee:
                       --build-arg "FETCH_ARTIFACTS_PAT=${FETCH_DEV_ARTIFACTS_PAT}"
                       --build-arg "CI_API_V4_URL=${CI_API_V4_URL}"
                       --build-arg "GITLAB_EDITION=gitlab-rails-ee"
-    - push_if_master_or_tag $GITLAB_REF_SLUG
+    - push_if_master_or_stable_or_tag $GITLAB_REF_SLUG
   <<: *except-ce
 
 gitlab-workhorse-ce:
@@ -423,7 +423,7 @@ gitlab-workhorse-ce:
                       --build-arg "FETCH_ARTIFACTS_PAT=${FETCH_DEV_ARTIFACTS_PAT}"
                       --build-arg "CI_API_V4_URL=${CI_API_V4_URL}"
                       --build-arg "GITLAB_EDITION=gitlab-rails-ce"
-    - push_if_master_or_tag $GITLAB_REF_SLUG
+    - push_if_master_or_stable_or_tag $GITLAB_REF_SLUG
   <<: *except-ee
 
 component-details:
