@@ -1,12 +1,14 @@
 #!/bin/bash
 
+
+
 set -e
 
 touch /var/log/gitlab/workhorse.log
 
 gitlab-workhorse \
   ${GITLAB_WORKHORSE_EXTRA_ARGS} \
-  -listenAddr 0.0.0.0:8181 \
+  -listenAddr 0.0.0.0:${GITLAB_WORKHORSE_LISTEN_PORT:-8181} \
   -documentRoot "/srv/gitlab/public" \
   -secretPath "/etc/gitlab/gitlab-workhorse/secret" \
   -config "/srv/gitlab/config/workhorse-config.toml" \
