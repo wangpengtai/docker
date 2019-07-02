@@ -17,7 +17,7 @@ function is_master(){
 }
 
 function is_stable(){
-  [ "$CI_COMMIT_REF_NAME" =~ "^\d+-\d+-stable(-ee)?$" ]
+  [[ "$CI_COMMIT_REF_NAME" =~ ^[0-9]+-[0-9]+-stable(-ee)?$ ]]
 }
 
 function force_build(){
