@@ -5,7 +5,7 @@ WAIT_FOR_TIMEOUT="${WAIT_FOR_TIMEOUT:-5}"
 cd /srv/gitlab
 
 # fetch the schema desired version directly from the source code
-SCHEMA_VERSION=$(grep '(version: ' /srv/gitlab/db/schema.rb | sed -e 's/.* \([[:digit:]]\+\)) do/\1/')
+SCHEMA_VERSION=$(grep '(version: ' /srv/gitlab/db/schema.rb | sed -e 's/_//g' -e 's/.* \([[:digit:]]\+\)) do/\1/')
 
 # Compare desired schema version to active schema version in the database
 # - set BYPASS_SCHEMA_VERSION to skip version check, and only test DB online
@@ -18,17 +18,15 @@ function checkSchemaVersion() {
       return 1
     fi
 
+    DB_SCHEMA_VERSION=$(echo ${DB_SCHEMA_VERSION} | grep 'Current version: ' | sed -e 's/_//g' -e 's/.* \([[:digit:]]\+\)/\1/')
+
     # Output the current schema version
-    echo "Database Schema"
-    echo $DB_SCHEMA_VERSION
-    echo "Codebase version: $SCHEMA_VERSION"
+    echo "Database Schema - current: ${DB_SCHEMA_VERSION}, codebase: ${SCHEMA_VERSION}"
+
     # Some uses (migrations) only care if the DB is up
     if [ -n "${BYPASS_SCHEMA_VERSION}" ]; then
       return 0
     fi
-
-    # DB_SCHEMA_VERSION ~ 'Current version: ##########', strip to just number.
-    DB_SCHEMA_VERSION=${DB_SCHEMA_VERSION##Current version: }
 
     # Compare local to db, pass if local less than or equal to db
     [ $SCHEMA_VERSION -le $DB_SCHEMA_VERSION ];
