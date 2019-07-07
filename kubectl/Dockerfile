@@ -1,7 +1,7 @@
 # ARGS for entire build
 ARG KUBECTL_VERSION="v1.9.3"
 
-FROM debian:stretch-slim
+FROM debian:buster-slim
 # ARG must be redeclared after each FROM
 ARG KUBECTL_VERSION
 ARG YQ_VERSION="2.3.0"

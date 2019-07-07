@@ -1,4 +1,4 @@
-FROM debian:stretch-slim
+FROM debian:buster-slim
 
 ARG BUILD_DIR=/tmp/build
 ARG RUBY_MAJOR_VERSION=2.6

@@ -1,4 +1,4 @@
-FROM debian:stretch-slim
+FROM debian:buster-slim
 
 ARG BUILD_DIR=/tmp/build
 ARG PG_VERSION=9.6.8
