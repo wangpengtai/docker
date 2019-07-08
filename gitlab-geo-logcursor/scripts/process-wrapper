@@ -4,7 +4,7 @@ set -e
 
 cd /srv/gitlab
 
-touch /var/log/gitlab/geo.log
+touch /var/log/gitlab/geo.log /var/log/gitlab/geo_output.log
 
 echo "Starting geo_log_cursor"
 /srv/gitlab/ee/bin/geo_log_cursor ${GEO_LOGCURSOR_ARGUMENTS} 2>&1 1>/var/log/gitlab/geo_output.log &
