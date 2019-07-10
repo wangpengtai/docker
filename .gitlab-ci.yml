@@ -424,14 +424,20 @@ gitlab-workhorse-ce:
     - push_if_master_or_tag $GITLAB_REF_SLUG
   <<: *except-ee
 
-component-details:
-  image: "alpine:latest"
+sync-images:
+  image: "docker:git"
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_HOST: tcp://docker:2375
+  services:
+    - docker:dind
   stage: release
   before_script: []
+  when: manual
   script:
     - cat artifacts/* > image_versions.txt
     - rm artifacts/*
-    - mv image_versions.txt artifacts
+    - sh build-scripts/docker_image_sync.sh image_versions.txt
   artifacts:
     paths:
       - artifacts/
